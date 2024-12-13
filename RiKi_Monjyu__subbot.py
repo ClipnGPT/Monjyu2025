@@ -1358,6 +1358,11 @@ class ChatClass:
             output_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
             output_text += res_text
             output_data = output_text
+            st = str('\n' + output_text).find('\n```')
+            if (st >= 0):
+                en = str('\n' + output_text).rfind('\n```')
+                if (en > st):
+                    output_data = str('\n' + output_text)[st+1:en+4]
             output_path  = res_path
             output_files = res_files
 
@@ -1564,6 +1569,11 @@ $$$ res_text $$$
         output_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
         output_text += res_text
         output_data = output_text
+        st = str('\n' + output_text).find('\n```')
+        if (st >= 0):
+            en = str('\n' + output_text).rfind('\n```')
+            if (en > st):
+                output_data = str('\n' + output_text)[st+1:en+4]
         output_path = res_path
         output_files = res_files
 
@@ -2139,6 +2149,11 @@ $$$ user_text $$$
         output_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
         output_text += res_text
         output_data = output_text
+        st = str('\n' + output_text).find('\n```')
+        if (st >= 0):
+            en = str('\n' + output_text).rfind('\n```')
+            if (en > st):
+                output_data = str('\n' + output_text)[st+1:en+4]
         output_path = res_path
         output_files = res_files
 
