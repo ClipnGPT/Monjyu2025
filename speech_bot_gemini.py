@@ -571,18 +571,8 @@ class _geminiAPI:
         if True:
 
             # tools
-            tools_ce = {'name': 'code_execution'}
-            tools.append(tools_ce)
-            #### tools_ws = {
-            #        'name': 'google_search_retrieval',
-            #    #    "google_search_retrieval": {
-            #    #        "dynamic_retrieval_config": {
-            #    #            "mode": "unspecified",
-            #    #            "dynamic_threshold": 0.06}                
-            #    #    }
-            #### }
-            ####tools.append(tools_ws)
-
+            #tools.append({"code_execution": {}, })
+            #tools.append({"google_search": {}, })
             for module_dic in function_modules:
                 func_dic = module_dic['function']
                 func_str = json.dumps(func_dic, ensure_ascii=False, )

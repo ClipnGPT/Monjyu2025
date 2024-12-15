@@ -46,7 +46,7 @@ config_path  = '_config/'
 config_file1 = 'RiKi_Monjyu_key.json'
 config_file2 = 'RiKi_ClipnGPT_key.json'
 
-# realTimeAPI 設定
+# モデル設定 (openai)
 MODEL = "gpt-4o-realtime-preview-2024-10-01"
 
 # 音声ストリーム 設定
@@ -82,18 +82,16 @@ class _key2Action:
         elif (os.path.isfile('../../' + config_path + config_file2)):
             with codecs.open('../../' + config_path + config_file2, 'r', 'utf-8') as f:
                 self.config_dic = json.load(f)
-        openai_key_id = self.config_dic['openai_key_id']
+        self.openai_key_id = self.config_dic['openai_key_id']
 
-        # realTimeAPI クラス
-        self.realTimeAPI = _realtime_api_class(api_key=openai_key_id, model=MODEL, )
+        # liveAPI クラス
+        self.liveAPI = _live_api_openai(api_key=self.openai_key_id, model=MODEL, )
 
         # キーボード監視 開始
         self.start_kb_listener()
 
     # キーボード監視 開始
     def start_kb_listener(self):
-        self.last_ctrl_l_time  = 0
-        self.last_ctrl_l_count = 0
         self.last_ctrl_r_time  = 0
         self.last_ctrl_r_count = 0
         self.kb_listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
@@ -106,53 +104,18 @@ class _key2Action:
 
     # キーボードイベント
     def on_press(self, key):
-        if   (key == keyboard.Key.ctrl_l)  or (key == keyboard.Key.ctrl_r):
+        if (key == keyboard.Key.ctrl_r):
             pass
         else:
-            self.last_ctrl_l_time  = 0
-            self.last_ctrl_l_count = 0
             self.last_ctrl_r_time  = 0
             self.last_ctrl_r_count = 0
 
     def on_release(self, key):
 
         # --------------------
-        # ctrl_l キー
-        # --------------------
-        if (key == keyboard.Key.ctrl_l):
-            press_time = time.time()
-            if ((press_time - self.last_ctrl_l_time) > 1):
-                self.last_ctrl_l_time  = press_time
-                self.last_ctrl_l_count = 1
-            else:
-                self.last_ctrl_l_count += 1
-                if (self.last_ctrl_l_count < 3):
-                    self.last_ctrl_l_time = press_time
-                else:
-                    self.last_ctrl_l_time  = 0
-                    self.last_ctrl_l_count = 0
-                    #print("Press ctrl_l x 3 !")
-
-                    # キー操作監視 停止
-                    self.stop_kb_listener()
-
-                    # realTimeAPI クラス
-                    if self.realTimeAPI.ws is None:
-                        self.realTimeAPI.start()
-                    else:
-                        self.realTimeAPI.stop()
-
-                    #keycontrol = Controller()
-                    #keycontrol.press(keyboard.Key.ctrl)
-                    #keycontrol.release(keyboard.Key.ctrl)
-
-                    # キー操作監視 再開
-                    self.start_kb_listener()
-
-        # --------------------
         # ctrl_r キー
         # --------------------
-        elif (key == keyboard.Key.ctrl_r):
+        if (key == keyboard.Key.ctrl_r):
             press_time = time.time()
             if ((press_time - self.last_ctrl_r_time) > 1):
                 self.last_ctrl_r_time  = press_time
@@ -169,11 +132,11 @@ class _key2Action:
                     # キー操作監視 停止
                     self.stop_kb_listener()
                
-                    # realTimeAPI クラス
-                    if self.realTimeAPI.ws is None:
-                        self.realTimeAPI.start()
+                    # live API クラス
+                    if self.liveAPI.session is None:
+                        self.liveAPI.start()
                     else:
-                        self.realTimeAPI.stop()
+                        self.liveAPI.stop()
 
                     #keycontrol = Controller()
                     #keycontrol.press(keyboard.Key.ctrl)
@@ -183,40 +146,35 @@ class _key2Action:
                     self.start_kb_listener()
 
         else:
-            self.last_ctrl_l_time  = 0
-            self.last_ctrl_l_count = 0
             self.last_ctrl_r_time  = 0
             self.last_ctrl_r_count = 0
 
 
 
-class _realtime_api_class:
+class _live_api_openai:
     def __init__(self, api_key, model, ):
 
-        # 認証情報
+        # API情報
         self.WS_URL = f"wss://api.openai.com/v1/realtime?model={ model }"
         self.HEADERS = {
             "Authorization": "Bearer " + api_key,
             "OpenAI-Beta": "realtime=v1"
         }
 
-        # botFunc
-        self.botFunc = None
-
-        # realtime
+        # 設定
         self.audio_send_queue = queue.Queue()
         self.audio_receive_queue = queue.Queue()
         self.graph_input_queue = queue.Queue()
         self.graph_output_queue = queue.Queue()
         self.break_flag = False
-        self.ws = None
+        self.session = None
         self.once_debug_flag = False
+
+        # botFunc
+        self.botFunc = None
 
         # monjyu
         self.monjyu = _monjyu_class(runMode='assistant', )
-
-        # visualizer
-        self.visualizer = _visualizer_class()
 
     def base64_to_pcm16(self, audio_base64):
         audio_data = base64.b64decode(audio_base64)
@@ -226,11 +184,14 @@ class _realtime_api_class:
         audio_base64 = base64.b64encode(audio_data).decode("utf-8")
         return audio_base64
 
-    def input_audio_to_queue(self, input_stream, CHUNK):
+    def input_audio(self, input_stream, input_rate, input_chunk):
+        delay_count = int( (input_rate/input_chunk) * 2)
         try:
+
+            # マイク入力
             last_zero_count = 0
-            while (not self.ws is None) and (not self.break_flag):
-                audio_data = input_stream.read(CHUNK, exception_on_overflow=False)
+            while (self.session is not None) and (not self.break_flag):
+                audio_data = input_stream.read(input_chunk, exception_on_overflow=False)
                 if audio_data is not None:
                     input_data = np.abs(np.frombuffer(audio_data, dtype=np.int16))
                     max_val = np.max(input_data)
@@ -239,19 +200,24 @@ class _realtime_api_class:
                         self.graph_input_queue.put(audio_data)
                         last_zero_count = 0
                     else:
-                        if last_zero_count < 20:
+                        if last_zero_count <= delay_count:
                             last_zero_count += 1
                             self.audio_send_queue.put(audio_data)
+                        self.graph_input_queue.put(bytes(INPUT_CHUNK))
                 else:
                     time.sleep(0.01)
+
         except Exception as e:
-            print(f"input_audio_to_queue: {e}")
-        self.break_flag = True
+            print(f"input_audio: {e}")
+        finally:
+            self.break_flag = True
         return True
 
-    def send_audio_from_queue(self):
+    def send_audio(self):
         try:
-            while (not self.ws is None) and (not self.break_flag):
+
+            # 音声送信
+            while (self.session is not None) and (not self.break_flag):
                 audio_data = self.audio_send_queue.get()
                 if audio_data is not None:
                     audio_base64 = self.pcm16_to_base64(audio_data)
@@ -259,35 +225,41 @@ class _realtime_api_class:
                         "type": "input_audio_buffer.append",
                         "audio": audio_base64
                     }
-                    self.ws.send(json.dumps(audio_event))
+                    self.session.send(json.dumps(audio_event))
                 else:
                     time.sleep(0.01)
+
         except Exception as e:
-            print(f"send_audio_from_queue: {e}")
-        self.break_flag = True
+            print(f"send_audio: {e}")
+        finally:
+            self.break_flag = True
         return True
 
-    def output_audio_from_queue(self, output_stream):
+    def play_audio(self, output_stream, output_rate, output_chunk):
         try:
-            while (not self.ws is None) and (not self.break_flag):
+
+            # 音声再生
+            while (self.session is not None) and (not self.break_flag):
                 audio_data = self.audio_receive_queue.get()
                 if audio_data is not None:
                     output_stream.write(audio_data)
                     self.graph_output_queue.put(audio_data)
                 else:
                     time.sleep(0.01)
+
         except Exception as e:
-            print(f"output_audio_from_queue: {e}")
-        self.break_flag = True
+            print(f"play_audio: {e}")
+        finally:
+            self.break_flag = True
         return True
 
     def send_request(self, request_text='',):
-        if (request_text is not None) and (request_text != ''):
-            print(f" User(text): { request_text }")
+        try:
+            if (request_text is not None) and (request_text != ''):
+                print(f" User(text): { request_text }")
+                if (self.session is not None) and (not self.break_flag):
 
-            try:
-                if (not self.ws is None) and (not self.break_flag):
-                    # text 送信
+                    # テキスト送信
                     request = {
                         "type": "conversation.item.create",
                         "item": {
@@ -299,18 +271,15 @@ class _realtime_api_class:
                             } ]
                         },
                     }
-                    self.ws.send(json.dumps(request))
-
-                    # 送信通知
+                    self.session.send(json.dumps(request))
                     request = {
                         "type": "response.create",
                     }
-                    self.ws.send(json.dumps(request))
+                    self.session.send(json.dumps(request))
 
-            except Exception as e:
-                print(f"send_request: {e}")
-                return False
-
+        except Exception as e:
+            print(f"send_request: {e}")
+            return False
         return True
 
     def tools_debug(self):
@@ -326,8 +295,8 @@ class _realtime_api_class:
 
     def receive_proc(self):
         try:
-            while (not self.ws is None) and (not self.break_flag):
-                response = self.ws.recv()
+            while (self.session is not None) and (not self.break_flag):
+                response = self.session.recv()
                 if response:
                     response_data = json.loads(response)
                     type  = response_data.get('type')
@@ -347,7 +316,7 @@ class _realtime_api_class:
                         elif type == "response.audio_transcript.delta":
                             pass # stream!
                         elif type == "response.audio_transcript.done":
-                            print(f" Realtime : { transcript }")
+                            print(f" Live(openai) : { transcript }")
                             try:
                                 #self.monjyu.post_output_log(outText=transcript, outData=transcript)
                                 thread = threading.Thread(
@@ -387,8 +356,8 @@ class _realtime_api_class:
                                 for module_dic in self.botFunc.function_modules:
                                     if (f_name == module_dic['func_name']):
                                         hit = True
-                                        print(f" Realtime :   function_call '{ module_dic['script'] }' ({ f_name })")
-                                        print(f" Realtime :   → { f_kwargs }")
+                                        print(f" Live(openai) :   function_call '{ module_dic['script'] }' ({ f_name })")
+                                        print(f" Live(openai) :   → { f_kwargs }")
 
                                         # function 実行
                                         try:
@@ -402,7 +371,7 @@ class _realtime_api_class:
                                             res_json = json.dumps(dic, ensure_ascii=False, )
 
                                         # tool_result
-                                        print(f" Realtime :   → { res_json }")
+                                        print(f" Live(openai) :   → { res_json }")
                                         #print()
 
                                         try:
@@ -415,13 +384,13 @@ class _realtime_api_class:
                                                     "output": res_json,
                                                 },
                                             }
-                                            self.ws.send(json.dumps(request))
+                                            self.session.send(json.dumps(request))
 
                                             # 送信通知
                                             request = {
                                                 "type": "response.create",
                                             }
-                                            self.ws.send(json.dumps(request))
+                                            self.session.send(json.dumps(request))
 
                                         except Exception as e:
                                             print(f"function_call: {e}")
@@ -453,57 +422,51 @@ class _realtime_api_class:
 
         except Exception as e:
             print(f"receive_proc: {e}")
-        self.break_flag = True
-        return True
-
-    def visualizer_update(self):
-        try:
-            if not self.graph_input_queue.empty():
-                input_data = self.graph_input_queue.get()
-                self.visualizer.update_value(input_chunk=input_data)
-            else:
-                self.visualizer.update_value(input_chunk=bytes(INPUT_CHUNK))
-                
-            if not self.graph_output_queue.empty():
-                output_data = self.graph_output_queue.get()
-                self.visualizer.update_value(output_chunk=output_data)
-            else:
-                self.visualizer.update_value(output_chunk=bytes(OUTPUT_CHUNK))
-
-            self.visualizer.update_graph()
-        except Exception as e:
-            print(f"visualizer_update: {e}")
-            return False
+        finally:
+            self.break_flag = True
         return True
 
     def start(self):
-        self.main_thread = threading.Thread(target=self._main, daemon=True)
-        self.main_thread.start()
+        print(" Live(openai) : START !")
+        # 初期化
+        self.break_flag = False
+        self.audio_send_queue.queue.clear()
+        self.audio_receive_queue.queue.clear()
+        self.graph_input_queue.queue.clear()
+        self.graph_output_queue.queue.clear()
+        # スレッド処理
+        def main_thread():
+            # visualizer開始
+            self.visualizer = _visualizer_class()
+            self.visualizer.api_instance = self  # 自身への参照を追加
+            self._main()
+            # visualizer停止
+            self.visualizer.root.quit()
+            self.visualizer.root.destroy()
+        # 起動
+        self.main_task = threading.Thread(target=main_thread, daemon=True)
+        self.main_task.start()
         return True
 
     def stop(self):
+        print(" Live(openai) : STOP !")
+        # 停止
         self.break_flag = True
-        self.main_thread.join()
+        self.main_task.join()
         return True
 
     def _main(self):
         try:
-            # visualizer開始
-            self.visualizer = _visualizer_class()
-            self.visualizer.api_instance = self  # 自身への参照を追加
-
             # 起動
-            self.break_flag = False
-            if (self.ws is None):
-                self.ws = websocket.create_connection(self.WS_URL, header=self.HEADERS)
-                print("WebSocketに接続しました。")
+            if (self.session is None):
+                self.session = websocket.create_connection(self.WS_URL, header=self.HEADERS)
 
                 # Monjyu実行が可能か確認
                 ext_monjyu = False
                 instructions = \
 """
 あなたは美しい日本語を話す賢いアシスタントです。
-あなたはRealTimeAPIで実行中のアシスタントです。
+あなたはLiveAPI(RealtimeAPI)で実行中のアシスタントです。
 """
                 if self.botFunc is not None:
                     for module_dic in self.botFunc.function_modules:
@@ -512,11 +475,12 @@ class _realtime_api_class:
                             instructions = \
 """
 あなたは美しい日本語を話す賢いアシスタントです。
-あなたはRealTimeAPIで実行中のアシスタントです。
+あなたはLiveAPI(RealtimeAPI)で実行中のアシスタントです。
 あなたはリアルタイム会話を中心に実行してください。
 あなた自身で回答できない場合は、外部AI(execute_monjyu_request)を呼び出すことで、
 適切なFunctions(Tools)も間接的に利用して、その結果で回答してしてください。
 """
+                            print(" Live(openai) : 外部AI(execute_monjyu_request) READY")
                             break
 
                 # ツール設定 通常はexecute_monjyu_requestのみ有効として処理
@@ -548,21 +512,16 @@ class _realtime_api_class:
                         "tool_choice": "auto",
                     }
                 }
-                self.ws.send(json.dumps(update_request))
-
-                self.audio_send_queue.queue.clear()
-                self.audio_receive_queue.queue.clear()
-                self.graph_input_queue.queue.clear()
-                self.graph_output_queue.queue.clear()
+                self.session.send(json.dumps(update_request))
 
                 audio_stream = pyaudio.PyAudio()
                 input_stream = audio_stream.open(format=FORMAT, channels=CHANNELS, rate=INPUT_RATE, input=True, frames_per_buffer=INPUT_CHUNK)
                 output_stream = audio_stream.open(format=FORMAT, channels=CHANNELS, rate=OUTPUT_RATE, output=True, frames_per_buffer=OUTPUT_CHUNK)
 
                 threads = [
-                    threading.Thread(target=self.input_audio_to_queue, args=(input_stream, INPUT_CHUNK), daemon=True),
-                    threading.Thread(target=self.send_audio_from_queue, daemon=True),
-                    threading.Thread(target=self.output_audio_from_queue, args=(output_stream,), daemon=True),
+                    threading.Thread(target=self.input_audio, args=(input_stream, INPUT_RATE, INPUT_CHUNK), daemon=True),
+                    threading.Thread(target=self.send_audio, daemon=True),
+                    threading.Thread(target=self.play_audio, args=(output_stream, OUTPUT_RATE, OUTPUT_CHUNK), daemon=True),
                     threading.Thread(target=self.receive_proc, daemon=True),
                     #threading.Thread(target=self.tools_debug, daemon=True)
                 ]
@@ -576,77 +535,52 @@ class _realtime_api_class:
                     thread.start()
 
             # 待機
+            print(" Live(openai) : RUN (WAIT)")
             while (not self.break_flag):
                 self.visualizer_update()
                 time.sleep(0.01)
 
         except Exception as e:
             print(f"_main: {e}")
-
-        # 停止
-        self.break_flag = True
-        #for thread in threads:
-        #    thread.join()
-        time.sleep(1.00)
-
-        # visualizer停止
-        self.visualizer.root.quit()
-        self.visualizer.root.destroy()
-
-        # 解放
-        if input_stream:
-            input_stream.stop_stream()
-            input_stream.close()
-        if output_stream:
-            output_stream.stop_stream()
-            output_stream.close()
-        audio_stream.terminate()
-        if self.ws and self.ws.connected:
-            self.ws.close()
-            self.ws = None
-            print("WebSocketを切断しました。")
+        finally:
+            self.break_flag = True
+            time.sleep(1.00)
+            #for thread in threads:
+            #    thread.join()
+            if self.session and self.session.connected:
+                self.session.close()
+                self.session = None
+            # 解放
+            if input_stream:
+                input_stream.stop_stream()
+                input_stream.close()
+            if output_stream:
+                output_stream.stop_stream()
+                output_stream.close()
+            audio_stream.terminate()
+        print(" Live(openai) : END")
         return True
 
-
-
-class _monjyu_class:
-    def __init__(self, runMode='assistant' ):
-        self.runMode = runMode
-
-        # ポート設定等
-        self.local_endpoint = f'http://localhost:{ CORE_PORT }'
-        self.user_id = 'admin'
-
-    def post_input_log(self, reqText='', inpText=''):
-        # AI要求送信
+    def visualizer_update(self):
         try:
-            response = requests.post(
-                self.local_endpoint + '/post_input_log',
-                json={'user_id': self.user_id, 
-                      'request_text': reqText,
-                      'input_text': inpText, },
-                timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT)
-            )
-            if response.status_code != 200:
-                print('error', f"Error response ({ CORE_PORT }/post_input_log) : {response.status_code} - {response.text}")
-        except Exception as e:
-            print('error', f"Error communicating ({ CORE_PORT }/post_input_log) : {e}")
-        return True
+            # グラフ更新
+            if not self.graph_input_queue.empty():
+                input_data = self.graph_input_queue.get()
+                self.visualizer.update_value(input_chunk=input_data)
+            else:
+                self.visualizer.update_value(input_chunk=bytes(INPUT_CHUNK))
+                
+            if not self.graph_output_queue.empty():
+                output_data = self.graph_output_queue.get()
+                self.visualizer.update_value(output_chunk=output_data)
+            else:
+                self.visualizer.update_value(output_chunk=bytes(OUTPUT_CHUNK))
 
-    def post_output_log(self, outText='', outData=''):
-        # AI要求送信
-        try:
-            response = requests.post(
-                self.local_endpoint + '/post_output_log',
-                json={'user_id': self.user_id, 
-                      'output_text': outText,
-                      'output_data': outData, },
-                timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT)
-            )
-            if response.status_code != 200:
-                print('error', f"Error response ({ CORE_PORT }/post_output_log) : {response.status_code} - {response.text}")
+            self.visualizer.update_graph()
+
         except Exception as e:
-            print('error', f"Error communicating ({ CORE_PORT }/post_output_log) : {e}")
+            print(f"visualizer_update: {e}")
+            return False
         return True
 
 
@@ -717,6 +651,7 @@ class _visualizer_class:
             self.api_instance.break_flag = True
             
     def update_value(self, input_chunk=None, output_chunk=None):
+        # 入力波形
         if input_chunk is not None:
             # 入力データの更新（絶対値に変換）
             input_data = np.abs(np.frombuffer(input_chunk, dtype=np.int16))
@@ -727,7 +662,7 @@ class _visualizer_class:
             self.input_data = input_data
             self.line1.set_data(range(len(input_data)), input_data)
             self.ax1.set_xlim(0, len(input_data))
-            
+        # 出力波形
         if output_chunk is not None:
             # 出力データの更新（絶対値に変換）
             output_data = np.abs(np.frombuffer(output_chunk, dtype=np.int16))
@@ -738,7 +673,7 @@ class _visualizer_class:
             self.output_data = output_data
             self.line2.set_data(range(len(output_data)), output_data)
             self.ax2.set_xlim(0, len(output_data))
-            
+        # グラフ更新
         #self.update_graph()
 
     def update_graph(self):
@@ -747,19 +682,61 @@ class _visualizer_class:
             self.root.update()
         except:
             pass
-            
+
+
+
+class _monjyu_class:
+    def __init__(self, runMode='assistant' ):
+        self.runMode = runMode
+
+        # ポート設定等
+        self.local_endpoint = f'http://localhost:{ CORE_PORT }'
+        self.user_id = 'admin'
+
+    def post_input_log(self, reqText='', inpText=''):
+        # AI要求送信
+        try:
+            response = requests.post(
+                self.local_endpoint + '/post_input_log',
+                json={'user_id': self.user_id, 
+                      'request_text': reqText,
+                      'input_text': inpText, },
+                timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT)
+            )
+            if response.status_code != 200:
+                print('error', f"Error response ({ CORE_PORT }/post_input_log) : {response.status_code} - {response.text}")
+        except Exception as e:
+            print('error', f"Error communicating ({ CORE_PORT }/post_input_log) : {e}")
+        return True
+
+    def post_output_log(self, outText='', outData=''):
+        # AI要求送信
+        try:
+            response = requests.post(
+                self.local_endpoint + '/post_output_log',
+                json={'user_id': self.user_id, 
+                      'output_text': outText,
+                      'output_data': outData, },
+                timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT)
+            )
+            if response.status_code != 200:
+                print('error', f"Error response ({ CORE_PORT }/post_output_log) : {response.status_code} - {response.text}")
+        except Exception as e:
+            print('error', f"Error communicating ({ CORE_PORT }/post_output_log) : {e}")
+        return True
+
 
 
 class _class:
 
     def __init__(self, ):
         self.version   = "v0"
-        self.func_name = "extension_UI_key2RealTimeAPI"
+        self.func_name = "extension_UI_key2Live_openai"
         self.func_ver  = "v0.20241008"
-        self.func_auth = "h0MmuBSfyHFVSPQ+uqVSZCO6MHFKi8TRGjoM6OG2SpUdF2P/S25GWoK6O8gf4Z6d"
+        self.func_auth = "h0MmuBSfyHFVSPQ+uqVSZFzgtA/0GfSQa4URyA0F0O5bcSMXp28PFOLPq3YGTbri"
         self.function  = {
             "name": self.func_name,
-            "description": "拡張ＵＩ_キー(ctrl)連打で、RealTimeAPIを起動または停止する。",
+            "description": "拡張ＵＩ_キー(ctrl)連打で、LiveAPI(RealTimeAPI)を起動または停止する。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -787,7 +764,7 @@ class _class:
 
     def func_reset(self, botFunc=None, ):
         if botFunc is not None:
-            self.sub_proc.realTimeAPI.botFunc = botFunc
+            self.sub_proc.liveAPI.botFunc = botFunc
         return True
 
     def func_proc(self, json_kwargs=None, ):
@@ -808,10 +785,10 @@ class _class:
 
         # 処理
         if (reqText != ''):
-            if self.sub_proc.realTimeAPI.ws is None:
-                self.sub_proc.realTimeAPI.start()
+            if self.sub_proc.liveAPI.session is None:
+                self.sub_proc.liveAPI.start()
                 time.sleep(5.00)
-            self.sub_proc.realTimeAPI.send_request(request_text=reqText, )
+            self.sub_proc.liveAPI.send_request(request_text=reqText, )
 
         # 戻り
         dic = {}
@@ -823,6 +800,18 @@ class _class:
 if __name__ == '__main__':
 
     ext = _class()
+    #api_key = ext.sub_proc.api_key
+
+    #liveAPI = _live_api_openai(api_key, MODEL)
+    #liveAPI.start()
+    #time.sleep(5)
+    #liveAPI.send_request(request_text='日本語で話してください')
+    #time.sleep(30)
+    #liveAPI.stop()
+    #time.sleep(5)
+
+
+    #ext = _class()
     print(ext.func_proc('{ "runMode" : "assistant", "reqText" : "" }'))
 
     time.sleep(2)

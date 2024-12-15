@@ -573,7 +573,8 @@ class _freeaiAPI:
         if True:
 
             # tools
-            #tools = [{"name":'code_execution'}]
+            #tools.append({"code_execution": {}, })
+            #tools.append({"google_search": {}, })
             for module_dic in function_modules:
                 func_dic = module_dic['function']
                 func_str = json.dumps(func_dic, ensure_ascii=False, )

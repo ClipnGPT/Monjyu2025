@@ -40,6 +40,13 @@ import matplotlib
 import seaborn
 import pytesseract
 import websocket
+
+# google
+from google import genai
+from google.genai import types
+
+# win32/OCR
+import pytesseract
 if (os.name == 'nt'):
     import win32clipboard
     import comtypes.client
@@ -65,11 +72,6 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
-
-# OCRモジュールのインポート
-import pytesseract
-if (os.name == 'nt'):
-    import winocr
 
 # 音声関連モジュールのインポート
 import gtts
@@ -227,14 +229,25 @@ if __name__ == '__main__':
             print(msg)
             print()
 
-        # key2RealTimeAPI
-        ext_module = addin.addin_modules.get('monjyu_UI_key2RealTimeAPI', None)
+        # key2Live_freeai
+        ext_module = addin.addin_modules.get('monjyu_UI_key2Live_freeai', None)
         if (ext_module is not None):
             try:
                 if (ext_module['onoff'] == 'on'):
                     func_reset = ext_module['func_reset']
                     res  = func_reset(botFunc=botFunc, )
-                    print('reset', 'monjyu_UI_key2RealTimeAPI')
+                    print('reset', 'monjyu_UI_key2Live_freeai')
+            except Exception as e:
+                print(e)
+
+        # key2Live_openai
+        ext_module = addin.addin_modules.get('monjyu_UI_key2Live_openai', None)
+        if (ext_module is not None):
+            try:
+                if (ext_module['onoff'] == 'on'):
+                    func_reset = ext_module['func_reset']
+                    res  = func_reset(botFunc=botFunc, )
+                    print('reset', 'monjyu_UI_key2Live_openai')
             except Exception as e:
                 print(e)
 
