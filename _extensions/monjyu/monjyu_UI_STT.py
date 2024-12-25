@@ -58,8 +58,11 @@ class _stt_woker:
     # Worker デーモン
     def proc_worker(self):
         while True:
-            self.stt_proc()
-            time.sleep(0.25)
+            hit = self.stt_proc()
+            if hit == True:
+                time.sleep(0.25)
+            else:
+                time.sleep(0.50)
         return True
 
     def stt_proc(self, remove=True, ):

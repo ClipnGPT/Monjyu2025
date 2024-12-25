@@ -40,9 +40,9 @@ ECHO -------
     python -m pip  install --upgrade pygame
     python -m pip  install --upgrade pynput
 
-rem python -m pip  install --upgrade numpy
-rem python -m pip  install --upgrade numpy==1.26.4
-    python -m pip  install --upgrade numpy==2.0.2
+    python -m pip  install --upgrade numpy
+rem python -m pip  install --upgrade numpy==2.0.2
+rem python -m pip  install --upgrade numpy==2.2.0
 rem python -m pip  install --upgrade opencv-python
 rem python -m pip  install --upgrade opencv-contrib-python
 rem python -m pip  install --upgrade opencv-python==4.9.0.80

@@ -112,15 +112,19 @@ class _play_woker:
     # Worker デーモン
     def proc_worker(self):
         while True:
+            hit = False
             try:
                 #(x, y) = pyautogui.position()
                 (x, y) = self.mouse_position()
                 self.last_mouse_x = x
                 self.last_mouse_y = y
-                self.play_proc()
+                hit = self.play_proc()
             except:
                 pass
-            time.sleep(0.25)
+            if hit == True:
+                time.sleep(0.25)
+            else:
+                time.sleep(0.50)
 
         return True
 

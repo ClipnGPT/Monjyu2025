@@ -30,6 +30,7 @@ import pynput
 import pyperclip
 import hashlib
 import PIL  # Pillow
+from PIL import Image, ImageGrab, ImageTk, ImageEnhance
 import numpy
 import cv2
 import pandas

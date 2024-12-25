@@ -144,7 +144,7 @@ class _ollamaAPI:
             self.ollama_client = ollama.Client(host=f"http://{ self.ollama_server }:{ self.ollama_port }", )
             get_models  = self.ollama_client.list().get('models')
             for model in get_models:
-                self.ollama_models.append(model.get('name'))
+                self.ollama_models.append(model.get('model'))
         except:
             print(' ollama  : server (' + self.ollama_server + ') not enabled! ')
             if (self.ollama_server == 'localhost'):
@@ -156,7 +156,7 @@ class _ollamaAPI:
                     self.ollama_client = ollama.Client(host="http://localhost:11434", )
                     get_models  = self.ollama_client.list().get('models')
                     for model in get_models:
-                        self.ollama_models.append(model.get('name'))
+                        self.ollama_models.append(model.get('model'))
                     self.ollama_server = 'localhost'
                     self.ollama_port   = '11434'
                 except:

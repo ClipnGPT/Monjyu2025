@@ -137,14 +137,20 @@ class _clip_woker:
                             self.last_image_list = clip_image
                             batch_list = clip_image
 
+            hit = False
             if (batch_string is not None):
+                hit = True
                 self.string_proc(batch_string)
             if (batch_image is not None):
+                hit = True
                 self.image_proc(batch_image)
             if (batch_list is not None):
+                hit = True
                 self.list_proc(batch_list)
-            
-            time.sleep(0.25)
+            if hit == True:
+                time.sleep(0.25)
+            else:
+                time.sleep(0.50)
 
     def to_clip(self, clip_string: str):
         # クリップボードへ

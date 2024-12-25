@@ -51,9 +51,13 @@ class _monjyu_class:
             if response.status_code == 200:
                 results = response.json()
                 for f in results['files']:
-                    fx = f.split(' ')
-                    if (fx[3] == 'checked'):
-                        file_names.append(fx[0])
+                    #fx = f.split(' ')
+                    #if (fx[3] == 'checked'):
+                    #    file_names.append(fx[0])
+                    file_name = f.get('file_name','')
+                    checked   = f.get('checked','')
+                    if checked == 'yes':
+                        file_names.append(file_name)
             else:
                 print('error', f"Error response ({self.webui_port}/get_input_list) : {response.status_code}")
         except Exception as e:

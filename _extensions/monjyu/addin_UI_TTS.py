@@ -129,6 +129,7 @@ class _tts_woker:
     # Worker デーモン
     def proc_worker(self):
         while True:
+            hit = False
             try:
                 #(x, y) = pyautogui.position()
                 (x, y) = self.mouse_position()
@@ -137,7 +138,10 @@ class _tts_woker:
                 self.tts_proc()
             except:
                 pass
-            time.sleep(0.25)
+            if hit == True:
+                time.sleep(0.25)
+            else:
+                time.sleep(0.50)
 
         return True
 
