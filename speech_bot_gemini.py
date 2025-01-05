@@ -497,6 +497,8 @@ class _geminiAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:5].lower() == ('free,')):
             inpText = inpText.strip()[5:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:6].lower() == ('plamo,')):
             inpText = inpText.strip()[6:]
 

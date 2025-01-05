@@ -46,7 +46,10 @@ class botFunction:
         if (len(path_files) > 0):
             for f in path_files:
                 base_name = os.path.basename(f)
-                if (base_name[:4] != '_v6_') and (base_name[:4] != '_v7_'):
+                if  base_name[:4]   != '_v6_' \
+                and base_name[:4]   != '_v7_' \
+                and base_name[-10:] != '_pyinit.py' \
+                and base_name[-10:] != '_python.py':
 
                     try:
                         file_name   = os.path.splitext(base_name)[0]

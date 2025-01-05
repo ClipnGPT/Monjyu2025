@@ -23,6 +23,7 @@ import requests
 import json
 import re
 
+from typing import Dict, Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -92,6 +93,11 @@ class postAddinsDataModel(BaseModel):
     text_pdf_execute: str
     image_ocr_execute: str
     image_yolo_execute: str
+
+# Live設定データモデル
+class postLiveDataModel(BaseModel):
+    req_mode: str
+    voice: str
 
 # 音声入力項目モデル
 class sttFieldModel(BaseModel):
@@ -189,6 +195,9 @@ class WebUiClass:
         self.app.post("/post_mode_setting")(self.post_mode_setting)
         self.app.get("/get_addins_setting")(self.get_addins_setting)
         self.app.post("/post_addins_setting")(self.post_addins_setting)
+        self.app.get("/get_live_voices")(self.get_live_voices)
+        self.app.get("/get_live_setting")(self.get_live_setting)
+        self.app.post("/post_live_setting")(self.post_live_setting)
         self.app.get("/get_default_image")(self.get_default_image)
         self.app.get("/get_image_info")(self.get_image_info)
         self.app.post("/post_text_files")(self.post_text_files)
@@ -288,6 +297,30 @@ class WebUiClass:
                                         "image_ocr_execute": image_ocr_execute, 
                                         "image_yolo_execute": image_yolo_execute, }
         return JSONResponse(content={'message': 'post_addins_setting successfully'})
+
+    async def get_live_voices(self, req_mode: str) -> Dict[str, str]:
+        # 設定情報を返す
+        if (self.data is not None):
+            result = self.data.live_voices[req_mode]
+        else:
+            result = {}
+        return JSONResponse(content=result)
+
+    async def get_live_setting(self, req_mode: str):
+        # 設定情報を返す
+        if (self.data is not None):
+            result = self.data.live_setting[req_mode]
+        else:
+            result = {}
+        return JSONResponse(content=result)
+
+    async def post_live_setting(self, data: postLiveDataModel):
+        # 設定情報を更新する
+        req_mode = str(data.req_mode) if data.req_mode else ""
+        voice = str(data.voice) if data.voice else ""
+        if (self.data is not None):
+            self.data.live_setting[req_mode] = {"voice": voice }
+        return JSONResponse(content={'message': 'post_live_setting successfully'})
 
     async def get_default_image(self):
         # デフォルト画像データの取得

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ------------------------------------------------
-# COPYRIGHT (C) 2014-2024 Mitsuo KONDOU.
+# COPYRIGHT (C) 2014-2025 Mitsuo KONDOU.
 # This software is released under the not MIT License.
 # Permission from the right holder is required for use.
 # https://github.com/ClipnGPT
@@ -161,6 +161,7 @@ class _clip_woker:
         return True
 
     def string_proc(self, clip_string):
+        clip_string = clip_string.replace('\r', '')
         # 文字列処理スレッド
         #print("Hallo String, " + clip_string)
 
@@ -590,7 +591,7 @@ class _class:
         self.func_auth = "y+MlAmcqvzqaXoBZtIz/V9H611RcQmQJ/HqghKjoH/1eSmmAQ9zTVio4xBlwCyn1"
         self.function  = {
             "name": self.func_name,
-            "description": "文殊拡張ＵＩ_Monjyuのクリップボードインターフェース機能。",
+            "description": "拡張ＵＩ_文殊(もんじゅ):Monjyuのクリップボードインターフェース機能。",
             "parameters": {
                 "type": "object",
                 "properties": {

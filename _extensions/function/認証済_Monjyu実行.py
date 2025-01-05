@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ------------------------------------------------
-# COPYRIGHT (C) 2014-2024 Mitsuo KONDOU.
+# COPYRIGHT (C) 2014-2025 Mitsuo KONDOU.
 # This software is released under the not MIT License.
 # Permission from the right holder is required for use.
 # https://github.com/ClipnGPT
@@ -126,8 +126,9 @@ class _class:
             "name": self.func_name,
             "description": \
 """
-この機能は、RealTimeAPIセッションからのみ実行する。
-この機能で、画像認識機能などマルチモーダルなAI機能が呼び出せます。
+この機能は、LiveAPI(RealTimeAPI)セッションから呼び出して利用する。
+この機能から、画像認識などの機能が実行可能な外部AI 文殊/Monjyu(もんじゅ) が実行される。
+社内システム(WEB)のログイン,出勤,退勤の操作は、'operation_internal_web_systems'機能の利用を明示して呼び出す必要がある。
 """,
             "parameters": {
                 "type": "object",

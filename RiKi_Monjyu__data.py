@@ -88,6 +88,8 @@ class _data_class:
         self.openai_enable = True
         self.mode_setting = {}
         self.addins_setting = {}
+        self.live_voices = {}
+        self.live_setting = {}
         self._reset()
 
         # スレッドロック
@@ -186,6 +188,23 @@ class _data_class:
             "image_yolo_execute": ""
         }
 
+        # liveの設定
+        self.live_voices[ 'freeai'] = {"Puck": "Puck", 
+                                       "Charon": "Charon", 
+                                       "Kore": "Kore", 
+                                       "Fenrir": "Fenrir", 
+                                       "Aoede": "Aoede" }
+        self.live_setting['freeai'] = { "voice": "Aoede", }
+        self.live_voices[ 'openai'] = {"alloy": "Alloy", 
+                                       "ash": "Ash",
+                                       "ballad": "Ballad",
+                                       "coral": "Coral", 
+                                       "echo": "Echo", 
+                                       "sage": "Sage", 
+                                       "shimmer": "Shimmer",
+                                       "verse": "Verse" }
+        self.live_setting['openai'] = { "voice": "alloy", }
+
     def update_subai_status(self, port: str):
         """
         サブAIのステータスを定期的に更新する。
@@ -194,7 +213,7 @@ class _data_class:
         while True:
             if first_time:
                 first_time = False
-                sleep_sec = random.uniform(self.num_subais/4, self.num_subais/4 + self.num_subais - 5)
+                sleep_sec = random.uniform(self.num_subais/2, self.num_subais/2 + self.num_subais)
             else:
                 sleep_sec = random.uniform(self.num_subais, self.num_subais*2)
             time.sleep(sleep_sec)

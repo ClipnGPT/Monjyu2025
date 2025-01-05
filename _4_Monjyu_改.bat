@@ -66,6 +66,7 @@ rem python -m pip  install --upgrade opencv-contrib-python==4.9.0.80
     python -m pip  install --upgrade google.generativeai
     python -m pip  install --upgrade google.genai
     python -m pip  install --upgrade ollama
+    python -m pip  install --upgrade groq
 
 rem    python -m pip  install --upgrade langchain
 rem    python -m pip  install --upgrade codeinterpreterapi

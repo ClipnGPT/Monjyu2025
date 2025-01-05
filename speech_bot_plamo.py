@@ -474,6 +474,8 @@ class _plamoAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:5].lower() == ('free,')):
             inpText = inpText.strip()[5:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:6].lower() == ('plamo,')):
             inpText = inpText.strip()[6:]
 
@@ -681,8 +683,7 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                #inpText = 'おはようございます。'
-                inpText = 'plamo,おはようございます。'
+                inpText = 'おはようございます。'
                 print()
                 print('[Request]')
                 print(reqText, inpText )

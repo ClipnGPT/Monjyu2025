@@ -228,6 +228,7 @@ class CoreAiClass:
         self.app.post("/post_clear")(self.post_clear)
         self.app.post("/post_input_log")(self.post_input_log)
         self.app.post("/post_output_log")(self.post_output_log)
+        self.app.post("/post_histories")(self.post_histories)
         self.app.post("/post_clip_names")(self.post_clip_names)
         self.app.post("/post_clip_text")(self.post_clip_text)
 
@@ -361,6 +362,20 @@ class CoreAiClass:
                     models[self.chat_class.ollamaAPI.ollama_v_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_v_nick_name
                 if self.chat_class.ollamaAPI.ollama_x_enable and self.chat_class.ollamaAPI.ollama_x_nick_name:
                     models[self.chat_class.ollamaAPI.ollama_x_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_x_nick_name
+
+        if True:
+            if self.chat_class.groq_enable is None:
+                self.chat_class.groq_auth()
+            if self.chat_class.groq_enable:
+                models['[groq]'] = '[Groq]'
+                if self.chat_class.groqAPI.groq_a_enable and self.chat_class.groqAPI.groq_a_nick_name:
+                    models[self.chat_class.groqAPI.groq_a_nick_name.lower()] = ' ' + self.chat_class.groqAPI.groq_a_nick_name
+                if self.chat_class.groqAPI.groq_b_enable and self.chat_class.groqAPI.groq_b_nick_name:
+                    models[self.chat_class.groqAPI.groq_b_nick_name.lower()] = ' ' + self.chat_class.groqAPI.groq_b_nick_name
+                if self.chat_class.groqAPI.groq_v_enable and self.chat_class.groqAPI.groq_v_nick_name:
+                    models[self.chat_class.groqAPI.groq_v_nick_name.lower()] = ' ' + self.chat_class.groqAPI.groq_v_nick_name
+                if self.chat_class.groqAPI.groq_x_enable and self.chat_class.groqAPI.groq_x_nick_name:
+                    models[self.chat_class.groqAPI.groq_x_nick_name.lower()] = ' ' + self.chat_class.groqAPI.groq_x_nick_name
 
         if True:
             if self.chat_class.plamo_enable is None:
@@ -1155,15 +1170,16 @@ class CoreAiClass:
         input_text = postData.input_text
         now_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
 
-        self.data.subai_input_log_key += 1
-        self.data.subai_input_log_all[self.data.subai_input_log_key] = {
-                "user_id": user_id, "from_port": self.core_port, "to_post": self.core_port,
-                "req_mode": 'log',
-                "inp_time": now_time, 
-                "sys_text": 'あなたは美しい日本語を話す賢いアシスタントです。', 
-                "req_text": request_text, 
-                "inp_text": input_text,
-                "upd_time": now_time, "dsp_time": None, }
+        with self.thread_lock:
+            self.data.subai_input_log_key += 1
+            self.data.subai_input_log_all[self.data.subai_input_log_key] = {
+                    "user_id": user_id, "from_port": self.core_port, "to_post": self.core_port,
+                    "req_mode": 'log',
+                    "inp_time": now_time, 
+                    "sys_text": 'あなたは美しい日本語を話す賢いアシスタントです。', 
+                    "req_text": request_text, 
+                    "inp_text": input_text,
+                    "upd_time": now_time, "dsp_time": None, }
 
         # 処理結果
         return JSONResponse(content={'message': 'post_input_log successfully'})
@@ -1180,16 +1196,55 @@ class CoreAiClass:
         output_data = postData.output_data
         now_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
 
-        self.data.subai_output_log_key += 1
-        self.data.subai_output_log_all[self.data.subai_output_log_key] = {
-            "user_id": user_id, "from_port": self.core_port, "to_post": self.core_port,
-            "req_mode": 'log',
-            "out_time": now_time, "out_text": output_text, "out_data": output_data,
-            "status": None,
-            "upd_time": now_time, "dsp_time": None, }
+        with self.thread_lock:
+            self.data.subai_output_log_key += 1
+            self.data.subai_output_log_all[self.data.subai_output_log_key] = {
+                "user_id": user_id, "from_port": self.core_port, "to_post": self.core_port,
+                "req_mode": 'log',
+                "out_time": now_time, "out_text": output_text, "out_data": output_data,
+                "status": None,
+                "upd_time": now_time, "dsp_time": None, }
 
         # 処理結果
         return JSONResponse(content={'message': 'post_input_log successfully'})
+
+    async def post_histories(self, postData: ResultDataModel):
+        """
+        エージェントから結果を受信する。
+        """
+        if (self.data is None):
+            raise HTTPException(status_code=503, detail='Service Unavailable')
+
+        user_id = str(postData.user_id) if postData.user_id is not None else "debug"
+        from_port = str(postData.from_port) if postData.from_port is not None else "live"
+        to_port = str(postData.to_port) if postData.to_port is not None else "live"
+        req_mode = str(postData.req_mode) if postData.req_mode is not None else "live"
+        system_text = postData.system_text
+        request_text = postData.request_text
+        input_text  = postData.input_text
+        result_savepath = postData.result_savepath
+        result_schema = postData.result_schema
+        output_text = postData.output_text
+        output_data = postData.output_data
+        output_path = postData.output_path
+        output_files = postData.output_files
+        status = postData.status
+
+        now_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+        key_val = f"{user_id}:{from_port}:{to_port}"
+        with self.thread_lock:
+            self.data.subai_histories_key += 1
+            self.data.subai_histories_all[self.data.subai_histories_key] = {
+                "key_val": key_val,
+                "user_id": user_id, "from_port": from_port, "to_post": to_port,
+                "req_mode": req_mode,
+                "inp_time": now_time, "sys_text": system_text, "req_text": request_text, "inp_text": input_text,
+                "out_time": now_time, "out_text": output_text, "out_data": output_data, 
+                "status": status,
+                "upd_time": now_time, "dsp_time": None, }
+   
+        # 処理結果
+        return JSONResponse(content={'message': 'post_histories successfully'})
 
     def _text_clear(self, user_id: str, req_mode: str):
         """

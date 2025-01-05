@@ -54,6 +54,8 @@ import speech_bot_gemini
 import speech_bot_gemini_key as gemini_key
 import speech_bot_ollama
 import speech_bot_ollama_key as ollama_key
+import speech_bot_groq
+import speech_bot_groq_key as groq_key
 import speech_bot_plamo
 import speech_bot_plamo_key as plamo_key
 
@@ -112,6 +114,7 @@ class ChatClass:
         self.claude_enable = None
         self.gemini_enable = None
         self.ollama_enable = None
+        self.groq_enable = None
         self.plamo_enable = None
 
         # CANCEL要求
@@ -477,6 +480,43 @@ class ChatClass:
 
         return self.ollama_enable
 
+    def groq_auth(self):
+        """
+        groq 認証
+        """
+
+        # groq 定義
+        self.groqAPI = speech_bot_groq._groqAPI()
+        self.groqAPI.init(log_queue=None)
+
+        # groq 認証情報
+        api_type = groq_key.getkey('groq','groq_api_type')
+        key_id   = groq_key.getkey('groq','groq_key_id')
+        if (self.conf.groq_key_id not in ['', '< your groq key >']):
+            key_id = self.conf.groq_key_id
+
+        # groq 認証実行
+        res = self.groqAPI.authenticate('groq',
+                            api_type,
+                            groq_key.getkey('groq','groq_default_gpt'), groq_key.getkey('groq','groq_default_class'),
+                            groq_key.getkey('groq','groq_auto_continue'),
+                            groq_key.getkey('groq','groq_max_step'), groq_key.getkey('groq','groq_max_session'),
+                            key_id,
+                            groq_key.getkey('groq','groq_a_nick_name'), groq_key.getkey('groq','groq_a_model'), groq_key.getkey('groq','groq_a_token'),
+                            groq_key.getkey('groq','groq_b_nick_name'), groq_key.getkey('groq','groq_b_model'), groq_key.getkey('groq','groq_b_token'),
+                            groq_key.getkey('groq','groq_v_nick_name'), groq_key.getkey('groq','groq_v_model'), groq_key.getkey('groq','groq_v_token'),
+                            groq_key.getkey('groq','groq_x_nick_name'), groq_key.getkey('groq','groq_x_model'), groq_key.getkey('groq','groq_x_token'),
+                            )
+
+        if res == True:
+            self.groq_enable = True
+            #qLog.log('info', self.proc_id, 'groq authenticate OK!')
+        else:
+            self.groq_enable = False
+            qLog.log('error', self.proc_id, 'groq authenticate NG!')
+
+        return self.groq_enable
+
     def plamo_auth(self):
         """
         plamo 認証
@@ -611,6 +651,8 @@ class ChatClass:
             self.gemini_auth()
         if (self.ollama_enable is None):
             self.ollama_auth()
+        if (self.groq_enable is None):
+            self.groq_auth()
         if (self.plamo_enable is None):
             self.plamo_auth()
 
@@ -1057,6 +1099,73 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot ollama ...')
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.ollamaAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                    history=history, function_modules=function_modules,
+                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                except Exception as e:
+                    qLog.log('error', self.proc_id, str(e))
+
+        if (self.groq_enable == True):
+            if (engine == '[groq]'):
+                engine_text = 'groq,\n'
+            else:
+                model_nick_name = 'groq'
+                a_nick_name = self.groqAPI.groq_a_nick_name.lower()
+                b_nick_name = self.groqAPI.groq_b_nick_name.lower()
+                v_nick_name = self.groqAPI.groq_v_nick_name.lower()
+                x_nick_name = self.groqAPI.groq_x_nick_name.lower()
+                if (engine != ''):
+                    if   ((len(a_nick_name) != 0) and (engine.lower() == a_nick_name)):
+                        engine_text = a_nick_name + ',\n'
+                    elif ((len(b_nick_name) != 0) and (engine.lower() == b_nick_name)):
+                        engine_text = b_nick_name + ',\n'
+                    elif ((len(v_nick_name) != 0) and (engine.lower() == v_nick_name)):
+                        engine_text = v_nick_name + ',\n'
+                    elif ((len(x_nick_name) != 0) and (engine.lower() == x_nick_name)):
+                        engine_text = x_nick_name + ',\n'
+                if (engine_text == '') and (reqText.find(',') >= 1):
+                    req_nick_name = reqText[:reqText.find(',')].lower()
+                    if   (req_nick_name == model_nick_name):
+                        engine_text = model_nick_name + ',\n'
+                        reqText = reqText[len(model_nick_name)+1:].strip()
+                    elif (len(a_nick_name) != 0) and (req_nick_name == a_nick_name):
+                        engine_text = a_nick_name + ',\n'
+                        reqText = reqText[len(a_nick_name)+1:].strip()
+                    elif (len(b_nick_name) != 0) and (req_nick_name == b_nick_name):
+                        engine_text = b_nick_name + ',\n'
+                        reqText = reqText[len(b_nick_name)+1:].strip()
+                    elif (len(v_nick_name) != 0) and (req_nick_name == v_nick_name):
+                        engine_text = v_nick_name + ',\n'
+                        reqText = reqText[len(v_nick_name)+1:].strip()
+                    elif (len(x_nick_name) != 0) and (req_nick_name == x_nick_name):
+                        engine_text = x_nick_name + ',\n'
+                        reqText = reqText[len(x_nick_name)+1:].strip()
+                if (engine_text == '') and (inpText.find(',') >= 1):
+                    inp_nick_name = inpText[:inpText.find(',')].lower()
+                    if   (inp_nick_name == model_nick_name):
+                        engine_text = model_nick_name + ',\n'
+                        inpText = inpText[len(model_nick_name)+1:].strip()
+                    elif (len(a_nick_name) != 0) and (inp_nick_name == a_nick_name):
+                        engine_text = a_nick_name + ',\n'
+                        inpText = inpText[len(a_nick_name)+1:].strip()
+                    elif (len(b_nick_name) != 0) and (inp_nick_name == b_nick_name):
+                        engine_text = b_nick_name + ',\n'
+                        inpText = inpText[len(b_nick_name)+1:].strip()
+                    elif (len(v_nick_name) != 0) and (inp_nick_name == v_nick_name):
+                        engine_text = v_nick_name + ',\n'
+                        inpText = inpText[len(v_nick_name)+1:].strip()
+                    elif (len(x_nick_name) != 0) and (inp_nick_name == x_nick_name):
+                        engine_text = x_nick_name + ',\n'
+                        inpText = inpText[len(x_nick_name)+1:].strip()
+
+            if (engine_text != ''):
+                inpText2 = engine_text + inpText
+                engine_text = ''
+
+                try:
+                    qLog.log('info', self.proc_id, 'chatBot groq ...')
+                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                        self.groqAPI.chatBot( chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )

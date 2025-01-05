@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ------------------------------------------------
-# COPYRIGHT (C) 2014-2024 Mitsuo KONDOU.
+# COPYRIGHT (C) 2014-2025 Mitsuo KONDOU.
 # This software is released under the not MIT License.
 # Permission from the right holder is required for use.
 # https://github.com/ClipnGPT

@@ -20,10 +20,10 @@ import json
 import queue
 import base64
 
-# perplexity チャットボット
-import openai
+# groq チャットボット
+import groq
 
-import speech_bot_perplexity_key  as perplexity_key
+import speech_bot_groq_key  as groq_key
 
 
 
@@ -34,47 +34,47 @@ def base64_encode(file_path):
 
 
 
-class _perplexityAPI:
+class _groqAPI:
 
     def __init__(self, ):
-        self.log_queue                  = None
-        self.bot_auth                   = None
+        self.log_queue              = None
+        self.bot_auth               = None
 
-        self.temperature                = 0.8
-        self.timeOut                    = 60
+        self.temperature            = 0.8
+        self.timeOut                = 180
 
-        self.perplexity_api_type        = 'perplexity'
-        self.perplexity_default_gpt     = 'auto'
-        self.perplexity_default_class   = 'auto'
-        self.perplexity_auto_continue   = 3
-        self.perplexity_max_step        = 10
-        self.perplexity_max_session     = 5
+        self.groq_api_type          = 'groq'
+        self.groq_default_gpt       = 'auto'
+        self.groq_default_class     = 'auto'
+        self.groq_auto_continue     = 3
+        self.groq_max_step          = 10
+        self.groq_max_session       = 5
        
-        self.perplexity_key_id          = None
+        self.groq_key_id            = None
 
-        self.perplexity_a_enable        = False
-        self.perplexity_a_nick_name     = ''
-        self.perplexity_a_model         = None
-        self.perplexity_a_token         = 0
+        self.groq_a_enable          = False
+        self.groq_a_nick_name       = ''
+        self.groq_a_model           = None
+        self.groq_a_token           = 0
 
-        self.perplexity_b_enable        = False
-        self.perplexity_b_nick_name     = ''
-        self.perplexity_b_model         = None
-        self.perplexity_b_token         = 0
+        self.groq_b_enable          = False
+        self.groq_b_nick_name       = ''
+        self.groq_b_model           = None
+        self.groq_b_token           = 0
 
-        self.perplexity_v_enable        = False
-        self.perplexity_v_nick_name     = ''
-        self.perplexity_v_model         = None
-        self.perplexity_v_token         = 0
+        self.groq_v_enable          = False
+        self.groq_v_nick_name       = ''
+        self.groq_v_model           = None
+        self.groq_v_token           = 0
 
-        self.perplexity_x_enable        = False
-        self.perplexity_x_nick_name     = ''
-        self.perplexity_x_model         = None
-        self.perplexity_x_token         = 0
+        self.groq_x_enable          = False
+        self.groq_x_nick_name       = ''
+        self.groq_x_model           = None
+        self.groq_x_token           = 0
 
-        self.history                    = []
+        self.history                = []
 
-        self.seq                        = 0
+        self.seq                    = 0
         self.reset()
 
     def init(self, log_queue=None, ):
@@ -82,7 +82,7 @@ class _perplexityAPI:
         return True
 
     def reset(self, ):
-        self.history                    = []
+        self.history                = []
         return True
 
     def print(self, session_id='admin', text='', ):
@@ -102,67 +102,72 @@ class _perplexityAPI:
                 pass
 
     def authenticate(self, api,
-                     perplexity_api_type,
-                     perplexity_default_gpt, perplexity_default_class,
-                     perplexity_auto_continue,
-                     perplexity_max_step, perplexity_max_session,
+                     groq_api_type,
+                     groq_default_gpt, groq_default_class,
+                     groq_auto_continue,
+                     groq_max_step, groq_max_session,
 
-                     perplexity_key_id,
+                     groq_key_id,
 
-                     perplexity_a_nick_name, perplexity_a_model, perplexity_a_token, 
-                     perplexity_b_nick_name, perplexity_b_model, perplexity_b_token, 
-                     perplexity_v_nick_name, perplexity_v_model, perplexity_v_token, 
-                     perplexity_x_nick_name, perplexity_x_model, perplexity_x_token, 
+                     groq_a_nick_name, groq_a_model, groq_a_token, 
+                     groq_b_nick_name, groq_b_model, groq_b_token, 
+                     groq_v_nick_name, groq_v_model, groq_v_token, 
+                     groq_x_nick_name, groq_x_model, groq_x_token, 
                     ):
 
         # 設定
 
         # 認証
-        self.bot_auth                       = None
-        self.perplexity_key_id              = perplexity_key_id
+        self.bot_auth                   = None
+        self.groq_key_id                = groq_key_id
 
-        self.perplexity_default_gpt         = perplexity_default_gpt
-        self.perplexity_default_class       = perplexity_default_class
-        if (str(perplexity_auto_continue) != 'auto'):
-            self.perplexity_auto_continue   = int(perplexity_auto_continue)
-        if (str(perplexity_max_step)      != 'auto'):
-            self.perplexity_max_step        = int(perplexity_max_step)
-        if (str(perplexity_max_session) != 'auto'):
-            self.perplexity_max_session     = int(perplexity_max_session)
+        self.groq_default_gpt           = groq_default_gpt
+        self.groq_default_class         = groq_default_class
+        if (str(groq_auto_continue) != 'auto'):
+            self.groq_auto_continue     = int(groq_auto_continue)
+        if (str(groq_max_step)      != 'auto'):
+            self.groq_max_step          = int(groq_max_step)
+        if (str(groq_max_session) != 'auto'):
+            self.groq_max_session       = int(groq_max_session)
 
-        # perplexity チャットボット
-        if (perplexity_a_nick_name != ''):
-            self.perplexity_a_enable        = False
-            self.perplexity_a_nick_name     = perplexity_a_nick_name
-            self.perplexity_a_model         = perplexity_a_model
-            self.perplexity_a_token         = int(perplexity_a_token)
+        # groq チャットボット
+        if (groq_a_nick_name != ''):
+            self.groq_a_enable          = False
+            self.groq_a_nick_name       = groq_a_nick_name
+            self.groq_a_model           = groq_a_model
+            self.groq_a_token           = int(groq_a_token)
 
-        if (perplexity_b_nick_name != ''):
-            self.perplexity_b_enable        = False
-            self.perplexity_b_nick_name     = perplexity_b_nick_name
-            self.perplexity_b_model         = perplexity_b_model
-            self.perplexity_b_token         = int(perplexity_b_token)
+        if (groq_b_nick_name != ''):
+            self.groq_b_enable          = False
+            self.groq_b_nick_name       = groq_b_nick_name
+            self.groq_b_model           = groq_b_model
+            self.groq_b_token           = int(groq_b_token)
 
-        if (perplexity_v_nick_name != ''):
-            self.perplexity_v_enable        = False
-            self.perplexity_v_nick_name     = perplexity_v_nick_name
-            self.perplexity_v_model         = perplexity_v_model
-            self.perplexity_v_token         = int(perplexity_v_token)
+        if (groq_v_nick_name != ''):
+            self.groq_v_enable          = False
+            self.groq_v_nick_name       = groq_v_nick_name
+            self.groq_v_model           = groq_v_model
+            self.groq_v_token           = int(groq_v_token)
 
-        if (perplexity_x_nick_name != ''):
-            self.perplexity_x_enable        = False
-            self.perplexity_x_nick_name     = perplexity_x_nick_name
-            self.perplexity_x_model         = perplexity_x_model
-            self.perplexity_x_token         = int(perplexity_x_token)
+        if (groq_x_nick_name != ''):
+            self.groq_x_enable          = False
+            self.groq_x_nick_name       = groq_x_nick_name
+            self.groq_x_model           = groq_x_model
+            self.groq_x_token           = int(groq_x_token)
 
         # API-KEYの設定
         self.client = None
-        if (perplexity_key_id[:1] == '<'):
+        if (groq_key_id[:1] == '<'):
             return False
         try:
-            self.client = openai.OpenAI(
-                api_key=perplexity_key_id,
-                base_url="https://api.perplexity.ai",
+            self.client_ab = groq.Groq(
+                api_key=groq_key_id,
+            )
+            self.client_v  = groq.Groq(
+                api_key=groq_key_id,
+            )
+            self.client_x  = groq.Groq(
+                api_key=groq_key_id,
             )
         except Exception as e:
             print(e)
@@ -170,17 +175,17 @@ class _perplexityAPI:
 
         # モデル
         hit = False
-        if (self.perplexity_a_model != ''):
-            self.perplexity_a_enable = True
+        if (self.groq_a_model != ''):
+            self.groq_a_enable = True
             hit = True
-        if (self.perplexity_b_model != ''):
-            self.perplexity_b_enable = True
+        if (self.groq_b_model != ''):
+            self.groq_b_enable = True
             hit = True
-        if (self.perplexity_v_model != ''):
-            self.perplexity_v_enable = True
+        if (self.groq_v_model != ''):
+            self.groq_v_enable = True
             hit = True
-        if (self.perplexity_x_model != ''):
-            self.perplexity_x_enable = True
+        if (self.groq_x_model != ''):
+            self.groq_x_enable = True
             hit = True
 
         if (hit == True):
@@ -298,32 +303,47 @@ class _perplexityAPI:
 
         return res_history
 
-    def history2msg_pplx(self, history=[], ):
-        # 過去メッセージ追加
-        msg_text = ''
-        if (len(history) > 1):
-            msg_text += "''' これは過去の会話履歴です。\n"
-            for m in range(len(history) - 1):
-                role    = history[m].get('role','')
-                content = history[m].get('content','')
-                name    = history[m].get('name','')
-                # 全てユーザーメッセージにて処理
-                if (name is None) or (name == ''):
-                    msg_text += '(' + role + ')' + '\n' + content + '\n'
-                else:
-                    if (role == 'function_call'):
-                        msg_text += '(function ' + name + ' call)'  + '\n' + content + '\n'
-                    else:
-                        msg_text += '(function ' + name + ' result) ' + '\n' + content + '\n'
-            msg_text += "''' 会話履歴はここまでです。\n"
-            msg_text += "\n"
-        m = len(history) - 1
-        msg_text += history[m].get('content', '')
-        #print(msg_text)
-
+    def history2msg_gpt(self, history=[], ):
         res_msg = []
-        dic = {'role': 'user', 'content': msg_text }
-        res_msg.append(dic)
+        for h in range(len(history)):
+            role    = history[h]['role']
+            content = history[h]['content']
+            name    = history[h]['name']
+            if (role != 'function_call'):
+            #if True:
+                if (name == ''):
+                    dic = {'role': role, 'content': content }
+                    res_msg.append(dic)
+                else:
+                    dic = {'role': role, 'name': name, 'content': content }
+                    res_msg.append(dic)
+
+        return res_msg
+
+    def history2msg_vision(self, history=[], image_urls=[], ):
+        res_msg = []
+        last_h  = 0
+        for h in range(len(history)):
+            role    = history[h]['role']
+            if (role != 'function_call') and (role != 'function'):
+                last_h = h 
+
+        for h in range(len(history)):
+            role    = history[h]['role']
+            content = history[h]['content']
+            name    = history[h]['name']
+            if (role != 'function_call') and (role != 'function'):
+                con = []
+                con.append({'type': 'text', 'text': content})
+                if (h == last_h):
+                    for image_url in image_urls:
+                        con.append(image_url)
+                if (name == ''):
+                    dic = {'role': role, 'content': con }
+                    res_msg.append(dic)
+                else:
+                    dic = {'role': role, 'name': name, 'content': con }
+                    res_msg.append(dic)
 
         return res_msg
 
@@ -378,20 +398,16 @@ class _perplexityAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' perplexity  : Not Authenticate Error !')
+            self.print(session_id, ' groq  : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
-        res_name = self.perplexity_a_nick_name
-        res_api  = self.perplexity_a_model
-        if  (chat_class == 'perplexity'):
-            if (self.perplexity_b_enable == True):
-                res_name = self.perplexity_b_nick_name
-                res_api  = self.perplexity_b_model
-        if  (chat_class == 'pplx'):
-            if (self.perplexity_x_enable == True):
-                res_name = self.perplexity_x_nick_name
-                res_api  = self.perplexity_x_model
+        res_name = self.groq_a_nick_name
+        res_api  = self.groq_a_model
+        if  (chat_class == 'groq'):
+            if (self.groq_b_enable == True):
+                res_name = self.groq_b_nick_name
+                res_api  = self.groq_b_model
 
         # モデル 補正 (assistant)
         if ((chat_class == 'assistant') \
@@ -401,63 +417,63 @@ class _perplexityAPI:
         or  (chat_class == '複雑な会話') \
         or  (chat_class == 'アシスタント') \
         or  (model_select == 'x')):
-            if (self.perplexity_x_enable == True):
-                res_name = self.perplexity_x_nick_name
-                res_api  = self.perplexity_x_model
+            if (self.groq_x_enable == True):
+                res_name = self.groq_x_nick_name
+                res_api  = self.groq_x_model
 
         # model 指定
-        if (self.perplexity_a_nick_name != ''):
-            if (inpText.strip()[:len(self.perplexity_a_nick_name)+1].lower() == (self.perplexity_a_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.perplexity_a_nick_name)+1:]
-        if (self.perplexity_b_nick_name != ''):
-            if (inpText.strip()[:len(self.perplexity_b_nick_name)+1].lower() == (self.perplexity_b_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.perplexity_b_nick_name)+1:]
-                if   (self.perplexity_b_enable == True):
-                        res_name = self.perplexity_b_nick_name
-                        res_api  = self.perplexity_b_model
-        if (self.perplexity_v_nick_name != ''):
-            if (inpText.strip()[:len(self.perplexity_v_nick_name)+1].lower() == (self.perplexity_v_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.perplexity_v_nick_name)+1:]
-                if   (self.perplexity_v_enable == True):
+        if (self.groq_a_nick_name != ''):
+            if (inpText.strip()[:len(self.groq_a_nick_name)+1].lower() == (self.groq_a_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.groq_a_nick_name)+1:]
+        if (self.groq_b_nick_name != ''):
+            if (inpText.strip()[:len(self.groq_b_nick_name)+1].lower() == (self.groq_b_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.groq_b_nick_name)+1:]
+                if   (self.groq_b_enable == True):
+                        res_name = self.groq_b_nick_name
+                        res_api  = self.groq_b_model
+        if (self.groq_v_nick_name != ''):
+            if (inpText.strip()[:len(self.groq_v_nick_name)+1].lower() == (self.groq_v_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.groq_v_nick_name)+1:]
+                if   (self.groq_v_enable == True):
                     if  (len(image_urls) > 0) \
                     and (len(image_urls) == len(upload_files)):
-                        res_name = self.perplexity_v_nick_name
-                        res_api  = self.perplexity_v_model
-                elif (self.perplexity_x_enable == True):
-                        res_name = self.perplexity_x_nick_name
-                        res_api  = self.perplexity_x_model
-        if (self.perplexity_x_nick_name != ''):
-            if (inpText.strip()[:len(self.perplexity_x_nick_name)+1].lower() == (self.perplexity_x_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.perplexity_x_nick_name)+1:]
-                if   (self.perplexity_x_enable == True):
-                        res_name = self.perplexity_x_nick_name
-                        res_api  = self.perplexity_x_model
-                elif (self.perplexity_b_enable == True):
-                        res_name = self.perplexity_b_nick_name
-                        res_api  = self.perplexity_b_model
+                        res_name = self.groq_v_nick_name
+                        res_api  = self.groq_v_model
+                elif (self.groq_x_enable == True):
+                        res_name = self.groq_x_nick_name
+                        res_api  = self.groq_x_model
+        if (self.groq_x_nick_name != ''):
+            if (inpText.strip()[:len(self.groq_x_nick_name)+1].lower() == (self.groq_x_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.groq_x_nick_name)+1:]
+                if   (self.groq_x_enable == True):
+                        res_name = self.groq_x_nick_name
+                        res_api  = self.groq_x_model
+                elif (self.groq_b_enable == True):
+                        res_name = self.groq_b_nick_name
+                        res_api  = self.groq_b_model
         if   (inpText.strip()[:5].lower() == ('riki,')):
             inpText = inpText.strip()[5:]
-            if   (self.perplexity_x_enable == True):
-                        res_name = self.perplexity_x_nick_name
-                        res_api  = self.perplexity_x_model
-            elif (self.perplexity_b_enable == True):
-                        res_name = self.perplexity_b_nick_name
-                        res_api  = self.perplexity_b_model
+            if   (self.groq_x_enable == True):
+                        res_name = self.groq_x_nick_name
+                        res_api  = self.groq_x_model
+            elif (self.groq_b_enable == True):
+                        res_name = self.groq_b_nick_name
+                        res_api  = self.groq_b_model
         elif (inpText.strip()[:7].lower() == ('vision,')):
             inpText = inpText.strip()[7:]
-            if   (self.perplexity_v_enable == True):
+            if   (self.groq_v_enable == True):
                 if  (len(image_urls) > 0) \
                 and (len(image_urls) == len(upload_files)):
-                        res_name = self.perplexity_v_nick_name
-                        res_api  = self.perplexity_v_model
-            elif (self.perplexity_x_enable == True):
-                        res_name = self.perplexity_x_nick_name
-                        res_api  = self.perplexity_x_model
+                        res_name = self.groq_v_nick_name
+                        res_api  = self.groq_v_model
+            elif (self.groq_x_enable == True):
+                        res_name = self.groq_x_nick_name
+                        res_api  = self.groq_x_model
         elif (inpText.strip()[:10].lower() == ('assistant,')):
             inpText = inpText.strip()[10:]
-            if (self.perplexity_b_enable == True):
-                        res_name = self.perplexity_b_nick_name
-                        res_api  = self.perplexity_b_model
+            if (self.groq_b_enable == True):
+                        res_name = self.groq_b_nick_name
+                        res_api  = self.groq_b_model
         elif (inpText.strip()[:7].lower() == ('openai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
@@ -485,30 +501,33 @@ class _perplexityAPI:
 
         # モデル 未設定時
         if (res_api is None):
-            res_name = self.perplexity_a_nick_name
-            res_api  = self.perplexity_a_model
-            if (self.perplexity_b_enable == True):
+            res_name = self.groq_a_nick_name
+            res_api  = self.groq_a_model
+            if (self.groq_b_enable == True):
                 if (len(upload_files) > 0) \
                 or (len(inpText) > 1000):
-                    res_name = self.perplexity_b_nick_name
-                    res_api  = self.perplexity_b_model
+                    res_name = self.groq_b_nick_name
+                    res_api  = self.groq_b_model
 
         # モデル 補正 (vision)
         if  (len(image_urls) > 0) \
         and (len(image_urls) == len(upload_files)):
-            if   (self.perplexity_v_enable == True):
-                res_name = self.perplexity_v_nick_name
-                res_api  = self.perplexity_v_model
-            elif (self.perplexity_x_enable == True):
-                res_name = self.perplexity_x_nick_name
-                res_api  = self.perplexity_x_model
+            if   (self.groq_v_enable == True):
+                res_name = self.groq_v_nick_name
+                res_api  = self.groq_v_model
+            elif (self.groq_x_enable == True):
+                res_name = self.groq_x_nick_name
+                res_api  = self.groq_x_model
 
         # history 追加・圧縮 (古いメッセージ)
         res_history = self.history_add(history=res_history, sysText=sysText, reqText=reqText, inpText=inpText, )
         res_history = self.history_zip1(history=res_history, )
 
         # メッセージ作成
-        msg = self.history2msg_pplx(history=res_history, )
+        if (model_select != 'v'):
+            msg = self.history2msg_gpt(history=res_history, )
+        else:
+            msg = self.history2msg_vision(history=res_history, image_urls=image_urls,)
 
         # ストリーム実行?
         if (session_id == 'admin'):
@@ -516,7 +535,8 @@ class _perplexityAPI:
         else:
             stream = False
         #print(' stream = False, ')
-        #stream = False
+        stream = False
+        functions = []
 
         # 実行ループ
         #try:
@@ -532,11 +552,11 @@ class _perplexityAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" perplexity  : { res_api }, pass={ n }, ")
+                self.print(session_id, f" groq  : { res_api }, pass={ n }, ")
 
                 # Stream 表示
                 if (stream == True):
-                    response = self.client.chat.completions.create(
+                    response = self.client_x.chat.completions.create(
                             model           = res_api,
                             messages        = msg,
                             temperature     = float(temperature),
@@ -561,16 +581,70 @@ class _perplexityAPI:
                     if (res_content != ''):
                         self.print(session_id, )
 
-
                 # 通常実行
                 if (stream == False):
-                    response = self.client.chat.completions.create(
-                            model           = res_api,
-                            messages        = msg,
-                            temperature     = float(temperature),
-                            timeout         = self.timeOut,
-                            stream          = stream, 
-                            )
+
+                    if   (model_select == 'v') and (len(image_urls) > 0):
+                        null_history = self.history_add(history=[], sysText=sysText, reqText=reqText, inpText=inpText, )
+                        msg = self.history2msg_vision(history=null_history, image_urls=image_urls,)
+                        response = self.client_v.chat.completions.create(
+                                model           = res_api,
+                                messages        = msg,
+                                # max_tokens      = 4000,
+                                timeout         = self.timeOut, 
+                                stream          = stream, 
+                                )
+
+                    elif (functions != []):
+                        # ツール設定
+                        tools = []
+                        for f in range(len(functions)):
+                            tools.append({"type": "function", "function": functions[f]})
+                            response = self.client_ab.chat.completions.create(
+                                model           = res_api,
+                                messages        = msg,
+                                temperature     = float(temperature),
+                                tools           = tools,
+                                tool_choice     = 'auto',
+                                timeout         = self.timeOut,
+                                stream          = stream, 
+                                )
+
+                    else:
+                        if (jsonSchema is None) or (jsonSchema == ''):
+                            response = self.client_ab.chat.completions.create(
+                                model           = res_api,
+                                messages        = msg,
+                                temperature     = float(temperature),
+                                timeout         = self.timeOut,
+                                stream          = stream, 
+                                )
+                        else:
+                            schema = None
+                            try:
+                                schema = json.loads(jsonSchema)
+                            except:
+                                pass
+                            # スキーマ指定無し
+                            if (schema is None):
+                                response = self.client_ab.chat.completions.create(
+                                    model           = res_api,
+                                    messages        = msg,
+                                    temperature     = float(temperature),
+                                    timeout         = self.timeOut, 
+                                    response_format = { "type": "json_object" },
+                                    stream          = stream, 
+                                    )
+                            # スキーマ指定有り
+                            else:
+                                response = self.client_ab.chat.completions.create(
+                                    model           = res_api,
+                                    messages        = msg,
+                                    temperature     = float(temperature),
+                                    timeout         = self.timeOut, 
+                                    response_format = { "type": "json_schema", "json_schema": schema },
+                                    stream          = stream, 
+                                    )
 
                     # response 処理
                     try:
@@ -590,9 +664,9 @@ class _perplexityAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" perplexity  : { res_name.lower() } complite.")
+                self.print(session_id, f" groq  : { res_name.lower() } complite.")
             else:
-                self.print(session_id,  ' perplexity  : Error !')
+                self.print(session_id,  ' groq  : Error !')
 
         #except Exception as e:
         #    print(e)
@@ -621,7 +695,7 @@ class _perplexityAPI:
             sysText = 'あなたは教師のように話す賢いアシスタントです。'
 
         if (self.bot_auth is None):
-            self.print(session_id, ' perplexity : Not Authenticate Error !')
+            self.print(session_id, ' groq : Not Authenticate Error !')
             return res_text, res_path, nick_name, model_name, res_history
 
         # ファイル分離
@@ -636,7 +710,7 @@ class _perplexityAPI:
         #nick_name  = 'auto'
         #model_name = 'auto'
 
-        # perplexity
+        # groq
         res_text, res_path, res_files, nick_name, model_name, res_history = \
         self.run_gpt(   chat_class=chat_class, model_select=model_select,
                         nick_name=nick_name, model_name=model_name,
@@ -658,25 +732,25 @@ class _perplexityAPI:
 
 if __name__ == '__main__':
 
-        #perplexityAPI = speech_bot_perplexity._perplexityAPI()
-        perplexityAPI = _perplexityAPI()
+        #groqAPI = speech_bot_groq._groqAPI()
+        groqAPI = _groqAPI()
 
-        api_type = perplexity_key.getkey('perplexity','perplexity_api_type')
+        api_type = groq_key.getkey('groq','groq_api_type')
         print(api_type)
 
         log_queue = queue.Queue()
-        res = perplexityAPI.init(log_queue=log_queue, )
+        res = groqAPI.init(log_queue=log_queue, )
 
-        res = perplexityAPI.authenticate('perplexity',
+        res = groqAPI.authenticate('groq',
                             api_type,
-                            perplexity_key.getkey('perplexity','perplexity_default_gpt'), perplexity_key.getkey('perplexity','perplexity_default_class'),
-                            perplexity_key.getkey('perplexity','perplexity_auto_continue'),
-                            perplexity_key.getkey('perplexity','perplexity_max_step'), perplexity_key.getkey('perplexity','perplexity_max_session'),
-                            perplexity_key.getkey('perplexity','perplexity_key_id'),
-                            perplexity_key.getkey('perplexity','perplexity_a_nick_name'), perplexity_key.getkey('perplexity','perplexity_a_model'), perplexity_key.getkey('perplexity','perplexity_a_token'),
-                            perplexity_key.getkey('perplexity','perplexity_b_nick_name'), perplexity_key.getkey('perplexity','perplexity_b_model'), perplexity_key.getkey('perplexity','perplexity_b_token'),
-                            perplexity_key.getkey('perplexity','perplexity_v_nick_name'), perplexity_key.getkey('perplexity','perplexity_v_model'), perplexity_key.getkey('perplexity','perplexity_v_token'),
-                            perplexity_key.getkey('perplexity','perplexity_x_nick_name'), perplexity_key.getkey('perplexity','perplexity_x_model'), perplexity_key.getkey('perplexity','perplexity_x_token'),
+                            groq_key.getkey('groq','groq_default_gpt'), groq_key.getkey('groq','groq_default_class'),
+                            groq_key.getkey('groq','groq_auto_continue'),
+                            groq_key.getkey('groq','groq_max_step'), groq_key.getkey('groq','groq_max_session'),
+                            groq_key.getkey('groq','groq_key_id'),
+                            groq_key.getkey('groq','groq_a_nick_name'), groq_key.getkey('groq','groq_a_model'), groq_key.getkey('groq','groq_a_token'),
+                            groq_key.getkey('groq','groq_b_nick_name'), groq_key.getkey('groq','groq_b_model'), groq_key.getkey('groq','groq_b_token'),
+                            groq_key.getkey('groq','groq_v_nick_name'), groq_key.getkey('groq','groq_v_model'), groq_key.getkey('groq','groq_v_token'),
+                            groq_key.getkey('groq','groq_x_nick_name'), groq_key.getkey('groq','groq_x_model'), groq_key.getkey('groq','groq_x_token'),
                             )
         print('authenticate:', res, )
         if (res == True):
@@ -687,15 +761,14 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                #inpText = 'おはようございます。'
-                inpText = 'soner,おはようございます。'
+                inpText = 'おはようございます。'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
                 print()
-                res_text, res_path, res_files, res_name, res_api, perplexityAPI.history = \
-                    perplexityAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                            session_id='admin', history=perplexityAPI.history, function_modules=function_modules,
+                res_text, res_path, res_files, res_name, res_api, groqAPI.history = \
+                    groqAPI.chatBot(  chat_class='auto', model_select='auto', 
+                                            session_id='admin', history=groqAPI.history, function_modules=function_modules,
                                             sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
                                             inpLang='ja', outLang='ja', )
                 print()
@@ -706,28 +779,27 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                #inpText = 'おはようございます。'
-                #inpText = 'pplx,おはようございます。'
-                inpText = 'pplx,株式会社三光システムの姫路の住所？'
+                inpText = 'この画像はなんだと思いますか？'
+                filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
                 print()
                 print('[Request]')
                 print(reqText, inpText )
                 print()
-                res_text, res_path, res_files, res_name, res_api, perplexityAPI.history = \
-                    perplexityAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                            session_id='admin', history=perplexityAPI.history, function_modules=function_modules,
-                                            sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
-                                            inpLang='ja', outLang='ja', )
+                res_text, res_path, res_files, res_name, res_api, groqAPI.history = \
+                    groqAPI.chatBot(  chat_class='auto', model_select='auto', 
+                                        session_id='admin', history=groqAPI.history, function_modules=function_modules,
+                                        sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
+                                        inpLang='ja', outLang='ja', )
                 print()
-                print(f"[{ res_name }] ({ res_api })")
-                print(str(res_text))
+                print('[' + res_name + '] (' + res_api + ')' )
+                print('', res_text)
                 print()
 
             if False:
                 print('[History]')
-                for h in range(len(perplexityAPI.history)):
-                    print(perplexityAPI.history[h])
-                perplexityAPI.history = []
+                for h in range(len(groqAPI.history)):
+                    print(groqAPI.history[h])
+                groqAPI.history = []
 
 
 

@@ -23,6 +23,7 @@ import threading
 import multiprocessing
 
 # ダミーインポート
+#import pip
 import pygame
 import screeninfo
 import pyautogui
@@ -231,24 +232,28 @@ if __name__ == '__main__':
             print()
 
         # key2Live_freeai
+        riki_enable = False
         ext_module = addin.addin_modules.get('monjyu_UI_key2Live_freeai', None)
         if (ext_module is not None):
             try:
                 if (ext_module['onoff'] == 'on'):
                     func_reset = ext_module['func_reset']
-                    res  = func_reset(botFunc=botFunc, )
+                    res  = func_reset(botFunc=botFunc, data=data, )
                     print('reset', 'monjyu_UI_key2Live_freeai')
+                    riki_enable = True
             except Exception as e:
                 print(e)
 
         # key2Live_openai
+        #riki_enable = False
         ext_module = addin.addin_modules.get('monjyu_UI_key2Live_openai', None)
         if (ext_module is not None):
             try:
                 if (ext_module['onoff'] == 'on'):
                     func_reset = ext_module['func_reset']
-                    res  = func_reset(botFunc=botFunc, )
+                    res  = func_reset(botFunc=botFunc, data=data, )
                     print('reset', 'monjyu_UI_key2Live_openai')
+                    riki_enable = True
             except Exception as e:
                 print(e)
 
@@ -290,7 +295,10 @@ if __name__ == '__main__':
         webui_thread.start()
 
     # 起動メッセージ
-    qLog.log('info', main_id, 'Welcome Monjyu! Please access "http://localhost:8008/" in your browser.')
+    qLog.log('info', main_id, '')
+    qLog.log('info', main_id, 'Welcome to Assistant AI 文殊/Monjyu(もんじゅ). Access "http://localhost:8008/" in your browser.')
+    if (riki_enable == True):
+        qLog.log('info', main_id, 'Welcome to Live AI 力/RiKi(りき). Press ctrl(-l or -r) three times.')
 
     # 無限ループでプロセスを監視
     while True:

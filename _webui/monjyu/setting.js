@@ -126,6 +126,10 @@ let last_mode_setting = {
     voice: null
 };
 let last_addins_setting = null;
+let last_live_setting = {
+    freeai: null,
+    openai: null,
+}
 
 // サーバーから設定値を取得する関数
 function get_mode_setting_all() {
@@ -479,6 +483,118 @@ function post_addins_setting() {
     });
 }
 
+// Voiceの情報を取得してコンボボックスを設定する関数
+function get_live_voices() {
+    // freeai
+    $.ajax({
+        url: '/get_live_voices',
+        method: 'GET',
+        data: { req_mode: 'freeai' },
+        dataType: 'json',
+        async: false, // 同期処理
+        success: function(data) {
+            // 取得した選択肢を設定
+            for (var [key, value] of Object.entries(data)) {
+                $('#freeai_voice').append(`<option value="${key}">${value}</option>`);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('get_live_voices (freeai) error:', error);
+        }
+    });
+    // openai
+    $.ajax({
+        url: '/get_live_voices',
+        method: 'GET',
+        data: { req_mode: 'openai' },
+        dataType: 'json',
+        async: false, // 同期処理
+        success: function(data) {
+            // 取得した選択肢を設定
+            for (var [key, value] of Object.entries(data)) {
+                $('#openai_voice').append(`<option value="${key}">${value}</option>`);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('get_live_voices (openai) error:', error);
+        }
+    });
+}
+
+// サーバーからLive設定を取得する関数
+function get_live_setting_all() {
+    get_live_setting('freeai');
+    get_live_setting('openai');
+}
+
+// サーバーからLive設定を取得する関数
+function get_live_setting(req_mode) {
+    // Live設定をサーバーから受信
+    $.ajax({
+        url: '/get_live_setting',
+        method: 'GET',
+        data: { req_mode: req_mode },
+        dataType: 'json',
+        success: function(data) {
+
+            // freeai
+            if (req_mode === 'freeai') {
+                if (JSON.stringify(data) !== last_live_setting.freeai) {
+                    $('#freeai_voice').val(data.voice || '');
+                    last_live_setting.freeai = JSON.stringify(data);
+                }
+            }
+
+            // openai
+            if (req_mode === 'openai') {
+                if (JSON.stringify(data) !== last_live_setting.openai) {
+                    $('#openai_voice').val(data.voice || '');
+                    last_live_setting.openai = JSON.stringify(data);
+                }
+            }
+
+        },
+        error: function(xhr, status, error) {
+            console.error('get_live_setting error:', error);
+        }
+    });
+}
+
+// サーバーへLive設定を保存する関数
+function post_live_setting(req_mode) {
+    var formData = {};
+
+    // freeai
+    if (req_mode === 'freeai') {
+        formData = {
+            req_mode: req_mode,
+            voice: $('#freeai_voice').val(),
+        };
+    }
+
+    // openai
+    if (req_mode === 'openai') {
+        formData = {
+            req_mode: req_mode,
+            voice: $('#openai_voice').val(),
+        };
+    }
+
+    // Live設定をサーバーに送信
+    $.ajax({
+        url: '/post_live_setting',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function(response) {
+            console.log('post_live_setting:', response);
+        },
+        error: function(xhr, status, error) {
+            console.error('post_live_setting error:', error);
+        }
+    });
+}
+
 // chat-engineのセット
 function chat_set_engine(engine) {
     $('#chat_req_engine').val(engine);
@@ -579,11 +695,15 @@ $(document).ready(function() {
     // リトライの設定を行う
     set_max_retry();
 
+    // Liveのvoice設定を取得
+    get_live_voices();
+
     // 定期的に設定値を取得する処理
     get_mode_setting_all();
     get_addins_setting();
     setInterval(get_mode_setting_all, 3000);
     setInterval(get_addins_setting, 3000);
+    setInterval(get_live_setting_all, 3000);
 
     // 設定項目が変更された際に保存
     $('#chat_req_engine, #chat_req_functions, #chat_req_reset, #chat_max_retry, #chat_max_ai_count').change(function() {
@@ -630,6 +750,12 @@ $(document).ready(function() {
     });
     $('#result_text_save, #speech_stt_engine, #speech_tts_engine, #text_clip_input, #text_url_execute, #text_pdf_execute, #image_ocr_execute, #image_yolo_execute').change(function() {
         post_addins_setting();
+    });
+    $('#freeai_voice').change(function() {
+        post_live_setting('freeai');
+    });
+    $('#openai_voice').change(function() {
+        post_live_setting('openai');
     });
     
     // リセットボタンのクリックイベント

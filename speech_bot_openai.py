@@ -1078,6 +1078,10 @@ class ChatBotAPI:
             inpText = inpText.strip()[5:]
             if (self.gpt_b_enable == True):
                     model_select = 'a'
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
+            if (self.gpt_b_enable == True):
+                    model_select = 'a'
         elif (inpText.strip()[:6].lower() == ('plamo,')):
             inpText = inpText.strip()[6:]
             if (self.gpt_b_enable == True):
@@ -1895,6 +1899,8 @@ class ChatBotAPI:
         elif (inpText.strip()[:7].lower() == ('freeai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:5].lower() == ('free,')):
+            inpText = inpText.strip()[5:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
             inpText = inpText.strip()[5:]
         elif (inpText.strip()[:6].lower() == ('plamo,')):
             inpText = inpText.strip()[6:]

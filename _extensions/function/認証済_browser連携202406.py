@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # ------------------------------------------------
-# COPYRIGHT (C) 2014-2024 Mitsuo KONDOU.
+# COPYRIGHT (C) 2014-2025 Mitsuo KONDOU.
 # This software is released under the not MIT License.
 # Permission from the right holder is required for use.
 # https://github.com/ClipnGPT
@@ -117,7 +117,10 @@ class _class:
             "name": self.func_name,
             "description": \
 """
-指定したブラウザでurlのウェブページを表示したり、ブラウザを閉じたりする
+この機能は、操作するurlの指示があった場合に実行する。
+ユーザーから指定されたブラウザでurlのウェブページを表示できる。
+この機能で表示されたページを閉じることもできる。
+この機能には、AIエージェント能力は無い。
 """,
             "parameters": {
                 "type": "object",

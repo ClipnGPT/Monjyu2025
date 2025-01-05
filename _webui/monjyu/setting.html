@@ -90,6 +90,7 @@
                 <button data-target="clip">Clip</button>
                 <button data-target="voice">Voice</button>
                 <button data-target="addins">Addins</button>
+                <button data-target="live">Live</button>
                 <button data-target="reacts">Reacts</button>
             </div>
 
@@ -960,6 +961,32 @@
                                 <option value="">Auto (自動)</option>
                                 <option value="yes,">yes, (有効)</option>
                                 <option value="no,">no, (無効)</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Liveタブ -->
+            <div class="tab-content" id="live" style="justify-content: center;">
+                <table>
+                    <tr>
+                        <td align="right"> </td>
+                        <td> </td>
+                    </tr>
+                    <tr>
+                        <td align="right">freeai (voice):</td>
+                        <td>
+                            <select id="freeai_voice" name="freeai_voice">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">openai (voice):</td>
+                        <td>
+                            <select id="openai_voice" name="openai_voice">
+                                <option value="">Auto (自動)</option>
                             </select>
                         </td>
                     </tr>
