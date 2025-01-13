@@ -43,6 +43,7 @@ REQUEST_TIMEOUT = 30
 
 class _data_class:
     def __init__(self,  runMode: str = 'debug', qLog_fn: str = '',
+                        main=None, conf=None,
                         core_port: str = '8000', sub_base: str = '8100', num_subais: str = '48', ):
         self.runMode = runMode
 
@@ -56,6 +57,10 @@ class _data_class:
             qLog_fn = qPath_log + nowTime.strftime('%Y%m%d.%H%M%S') + '.' + os.path.basename(__file__) + '.log'
         qLog.init(mode='logger', filename=qLog_fn)
         qLog.log('info', self.proc_id, 'init')
+
+        # 各種設定の初期化
+        self.main      = main
+        self.conf      = conf
 
         # 設定
         self.core_port = core_port
@@ -90,6 +95,10 @@ class _data_class:
         self.addins_setting = {}
         self.live_voices = {}
         self.live_setting = {}
+        self.webAgent_useBrowser = ""
+        self.webAgent_modelAPI = ""
+        self.webAgent_modelNames = {}
+        self.webAgent_setting = {}
         self._reset()
 
         # スレッドロック
@@ -205,47 +214,58 @@ class _data_class:
                                        "verse": "Verse" }
         self.live_setting['openai'] = { "voice": "alloy", }
 
+        # Agentの設定
+        self.webAgent_useBrowser =  ""
+        self.webAgent_modelAPI =  ""
+        self.webAgent_modelNames[ 'freeai'] = {}
+        self.webAgent_setting[    'freeai'] = { "modelName": "", 
+                                                "maxSteps": "", }
+        self.webAgent_modelNames[ 'openai'] = {}
+        self.webAgent_setting[    'openai'] = { "modelName": "", 
+                                                "maxSteps": "", }
+        self.webAgent_modelNames[ 'claude'] = {}
+        self.webAgent_setting[    'claude'] = { "modelName": "", 
+                                                "maxSteps": "", }
+
     def update_subai_status(self, port: str):
         """
         サブAIのステータスを定期的に更新する。
         """
-        first_time = True
         while True:
-            if first_time:
-                first_time = False
-                sleep_sec = random.uniform(self.num_subais/2, self.num_subais/2 + self.num_subais)
-            else:
-                sleep_sec = random.uniform(self.num_subais, self.num_subais*2)
+            sleep_sec = random.uniform(self.num_subais, self.num_subais * 2)
             time.sleep(sleep_sec)
-            try:
-                endpoint = self.local_endpoint.replace( f':{ self.core_port }', f':{ port }' )
-                response = requests.get(endpoint + '/get_info', timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT))
-                if response.status_code == 200:
-                    new_status = response.json()['status']
-                    nick_name = response.json()['nick_name']
-                    full_name = response.json()['full_name']
-                    info_text = response.json()['info_text']
-                    with self.thread_lock:
-                        old_status = self.subai_info[port].get('status')
-                        upd_time   = self.subai_info[port].get('upd_time')
-                        if (new_status != old_status):
-                            upd_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-                        self.subai_info[port] = {
-                            'status': new_status, 
-                            'nick_name': nick_name, 
-                            'full_name': full_name, 
-                            'info_text': info_text, 
-                            'upd_time': upd_time, }
-                else:
-                    qLog.log('error', self.proc_id, f"Error response ({ port }/get_info) : {response.status_code}")
+            if  (self.main is None) \
+            or ((self.main is not None) and (self.main.main_all_ready == True)):
+
+                try:
+                    endpoint = self.local_endpoint.replace( f':{ self.core_port }', f':{ port }' )
+                    response = requests.get(endpoint + '/get_info', timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT))
+                    if response.status_code == 200:
+                        new_status = response.json()['status']
+                        nick_name = response.json()['nick_name']
+                        full_name = response.json()['full_name']
+                        info_text = response.json()['info_text']
+                        with self.thread_lock:
+                            old_status = self.subai_info[port].get('status')
+                            upd_time   = self.subai_info[port].get('upd_time')
+                            if (new_status != old_status):
+                                upd_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                            self.subai_info[port] = {
+                                'status': new_status, 
+                                'nick_name': nick_name, 
+                                'full_name': full_name, 
+                                'info_text': info_text, 
+                                'upd_time': upd_time, }
+                    else:
+                        qLog.log('error', self.proc_id, f"Error response ({ port }/get_info) : {response.status_code}")
+                        with self.thread_lock:
+                            self.subai_info[port]['status'] = 'NONE'
+                            self.subai_info[port]['upd_time'] = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                except Exception as e:
+                    qLog.log('error', self.proc_id, f"Error communicating ({ port }/get_info) : {e}")
                     with self.thread_lock:
                         self.subai_info[port]['status'] = 'NONE'
                         self.subai_info[port]['upd_time'] = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-            except Exception as e:
-                qLog.log('error', self.proc_id, f"Error communicating ({ port }/get_info) : {e}")
-                with self.thread_lock:
-                    self.subai_info[port]['status'] = 'NONE'
-                    self.subai_info[port]['upd_time'] = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
 
     def start_subais(self):
         """

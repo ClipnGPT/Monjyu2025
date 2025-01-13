@@ -99,6 +99,17 @@ class postLiveDataModel(BaseModel):
     req_mode: str
     voice: str
 
+# webAgent engine設定データモデル
+class postWebAgentEngine(BaseModel):
+    useBrowser: str
+    modelAPI: str
+
+# webAgent setting設定データモデル
+class postWebAgentSetting(BaseModel):
+    modelAPI: str
+    modelName: str
+    maxSteps: str
+
 # 音声入力項目モデル
 class sttFieldModel(BaseModel):
     field: str
@@ -198,6 +209,10 @@ class WebUiClass:
         self.app.get("/get_live_voices")(self.get_live_voices)
         self.app.get("/get_live_setting")(self.get_live_setting)
         self.app.post("/post_live_setting")(self.post_live_setting)
+        self.app.get("/get_webAgent_engine")(self.get_webAgent_engine)
+        self.app.get("/get_webAgent_setting")(self.get_webAgent_setting)
+        self.app.post("/post_webAgent_engine")(self.post_webAgent_engine)
+        self.app.post("/post_webAgent_setting")(self.post_webAgent_setting)
         self.app.get("/get_default_image")(self.get_default_image)
         self.app.get("/get_image_info")(self.get_image_info)
         self.app.post("/post_text_files")(self.post_text_files)
@@ -321,6 +336,49 @@ class WebUiClass:
         if (self.data is not None):
             self.data.live_setting[req_mode] = {"voice": voice }
         return JSONResponse(content={'message': 'post_live_setting successfully'})
+
+    async def get_webAgent_engine(self):
+        # 設定情報を返す
+        useBrowser = self.data.webAgent_useBrowser
+        modelAPI = self.data.webAgent_modelAPI
+        modelNames = {}
+        if (modelAPI != ''):
+            modelNames = self.data.webAgent_modelNames[modelAPI]
+        if (self.data is not None):
+            result = { "useBrowser": useBrowser,
+                       "modelAPI": modelAPI,
+                       "modelNames": modelNames, }
+        else:
+            result = {}
+        return JSONResponse(content=result)
+
+    async def get_webAgent_setting(self, modelAPI: str):
+        # 設定情報を返す
+        modelAPI = str(modelAPI) if modelAPI else "freeai"
+        if (self.data is not None):
+            result = self.data.webAgent_setting[modelAPI]
+        else:
+            result = {}
+        return JSONResponse(content=result)
+
+    async def post_webAgent_engine(self, data: postWebAgentEngine):
+        # 設定情報を更新する
+        useBrowser = str(data.useBrowser) if data.useBrowser else ""
+        modelAPI = str(data.modelAPI) if data.modelAPI else ""
+        if (self.data is not None):
+            self.data.webAgent_useBrowser = useBrowser
+            self.data.webAgent_modelAPI = modelAPI
+        return JSONResponse(content={'message': 'post_webAgent_engine successfully'})
+
+    async def post_webAgent_setting(self, data: postWebAgentSetting):
+        # 設定情報を更新する
+        modelAPI  = str(data.modelAPI)  if data.modelAPI  else "freeai"
+        modelName = str(data.modelName) if data.modelName else ""
+        maxSteps  = str(data.maxSteps ) if data.maxSteps  else ""
+        if (self.data is not None):
+            self.data.webAgent_setting[modelAPI] = {"modelName": modelName,
+                                                    "maxSteps":  maxSteps,  }
+        return JSONResponse(content={'message': 'post_webAgent_setting successfully'})
 
     async def get_default_image(self):
         # デフォルト画像データの取得

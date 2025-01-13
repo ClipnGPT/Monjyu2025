@@ -104,7 +104,7 @@ class _clip_woker:
                 try:
                     clip_string = pyperclip.paste()
                 except Exception as e:
-                    print(f"Error in getting string from clipboard: {e}")
+                    print('Clip&Monjyu :', f"Error in getting string from clipboard: {e}")
                     
                 # クリップボードから画像を取得
                 try:
@@ -115,7 +115,7 @@ class _clip_woker:
                     #else:
                     #    clip_image = np.array(clip_image)
                 except Exception as e:
-                    print(f"Error in getting image from clipboard: {e}")
+                    print('Clip&Monjyu :', f"Error in getting image from clipboard: {e}")
                     
                 # 文字列の変更を確認
                 if (clip_string != ''):
@@ -163,7 +163,7 @@ class _clip_woker:
     def string_proc(self, clip_string):
         clip_string = clip_string.replace('\r', '')
         # 文字列処理スレッド
-        #print("Hallo String, " + clip_string)
+        #print('Clip&Monjyu :', "Hallo String, " + clip_string)
 
         input_text = ''
 
@@ -203,7 +203,7 @@ class _clip_woker:
 
         # AI処理
         if (input_text != ''):
-            print('detect clipboard request.')
+            print('Clip&Monjyu :', 'detect clipboard request.')
 
             # accept
             self.play(outFile='_sounds/_sound_accept.mp3')
@@ -249,7 +249,7 @@ class _clip_woker:
             y,x = pandas_df.shape
             # 表データならexcel出力
             if (y>2 and x>2):
-                #print(pandas_df)
+                #print('Clip&Monjyu :', pandas_df)
                 
                 # 保管
                 nowTime  = datetime.datetime.now()
@@ -257,7 +257,7 @@ class _clip_woker:
                 #pandas_df.to_json(filename, force_ascii=False)
                 filename = qPath_input + nowTime.strftime('%Y%m%d.%H%M%S') + '.fromclip.xlsx'
                 pandas_df.to_excel(filename, sheet_name='Sheet1', index=False, )
-                print('detect clipboard data.')
+                print('Clip&Monjyu :', 'detect clipboard data.')
                 clip_names = [filename]
                 return self.monjyu.post_clip_names(user_id=self.user_id, clip_names=clip_names, )
 
@@ -269,14 +269,14 @@ class _clip_woker:
 
     def image_proc(self, clip_image):
         # 画像処理スレッド
-        #print("Hallo Image,")
+        #print('Clip&Monjyu :', "Hallo Image,")
 
         # イメージ保管
         try:
             nowTime  = datetime.datetime.now()
             filename = qPath_input + nowTime.strftime('%Y%m%d.%H%M%S') + '.fromclip.png'
             clip_image.convert('RGB').save(filename)
-            print('detect clipboard image.')
+            print('Clip&Monjyu :', 'detect clipboard image.')
             clip_names = [filename]
             return self.monjyu.post_clip_names(user_id=self.user_id, clip_names=clip_names, )
         except:
@@ -286,27 +286,27 @@ class _clip_woker:
 
     def list_proc(self, clip_list):
         # リスト処理スレッド
-        #print("Hallo list,")
+        #print('Clip&Monjyu :', "Hallo list,")
 
         # ファイル名？
         try:
             check = clip_list[0]
             if (os.path.isfile(check)):
                 clip_files = True
-                print('detect clipboard files.')
+                print('Clip&Monjyu :', 'detect clipboard files.')
 
                 if (len(clip_list) > 20):
-                    print('max files over error. (max=20)')
+                    print('Clip&Monjyu :', 'max files over error. (max=20)')
                     return False
 
                 clip_names = []
                 for list_name in clip_list:
                     if (os.path.getsize(list_name) > 20000000):
-                        print(f'max bytes over error. { list_name }, (max=20000000)')
+                        print('Clip&Monjyu :', f'max bytes over error. { list_name }, (max=20000000)')
                     else:
                         basename = os.path.basename(list_name)
                         filename = qPath_input + basename
-                        print(filename)
+                        print('Clip&Monjyu :', filename)
                         shutil.copyfile(list_name, filename)
                         clip_names.append(filename)
                 return self.monjyu.post_clip_names(user_id=self.user_id, clip_names=clip_names, )
@@ -325,12 +325,12 @@ class _clip_woker:
                 pygame.mixer.init()
                 self.mixer_enable = True
             except Exception as e:
-                print(e)
+                print('Clip&Monjyu :', e)
 
         # ミキサー再生
         if (self.mixer_enable == True):
             try:
-                #print(outFile)
+                #print('Clip&Monjyu :', outFile)
                 #pygame.mixer.init()
                 pygame.mixer.music.load(outFile)
                 pygame.mixer.music.play(1)
@@ -339,7 +339,7 @@ class _clip_woker:
                 pygame.mixer.music.unload()
                 return True
             except Exception as e:
-                print(e)
+                print('Clip&Monjyu :', e)
                 self.mixer_enable = False
 
         return False
@@ -364,7 +364,7 @@ class _monjyu_class:
 
     # get_model デーモン
     def get_models(self):
-        time.sleep(30.00)
+        time.sleep(60.00)
         while True:
             # ファイル添付
             self.chat_models = {}
@@ -381,13 +381,14 @@ class _monjyu_class:
                         key = key.replace('[', '')
                         key = key.replace(']', '')
                         self.chat_models[key.lower()] = value.lower()
+                    print('Clip&Monjyu :', 'Clip&Monjyu is READY.')
                     break
                 else:
-                    print('error', f"Error response ({ CORE_PORT }/get_models) : {response.status_code} - {response.text}")
+                    print('Clip&Monjyu :', f"Error response ({ CORE_PORT }/get_models) : {response.status_code} - {response.text}")
             except Exception as e:
-                print('error', f"Error communicating ({ CORE_PORT }/get_models) : {e}")
+                print('Clip&Monjyu :', f"Error communicating ({ CORE_PORT }/get_models) : {e}")
 
-            time.sleep(5.00)
+            time.sleep(10.00)
 
     def request(self, req_mode='chat', user_id='admin', sysText='', reqText='', inpText='', ):
         res_port = None
@@ -406,9 +407,9 @@ class _monjyu_class:
                     if (fx[3] == 'checked'):
                         file_names.append(fx[0])
             else:
-                print('error', f"Error response ({self.webui_port}/get_input_list) : {response.status_code}")
+                print('Clip&Monjyu :', f"Error response ({self.webui_port}/get_input_list) : {response.status_code}")
         except Exception as e:
-            print('error', f"Error communicating ({self.webui_port}/get_input_list) : {e}")
+            print('Clip&Monjyu :', f"Error communicating ({self.webui_port}/get_input_list) : {e}")
 
         # AI要求送信
         try:
@@ -423,9 +424,9 @@ class _monjyu_class:
             if response.status_code == 200:
                 res_port = str(response.json()['port'])
             else:
-                print('error', f"Error response ({ CORE_PORT }/post_req) : {response.status_code}")
+                print('Clip&Monjyu :', f"Error response ({ CORE_PORT }/post_req) : {response.status_code}")
         except Exception as e:
-            print('error', f"Error communicating ({ CORE_PORT }/post_req) : {e}")
+            print('Clip&Monjyu :', f"Error communicating ({ CORE_PORT }/post_req) : {e}")
         return res_port
 
     def post_clip_names(self, user_id='admin', clip_names=[], ):
@@ -438,9 +439,9 @@ class _monjyu_class:
             if response.status_code == 200:
                 return True
             else:
-                print('error', f"Error response ({ CORE_PORT }/post_clip_names) : {response.status_code}")
+                print('Clip&Monjyu :', f"Error response ({ CORE_PORT }/post_clip_names) : {response.status_code}")
         except Exception as e:
-            print('error', f"Error communicating ({ CORE_PORT }/post_clip_names) : {e}")
+            print('Clip&Monjyu :', f"Error communicating ({ CORE_PORT }/post_clip_names) : {e}")
         return False
 
     def post_clip_text(self, user_id='admin', clip_text='', ):
@@ -453,9 +454,9 @@ class _monjyu_class:
             if response.status_code == 200:
                 return True
             else:
-                print('error', f"Error response ({ CORE_PORT }/post_clip_text) : {response.status_code}")
+                print('Clip&Monjyu :', f"Error response ({ CORE_PORT }/post_clip_text) : {response.status_code}")
         except Exception as e:
-            print('error', f"Error communicating ({ CORE_PORT }/post_clip_text) : {e}")
+            print('Clip&Monjyu :', f"Error communicating ({ CORE_PORT }/post_clip_text) : {e}")
         return False
 
 
@@ -510,7 +511,7 @@ class _clip_to_memo:
                 ctypes.windll.user32.SendMessageW(child_handles[0], WM_CHAR, ord(out_txt[i]), 0)
             return True
         except Exception as e:
-            print(f"Error: {e}")
+            print('Clip&Monjyu :', e)
             return False
 
     def find_edit_control(self, element, depth=0, max_depth=10):
@@ -531,7 +532,7 @@ class _clip_to_memo:
                 if result:
                     return result
         except Exception as e:
-            print(f"Error at depth {depth}: {e}")
+            print('Clip&Monjyu :', f"Error at depth {depth}: {e}")
 
         return None
         
@@ -565,7 +566,7 @@ class _clip_to_memo:
 
                 return True
             except Exception as e:
-                print(f"Error: {e}")
+                print('Clip&Monjyu :', e)
         return False
 
     def notePad(self, txt='', cr=True, lf=False):
@@ -577,7 +578,7 @@ class _clip_to_memo:
         elif version == '11':
             return self.notePad11(txt, cr, lf)
         else:
-            #print(f"Unsupported Windows version: {version}")
+            #print('Clip&Monjyu :', f"Unsupported Windows version: {version}")
             return False
 
 
@@ -626,7 +627,7 @@ class _class:
         return True
 
     def func_proc(self, json_kwargs=None, ):
-        #print(json_kwargs)
+        #print('Clip&Monjyu :', json_kwargs)
 
         # 引数
         runMode  = None
@@ -651,7 +652,7 @@ class _class:
         dic = {}
         dic['result'] = "ok"
         json_dump = json.dumps(dic, ensure_ascii=False, )
-        #print('  --> ', json_dump)
+        #print('Clip&Monjyu :', '  --> ', json_dump)
         return json_dump
 
 if __name__ == '__main__':

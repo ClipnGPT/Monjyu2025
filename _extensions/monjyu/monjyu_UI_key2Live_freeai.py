@@ -61,9 +61,9 @@ config_file2 = 'RiKi_ClipnGPT_key.json'
 qIO_py2live  = 'temp/browser操作Agent_py2live.txt'
 
 # モデル設定 (freeai)
-MODEL = "models/gemini-2.0-flash-exp"
+MODEL = "gemini-2.0-flash-exp"
 VOICE = "Aoede"
-LEVEL = "2000"
+VOICE_LEVEL = 2500
 
 # 音声ストリーム 設定
 INPUT_CHUNK = 2048
@@ -277,6 +277,9 @@ class _live_api_freeai:
         self.mixer_enable = False
         self.MODEL = MODEL
         self.VOICE = VOICE
+        self.VOICE_LEVEL = VOICE_LEVEL
+        sec60 = int( (INPUT_RATE/INPUT_CHUNK) * 60) # 60sec
+        self.VOICE_BASE = [0 for _ in range(sec60)]
 
         # API情報
         self.client = genai.Client(
@@ -296,6 +299,7 @@ class _live_api_freeai:
         self.monjyu_once_flag = False
         self.monjyu_enable = False
         self.monjyu_funcinfo = ''
+        self.surfer_enable = False
         self.image_input_number = None
 
         # バッファ
@@ -344,7 +348,7 @@ class _live_api_freeai:
         return False
 
     async def input_audio(self):
-        vad_count = int( (INPUT_RATE/INPUT_CHUNK) * 2)
+        vad_count = int( (INPUT_RATE/INPUT_CHUNK) * 2) # 2sec
         input_stream = None
         try:
 
@@ -367,8 +371,11 @@ class _live_api_freeai:
                 audio_data = await asyncio.to_thread(input_stream.read, INPUT_CHUNK)
                 if audio_data is not None:
                     input_data = np.abs(np.frombuffer(audio_data, dtype=np.int16))
-                    max_val = np.max(input_data)
-                    if max_val > int(LEVEL):
+                    data_max = np.max(input_data)
+                    del self.VOICE_BASE[0]
+                    self.VOICE_BASE.append(data_max)
+                    base_avg = np.average(self.VOICE_BASE)
+                    if data_max > (base_avg + self.VOICE_LEVEL):
                         await self.audio_send_queue.put(audio_data)
                         await self.graph_input_queue.put(audio_data)
                         if (self.audio_input_time == None):
@@ -418,7 +425,7 @@ class _live_api_freeai:
             while (self.session is not None) and (not self.break_flag):
                 audio_data = await self.audio_send_queue.get()
                 if audio_data is not None:
-                    await self.session.send({"mime_type": "audio/pcm", "data": audio_data})
+                    await self.session.send(input={"mime_type": "audio/pcm", "data": audio_data})
                     self.last_send_time = time.time()
                 else:
                     await asyncio.sleep(0.01)
@@ -521,7 +528,7 @@ class _live_api_freeai:
                 jpeg_bytes = await self.image_send_queue.get()
                 if jpeg_bytes is not None:
                     print(" Live(freeai) : [IMAGE] Sending... ")
-                    await self.session.send({"mime_type": "image/jpeg", "data": base64.b64encode(jpeg_bytes).decode()})
+                    await self.session.send(input={"mime_type": "image/jpeg", "data": base64.b64encode(jpeg_bytes).decode()})
                     self.visualizer.update_image(jpeg_bytes)
                     self.last_send_time = time.time()
                 else:
@@ -597,8 +604,20 @@ class _live_api_freeai:
                 if (self.session is not None) and (not self.break_flag):
 
                     # テキスト送信
-                    await self.session.send(request_text or ".", end_of_turn=True)
+                    await self.session.send(input=request_text or ".", end_of_turn=True)
                     self.last_send_time = time.time()
+
+                    try:
+                        reqText = request_text
+                        inpText = ''
+                        #self.monjyu.post_input_log(reqText=reqText, inpText=inpText)
+                        thread = threading.Thread(
+                            target=self.monjyu.post_input_log,args=(reqText, inpText),
+                            daemon=True
+                        )
+                        thread.start()
+                    except Exception as e:
+                        print(e)
 
         except Exception as e:
             print(f"send_request: {e}")
@@ -663,6 +682,12 @@ class _live_api_freeai:
                         if (self.audio_output_time == None):
                             self.audio_output_time = datetime.datetime.now()
                         self.audio_output_buffer.append(audio_data)
+                    elif part.executable_code is not None:
+                        executable_code = part.executable_code.code
+                        #print(executable_code)
+                    elif part.code_execution_result is not None:
+                        output = part.code_execution_result.output
+                        #print(output)
                     else:
                         # 例外レスポンス parts
                         print('server_content.model_turn.parts [ ??? ]')
@@ -687,8 +712,8 @@ class _live_api_freeai:
                         print(e)
                     self.audio_output_time = None
                     self.audio_output_buffer = []
-                while not self.audio_receive_queue.empty():
-                    await self.audio_receive_queue.get()
+                #while not self.audio_receive_queue.empty():
+                #    await self.audio_receive_queue.get()
 
             # 例外レスポンス server_content
             if  model_turn is None \
@@ -735,8 +760,8 @@ class _live_api_freeai:
                                 res_json = json.dumps(dic, ensure_ascii=False, )
 
                             # tool_result
-                            print(f" Live(freeai) :   → { res_json }")
-                            print()
+                            #print(f" Live(freeai) :   → { res_json }")
+                            #print()
 
                             # 通常返信
                             tool_response = types.LiveClientToolResponse(
@@ -746,7 +771,7 @@ class _live_api_freeai:
                                     response=json.loads(res_json),
                                 )]
                             )
-                            await self.session.send(tool_response)
+                            await self.session.send(input=tool_response)
 
                 if hit == False:
                             # Not Found 返信
@@ -757,7 +782,7 @@ class _live_api_freeai:
                                     response={'result':'error'},
                                 )]
                             )
-                            await self.session.send(tool_response)
+                            await self.session.send(input=tool_response)
 
         except Exception as e:
             print(f"_tool_call: {e}")
@@ -780,12 +805,15 @@ class _live_api_freeai:
             self.monjyu_once_flag = True
             self.monjyu_enable = False
             self.monjyu_funcinfo = ''
+            self.surfer_enable = False
             # 有効確認
             if self.botFunc is not None:
                 for module_dic in self.botFunc.function_modules:
                     if (module_dic['func_name'] == 'execute_monjyu_request'):
                         self.monjyu_enable = True
                         print(f" Live(freeai) : [INIT] (execute_monjyu_request) ")
+                        # 受付音
+                        self.play(outFile='_sounds/_sound_accept.mp3')
                         # function 実行
                         dic = {}
                         dic['runMode'] = 'live'
@@ -802,6 +830,10 @@ class _live_api_freeai:
                             self.monjyu_funcinfo = res_text
                         except Exception as e:
                             print(e)
+                    if (module_dic['func_name'] == 'webBrowser_operation_agent'):
+                        self.surfer_enable = True
+                    if  (self.monjyu_enable == True) \
+                    and (self.surfer_enable == True):
                         break
         # 初期化
         self.image_send_queue = asyncio.Queue()
@@ -865,31 +897,32 @@ class _live_api_freeai:
                     voice == self.VOICE
                 print(f" Live(freeai) : [VOICE] { voice } ")
 
-                # Monjyu 無効
-                if (self.monjyu_enable != True):
-                    instructions = \
+                instructions = \
 """
 あなたは美しい日本語を話す賢いアシスタントです。
 あなたはLiveAPI(RealtimeAPI)で実行中のアシスタントです。
 あなたの名前は「力/RiKi(りき)」です。
 複数人で会話をしていますので、会話の流れを把握するようにして、口出しは最小限にお願いします。
 あなたへの指示でない場合、相槌も必要ありません。できるだけ静かにお願いします。
+"""
+                # surfer 有効
+                if (self.surfer_enable == True):
+                    print(" Live(freeai) : [READY] Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) ")
+                    instructions += \
+"""
+Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) が利用可能です。
+社内システム操作以外のウェブ操作を依頼して、その結果を報告してしてください。
 """
                 # Monjyu 有効
-                else:
+                if (self.monjyu_enable == True):
                     print(" Live(freeai) : [READY] 外部AI 文殊/Monjyu(もんじゅ:execute_monjyu_request) ")
-                    instructions = \
+                    instructions += \
 """
-あなたは美しい日本語を話す賢いアシスタントです。
-あなたはLiveAPI(RealtimeAPI)で実行中のアシスタントです。
-あなたの名前は「力/RiKi(りき)」です。
-複数人で会話をしていますので、会話の流れを把握するようにして、口出しは最小限にお願いします。
-あなたへの指示でない場合、相槌も必要ありません。できるだけ静かにお願いします。
-あなたへの指示の場合、あなたが回答できない場合は、外部AI 文殊/Monjyu(もんじゅ:execute_monjyu_request)を呼び出すことで、
-適切なFunctions(Tools)も間接的に利用して、その結果で回答してしてください。
+外部AI 文殊/Monjyu(もんじゅ:execute_monjyu_request) が利用可能です。
+利用指示があった場合、文殊/Monjyu(もんじゅ) 経由で適切なFunctions(Tools)を間接的に利用して、その結果を報告してください。
 """
                     if (self.monjyu_funcinfo != ''):
-                        instructions += '\n【外部AI 文殊/Monjyu(もんじゅ:execute_monjyu_request)経由で利用可能なFunctions(Tools)の情報】\n'
+                        instructions += '\n【外部AI 文殊/Monjyu(もんじゅ:execute_monjyu_request) 経由で利用可能なFunctions(Tools)の情報】\n'
                         instructions += self.monjyu_funcinfo
 
                 # ツール設定 通常はexecute_monjyu_requestのみ有効として処理
@@ -905,7 +938,8 @@ class _live_api_freeai:
                         #func_str = func_str.replace('"object"', '"OBJECT"')
                         #func_str = func_str.replace('"string"', '"STRING"')
                         #func     = json.loads(func_str)
-                        if (self.monjyu_enable == True):
+                        if (self.monjyu_enable == True) \
+                        or (self.surfer_enable == True):
                             if (module_dic['func_name'] == 'execute_monjyu_request') \
                             or (module_dic['func_name'] == 'webBrowser_operation_agent'):
                                 function_declarations.append(func_dic)
@@ -928,7 +962,7 @@ class _live_api_freeai:
                 #session = await self.client.aio.live.connect(model=self.MODEL, config=config)
                 #tg = asyncio.TaskGroup()
                 async with (
-                    self.client.aio.live.connect(model=self.MODEL, config=config) as session,
+                    self.client.aio.live.connect(model='models/' + self.MODEL, config=config) as session,
                     asyncio.TaskGroup() as tg,
                 ):
                     # 開始音
@@ -1312,7 +1346,7 @@ class _visualizer_class:
         except Exception as e:
             print(f"updating image: {e}")
         return True
-    
+
     def update_graph(self):
         try:
             self.canvas.draw()
@@ -1362,14 +1396,17 @@ class _monjyu_class:
         try:
             recognize_text = ''
             srr  = sr.Recognizer()
-            with sr.AudioFile(filename) as source:
-                audio = srr.record(source)
-                recognize_text = srr.recognize_google(audio, language='ja')
+            audiodata  = sr.AudioData(b''.join(audio_buffer), INPUT_RATE, 2)
+            recognize_text = srr.recognize_google(audiodata, language='ja')
         except Exception as e:
             #print(f"live_audio_input: {e}")
-            return False
+            recognize_text = ''
         
         if (recognize_text.strip() == ''):
+            try:
+                os.remove(filename)
+            except:
+                pass
             return False
         
         recognize_text = recognize_text.strip()
@@ -1397,9 +1434,8 @@ class _monjyu_class:
         try:
             recognize_text = ''
             srr  = sr.Recognizer()
-            with sr.AudioFile(filename) as source:
-                audio = srr.record(source)
-                recognize_text = srr.recognize_google(audio, language='ja')
+            audiodata  = sr.AudioData(b''.join(audio_buffer), OUTPUT_RATE, 2)
+            recognize_text = srr.recognize_google(audiodata, language='ja')
         except Exception as e:
             #print(f"live_audio_input: {e}")
             return False
@@ -1407,6 +1443,12 @@ class _monjyu_class:
         if (recognize_text.strip() == ''):
             return False
         
+        # 入力音声変換待機 最大3秒+1秒
+        chkTime = time.time()
+        while (self.last_reqText == '') and ((time.time() - chkTime) < 3):
+            time.sleep(0.25)
+        time.sleep(1.00)
+
         recognize_text = recognize_text.strip()
         print(f" Live(freeai) : { recognize_text } ")
         if (outMODEL is not None):
@@ -1414,7 +1456,9 @@ class _monjyu_class:
         else:
             outText = f"[Live]\n" + recognize_text
         res = self.post_output_log(outText=outText, outData=outText)
-        if (res == True):
+        if (res != True):
+            return False
+        else:
             return self.post_histories()
 
     def post_input_log(self, reqText='', inpText=''):
@@ -1433,6 +1477,7 @@ class _monjyu_class:
                 print('error', f"Error response ({ CORE_PORT }/post_input_log) : {response.status_code} - {response.text}")
         except Exception as e:
             print('error', f"Error communicating ({ CORE_PORT }/post_input_log) : {e}")
+            return False
         return True
 
     def post_output_log(self, outText='', outData=''):
@@ -1451,6 +1496,7 @@ class _monjyu_class:
                 print('error', f"Error response ({ CORE_PORT }/post_output_log) : {response.status_code} - {response.text}")
         except Exception as e:
             print('error', f"Error communicating ({ CORE_PORT }/post_output_log) : {e}")
+            return False
         return True
 
     def post_histories(self):
@@ -1471,11 +1517,16 @@ class _monjyu_class:
                 print('error', f"Error response ({ CORE_PORT }/post_histories) : {response.status_code} - {response.text}")
         except Exception as e:
             print('error', f"Error communicating ({ CORE_PORT }/post_histories) : {e}")
-        finally:
             self.last_reqText = ''
             self.last_inpText = ''
             self.last_outText = ''
             self.last_outData = ''
+            return False
+
+        self.last_reqText = ''
+        self.last_inpText = ''
+        self.last_outText = ''
+        self.last_outData = ''
         return True
 
 
@@ -1576,6 +1627,6 @@ if __name__ == '__main__':
 
     print(ext.func_proc('{ "runMode" : "assistant", "reqText" : "おはようございます" }'))
 
-    time.sleep(60)
+    time.sleep(180)
 
 

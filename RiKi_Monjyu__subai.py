@@ -81,6 +81,25 @@ class SubAiProcess:
     def __init__(self, runMode: str = 'debug', qLog_fn: str = '', 
                  main=None, conf=None, data=None, addin=None, botFunc=None,
                  core_port: str = '8000', sub_base: str = '8100', num_subais: str = '48'):
+
+        # ログ設定
+        self.proc_name = 'subai'
+        self.proc_id = '{0:10s}'.format(self.proc_name).replace(' ', '_')
+        if not os.path.isdir(qPath_log):
+            os.makedirs(qPath_log)
+        if qLog_fn == '':
+            nowTime = datetime.datetime.now()
+            qLog_fn = qPath_log + nowTime.strftime('%Y%m%d.%H%M%S') + '.' + os.path.basename(__file__) + '.log'
+        qLog.init(mode='logger', filename=qLog_fn)
+        qLog.log('info', self.proc_id, 'init')
+
+        # 各種設定の初期化
+        self.main      = main
+        self.conf      = conf
+        self.data      = data
+        self.addin     = addin
+        self.botFunc   = botFunc
+
         """ サブAIプロセスの初期化 """
         self.num_subais = int(num_subais)
         random_profile = random.sample(range(self.num_subais), self.num_subais)

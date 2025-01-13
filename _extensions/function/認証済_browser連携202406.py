@@ -129,13 +129,13 @@ class _class:
                         "type": "string",
                         "description": "表示または消去の指定 show,hide (例) show"
                     },
+                    "useBrowser": {
+                        "type": "string",
+                        "description": "利用ブラウザーの選択 edge,chrome,firefox,safari (例) edge"
+                    },
                     "url": {
                         "type": "string",
                         "description": "ウェブページのurl (例) https://openai.com/blog/chatgpt"
-                    },
-                    "browser": {
-                        "type": "string",
-                        "description": "ブラウザーの選択 edge,chrome,firefox,safari (例) edge"
                     },
                     "full_size": {
                         "type": "string",
@@ -159,20 +159,20 @@ class _class:
 
         # 引数
         show_or_hide = None
+        useBrowser   = None
         url          = None
-        browser      = None
         full_size    = None
         if (json_kwargs != None):
             args_dic = json.loads(json_kwargs)
             show_or_hide = args_dic.get('show_or_hide')
+            useBrowser   = args_dic.get('useBrowser')
             url          = args_dic.get('url')
-            browser      = args_dic.get('browser')
             full_size    = args_dic.get('full_size')
 
         # ブラウザ表示
         if (show_or_hide == 'show'):
 
-            res = self.browser.browser_open(url=url, browser=browser, full_size=full_size, )
+            res = self.browser.browser_open(url=url, browser=useBrowser, full_size=full_size, )
             if (res == True):
                 dic = {}
                 dic['result'] = "ok" 
@@ -207,15 +207,15 @@ if __name__ == '__main__':
     ext = _class()
     print(ext.func_proc('{ ' \
                       + '"show_or_hide" : "show",' \
-                      + '"url" : "https://openai.com/index/chatgpt/",' \
-                      + '"browser" : "edge"' \
+                      + '"useBrowser" : "edge",' \
+                      + '"url" : "https://openai.com/index/chatgpt/"' \
                       + ' }'))
     time.sleep(10.00)
 
     print(ext.func_proc('{ ' \
                       + '"show_or_hide" : "show",' \
-                      + '"url" : "https://openai.com/index/chatgpt/",' \
-                      + '"browser" : "edge"' \
+                      + '"useBrowser" : "edge",' \
+                      + '"url" : "https://openai.com/index/chatgpt/"' \
                       + ' }'))
     time.sleep(10.00)
 

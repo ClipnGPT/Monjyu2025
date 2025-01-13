@@ -121,7 +121,7 @@ if getattr(sys, 'frozen', False):
 
 class _main_class:
     def __init__(self):
-        pass
+        self.main_all_ready = False
 
     def init(self, runMode='debug', qLog_fn=''):
         self.runMode = runMode
@@ -204,6 +204,7 @@ if __name__ == '__main__':
 
         # data 初期化
         data = RiKi_Monjyu__data._data_class(   runMode=runMode, qLog_fn=qLog_fn,
+                                                main=main, conf=conf,
                                                 core_port=core_port, sub_base=sub_base, num_subais=numSubAIs)
 
         # addin 初期化
@@ -232,7 +233,7 @@ if __name__ == '__main__':
             print()
 
         # key2Live_freeai
-        riki_enable = False
+        liveai_enable = False
         ext_module = addin.addin_modules.get('monjyu_UI_key2Live_freeai', None)
         if (ext_module is not None):
             try:
@@ -240,12 +241,12 @@ if __name__ == '__main__':
                     func_reset = ext_module['func_reset']
                     res  = func_reset(botFunc=botFunc, data=data, )
                     print('reset', 'monjyu_UI_key2Live_freeai')
-                    riki_enable = True
+                    liveai_enable = True
             except Exception as e:
                 print(e)
 
         # key2Live_openai
-        #riki_enable = False
+        #liveai_enable = False
         ext_module = addin.addin_modules.get('monjyu_UI_key2Live_openai', None)
         if (ext_module is not None):
             try:
@@ -253,9 +254,26 @@ if __name__ == '__main__':
                     func_reset = ext_module['func_reset']
                     res  = func_reset(botFunc=botFunc, data=data, )
                     print('reset', 'monjyu_UI_key2Live_openai')
-                    riki_enable = True
+                    liveai_enable = True
             except Exception as e:
                 print(e)
+
+        # browser操作Agent
+        webAgent_enable = False
+        for module_dic in botFunc.function_modules:
+            if (module_dic['func_name'] == 'webBrowser_operation_agent'):
+                try:
+                    if (module_dic['onoff'] == 'on'):
+                        data.webAgent_modelNames['freeai'] = module_dic['class'].ModelNames['freeai']
+                        data.webAgent_modelNames['openai'] = module_dic['class'].ModelNames['openai']
+                        data.webAgent_modelNames['claude'] = module_dic['class'].ModelNames['claude']
+                        func_reset = module_dic['func_reset']
+                        res  = func_reset(data=data, )
+                        print('reset', 'webBrowser_operation_agent')
+                        webAgent_enable = True
+                except Exception as e:
+                    print(e)
+                break
 
     # サブAI起動
     if True:
@@ -295,10 +313,15 @@ if __name__ == '__main__':
         webui_thread.start()
 
     # 起動メッセージ
-    qLog.log('info', main_id, '')
-    qLog.log('info', main_id, 'Welcome to Assistant AI 文殊/Monjyu(もんじゅ). Access "http://localhost:8008/" in your browser.')
-    if (riki_enable == True):
-        qLog.log('info', main_id, 'Welcome to Live AI 力/RiKi(りき). Press ctrl(-l or -r) three times.')
+    print()
+    qLog.log('info', main_id, "Thank you for using our systems.")
+    qLog.log('info', main_id, "To use [ Assistant AI 文殊/Monjyu(もんじゅ) ], Access 'http://localhost:8008/' in your browser.")
+    if (liveai_enable == True):
+        qLog.log('info', main_id, "To use [ Live AI 力/RiKi(りき) ], Press ctrl-l or ctrl-r three times.")
+    if (webAgent_enable == True):
+        qLog.log('info', main_id, "To use [ Agentic AI WebAgent(ウェブエージェント) ], Specify use at the prompt.")
+    print()
+    main.main_all_ready = True
 
     # 無限ループでプロセスを監視
     while True:

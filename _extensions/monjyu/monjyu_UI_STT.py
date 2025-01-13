@@ -122,7 +122,7 @@ class _stt_woker:
                                 self.play(outFile='_sounds/_sound_ng.mp3')
 
                 except Exception as e:
-                    print(e)
+                    print('Monjyu_STT :', e)
 
         return res
 
@@ -209,12 +209,12 @@ class _stt_woker:
                 pygame.mixer.init()
                 self.mixer_enable = True
             except Exception as e:
-                print(e)
+                print('Monjyu_STT :', e)
 
         # ミキサー再生
         if (self.mixer_enable == True):
             try:
-                #print(outFile)
+                #print('Monjyu_STT :', outFile)
                 #pygame.mixer.init()
                 pygame.mixer.music.load(outFile)
                 pygame.mixer.music.play(1)
@@ -223,7 +223,7 @@ class _stt_woker:
                 pygame.mixer.music.unload()
                 return True
             except Exception as e:
-                print(e)
+                print('Monjyu_STT :', e)
                 self.mixer_enable = False
 
         return False
@@ -256,9 +256,9 @@ class _monjyu_class:
                     if (fx[3] == 'checked'):
                         file_names.append(fx[0])
             else:
-                print('error', f"Error response ({self.webui_port}/get_input_list) : {response.status_code} - {response.text}")
+                print('Monjyu_STT :', f"Error response ({self.webui_port}/get_input_list) : {response.status_code} - {response.text}")
         except Exception as e:
-            print('error', f"Error communicating ({self.webui_port}/get_input_list) : {e}")
+            print('Monjyu_STT :', f"Error communicating ({self.webui_port}/get_input_list) : {e}")
 
         # AI要求送信
         try:
@@ -273,9 +273,9 @@ class _monjyu_class:
             if response.status_code == 200:
                 res_port = str(response.json()['port'])
             else:
-                print('error', f"Error response ({ CORE_PORT }/post_request) : {response.status_code} - {response.text}")
+                print('Monjyu_STT :', f"Error response ({ CORE_PORT }/post_request) : {response.status_code} - {response.text}")
         except Exception as e:
-            print('error', f"Error communicating ({ CORE_PORT }/post_request) : {e}")
+            print('Monjyu_STT :', f"Error communicating ({ CORE_PORT }/post_request) : {e}")
         return res_port
 
 
@@ -311,7 +311,7 @@ class _class:
         return True
 
     def func_proc(self, json_kwargs=None, ):
-        #print(json_kwargs)
+        #print('Monjyu_STT :', json_kwargs)
 
         # 引数
         runMode = None
@@ -330,7 +330,7 @@ class _class:
         dic = {}
         dic['result'] = "ok"
         json_dump = json.dumps(dic, ensure_ascii=False, )
-        #print('  --> ', json_dump)
+        #print('Monjyu_STT :', '  --> ', json_dump)
         return json_dump
 
 if __name__ == '__main__':

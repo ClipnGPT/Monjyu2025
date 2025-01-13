@@ -77,8 +77,8 @@ def pip_install(module='', ver=None):
 # 動的インストール
 try:
     import langchain_openai
-    #import langchain_anthropic
-    #import langchain_google_genai
+    import langchain_anthropic
+    import langchain_google_genai
 
     from browser_use import Agent, Controller
     from browser_use.browser.browser import Browser, BrowserConfig
@@ -98,8 +98,8 @@ except:
         install_proc = subprocess.Popen(['playwright install'])
 
     pip_install('langchain_openai')
-    #pip_install('langchain_anthropic')
-    #pip_install('langchain_google_genai')
+    pip_install('langchain_anthropic')
+    pip_install('langchain_google_genai')
     pip_install('browser_use')
 
     print('playwright install ...')

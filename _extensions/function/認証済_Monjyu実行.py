@@ -59,9 +59,9 @@ class _monjyu_class:
                     if checked == 'yes':
                         file_names.append(file_name)
             else:
-                print('error', f"Error response ({self.webui_port}/get_input_list) : {response.status_code}")
+                print('Monjyu_Request :', f"Error response ({self.webui_port}/get_input_list) : {response.status_code}")
         except Exception as e:
-            print('error', f"Error communicating ({self.webui_port}/get_input_list) : {e}")
+            print('Monjyu_Request :', f"Error communicating ({self.webui_port}/get_input_list) : {e}")
 
         # AI要求送信
         try:
@@ -79,9 +79,9 @@ class _monjyu_class:
                 if (res_port == ''):
                     res_port = str(response.json()['port'])
             else:
-                print('error', f"Error response ({ CORE_PORT }/post_req) : {response.status_code}")
+                print('Monjyu_Request :', f"Error response ({ CORE_PORT }/post_req) : {response.status_code}")
         except Exception as e:
-            print('error', f"Error communicating ({ CORE_PORT }/post_req) : {e}")
+            print('Monjyu_Request :', f"Error communicating ({ CORE_PORT }/post_req) : {e}")
 
         # AI結果受信
         res_text = ''
@@ -106,10 +106,10 @@ class _monjyu_class:
                         else:
                             time.sleep(1.00)
                     else:
-                        print('error', f"Error response ({ CORE_PORT }/get_sessions_port) : {response.status_code} - {response.text}")
+                        print('Monjyu_Request :', f"Error response ({ CORE_PORT }/get_sessions_port) : {response.status_code} - {response.text}")
 
             except Exception as e:
-                print('error', f"Error communicating ({ CORE_PORT }/get_sessions_port) : {e}")
+                print('Monjyu_Request :', f"Error communicating ({ CORE_PORT }/get_sessions_port) : {e}")
 
         return res_text
 
@@ -128,7 +128,7 @@ class _class:
 """
 この機能は、LiveAPI(RealTimeAPI)セッションから呼び出して利用する。
 この機能から、画像認識などの機能が実行可能な外部AI 文殊/Monjyu(もんじゅ) が実行される。
-社内システム(WEB)のログイン,出勤,退勤の操作は、'operation_internal_web_systems'機能の利用を明示して呼び出す必要がある。
+社内システム(WEB) 出退勤,日報,掲示板 へのログイン,出勤,退勤の操作は、'operation_internal_web_systems'機能の利用を明示して呼び出す必要がある。
 """,
             "parameters": {
                 "type": "object",
@@ -158,7 +158,7 @@ class _class:
         return True
 
     def func_proc(self, json_kwargs=None, ):
-        #print(json_kwargs)
+        #print('Monjyu_Request :', json_kwargs)
 
         # 引数
         runMode = None
@@ -190,7 +190,7 @@ class _class:
         else:
             dic['result'] = "ng"
         json_dump = json.dumps(dic, ensure_ascii=False, )
-        #print('  --> ', json_dump)
+        #print('Monjyu_Request :', '  --> ', json_dump)
         return json_dump
 
 if __name__ == '__main__':

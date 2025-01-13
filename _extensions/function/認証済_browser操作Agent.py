@@ -27,6 +27,7 @@ qText_start       = 'Browser-use Agent function start!'
 qText_complete    = 'Browser-use Agent function complete!'
 qIO_func2py       = 'temp/browser操作Agent_func2py.txt'
 qIO_py2func       = 'temp/browser操作Agent_py2func.txt'
+qIO_py2live       = 'temp/browser操作Agent_py2live.txt'
 
 qTimeout_reset    = 30
 qTimeout_init     = 60
@@ -133,8 +134,8 @@ class _class:
             "description": \
 """
 この機能は、ユーザーからブラウザ操作の指示があった場合に実行する。
-この機能から、自律的にブラウザ操作が可能なAIエージェント 波乗/Surfer(サーファー) が実行される。
-この機能で、AIエージェント 波乗/Surfer(サーファー) によりWebブラウザを自立操作を実行し、その結果を取得することができる。
+この機能から、自律的にブラウザ操作が可能なAIエージェント WebAgent(ウェブエージェント) が実行される。
+この機能で、AIエージェント WebAgent(ウェブエージェント) によりWebブラウザを自立操作を実行し、その結果を取得することができる。
 社内システム(Web)の操作は、文殊/Monjyu(もんじゅ:execute_monjyu_request) 経由で'operation_internal_web_systems'から、この機能を使います。
 """,
             "parameters": {
@@ -144,12 +145,20 @@ class _class:
                         "type": "string",
                         "description": "実行モード 例) agent"
                     },
+                    "show_or_hide": {
+                        "type": "string",
+                        "description": "表示または消去の指定 show,hide (例) show"
+                    },
+                    "useBrowser": {
+                        "type": "string",
+                        "description": "利用ブラウザーの選択 ''=指定なしはchromium利用, 'chrome'=chrome利用, (例) '' 指定なし"
+                    },
                     "request_text": {
                         "type": "string",
                         "description": "依頼文字列 例) Google検索のページ(https://google.co.jp/)を表示して停止。"
                     },
                 },
-                "required": ["runMode", "request_text"]
+                "required": ["request_text"]
             }
         }
 
@@ -158,6 +167,18 @@ class _class:
         self.ext_pid    = None
         res = self.func_reset()
         self.start_time = time.time()
+
+        # 設定
+        self.data = None
+        self.useBrowser = 'chromium' # chromium, chrome,
+        self.ModelAPI = 'freeai' # freeai, openai, claude,
+        self.ModelNames = {}
+        self.ModelNames['freeai'] = { 'gemini-2.0-flash-exp': 'gemini-2.0-flash-exp', }
+        self.ModelNames['openai'] = { 'gpt-4o-mini': 'gpt-4o-mini',
+                                      'gpt-4o': 'gpt-4o', }
+        self.ModelNames['claude'] = { 'claude-3-5-sonnet-20241022': 'claude-3-5-sonnet', }
+        self.ModelName = 'gemini-2.0-flash-exp'
+        self.MaxSteps  = '20'
 
     def __del__(self, ):
         # Python 停止
@@ -172,7 +193,9 @@ class _class:
                 pass
         # Python kill!
 
-    def func_reset(self, ):
+    def func_reset(self, data=None, ):
+        if data is not None:
+            self.data = data
         # 初回直後のリセットは無効
         if (self.start_time != None):
             if ((time.time() - self.start_time) < qTimeout_reset):
@@ -183,6 +206,7 @@ class _class:
 
         # 結果クリア
         dummy = io_text_read(qIO_py2func)
+        dummy = io_text_read(qIO_py2live)
 
         # Python 初期化
         print(ext_python_init + ' loading')
@@ -221,6 +245,7 @@ class _class:
 
         # 結果クリア
         dummy = io_text_read(qIO_py2func)
+        dummy = io_text_read(qIO_py2live)
 
         # Python 起動
         print(ext_python_script + ' loading')
@@ -264,9 +289,48 @@ class _class:
 
         # 実行状況クリア
         dummy = io_text_read(qIO_py2func)
+        dummy = io_text_read(qIO_py2live)
 
         # 実行指示送信
-        res = io_text_write(qIO_func2py, json_kwargs)
+        if (json_kwargs is not None):
+            args_dic = json.loads(json_kwargs)
+
+            try:
+                if self.data is not None:
+                    self.useBrowser = self.data.webAgent_useBrowser
+                    if (self.useBrowser == ''):
+                        self.useBrowser = 'chromium'
+                    self.ModelAPI   = self.data.webAgent_modelAPI
+                    if (self.ModelAPI == ''):
+                        self.ModelAPI = 'freeai'
+                    self.ModelName = self.data.webAgent_setting[self.ModelAPI]['modelName']
+                    self.MaxSteps  = self.data.webAgent_setting[self.ModelAPI]['maxSteps']
+                    #print(self.ModelAPI, self.ModelName, self.MaxSteps)
+            except Exception as e:
+                print(e)
+
+            dic = {}
+            dic['runMode']      = args_dic.get('runMode', 'agent')
+            dic['show_or_hide'] = args_dic.get('show_or_hide', 'show')
+            dic['useBrowser']   = args_dic.get('useBrowser', self.useBrowser)
+            dic['request_text'] = args_dic.get('request_text', '')
+            ModelAPI = self.ModelAPI
+            if (ModelAPI == ''):
+                ModelAPI = 'freeai'
+            dic['ModelAPI'] = ModelAPI
+            ModelName = self.ModelName
+            if (ModelName == ''):
+                ModelName = list(self.ModelNames[ModelAPI].keys())[0]
+            dic['ModelName'] = ModelName
+            MaxSteps = self.MaxSteps
+            if (MaxSteps == ''):
+                if (ModelAPI != 'freeai'):
+                    MaxSteps = '10'
+                else:
+                    MaxSteps = '20'
+            dic['MaxSteps'] = MaxSteps
+            json_dump = json.dumps(dic, ensure_ascii=False, )
+            res = io_text_write(qIO_func2py, json_dump)
 
         # 実行開始を待機
         start = False
@@ -333,14 +397,17 @@ if __name__ == '__main__':
 
     ext = _class()
 
-    #json_kwargs= '{ "request_text" : "Google検索のページ(https://google.co.jp/)を表示して停止。" }'
-    json_kwargs= '{ "request_text" : "兵庫県三木市の天気を調べてください。" }'    
+    #json_kwargs= '{ "request_text": "Google検索のページ(https://google.co.jp/)を表示して停止。" }'
+    json_kwargs= '{ "useBrowser": "chrome", "request_text" : "兵庫県三木市の天気を調べてください。" }'
     print(ext.func_proc(json_kwargs))
 
-    time.sleep(30)
+    time.sleep(90)
 
-    #json_kwargs= '{ "request_text" : "Google検索のページ(https://google.co.jp/)を表示して停止。" }'
-    json_kwargs= '{ "request_text" : "表示中のページを要約してください。" }'    
+    #json_kwargs= '{ "request_text": "Google検索のページ(https://google.co.jp/)を表示して停止。" }'
+    json_kwargs= '{ "request_text": "表示中のページを要約してください。" }'    
+    #json_kwargs= '{ "request_text": "NotebookLM(https://notebooklm.google.com/)にアクセスして、本好きの下剋上（テキスト）解説の情報から、マインの生活を要約して" }'    
     print(ext.func_proc(json_kwargs))
 
-    time.sleep(60)
+    time.sleep(180)
+
+
