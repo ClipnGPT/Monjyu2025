@@ -1050,10 +1050,6 @@ class AzureOaiAPI:
             inpText = inpText.strip()[7:]
             if (self.gpt_b_enable == True):
                     model_select = 'b'
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
-            if (self.gpt_b_enable == True):
-                    model_select = 'b'
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
             if (self.gpt_b_enable == True):
@@ -1062,6 +1058,14 @@ class AzureOaiAPI:
             inpText = inpText.strip()[5:]
             if (self.gpt_b_enable == True):
                     model_select = 'x'
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+            if (self.gpt_b_enable == True):
+                    model_select = 'b'
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
+            inpText = inpText.strip()[7:]
+            if (self.gpt_b_enable == True):
+                    model_select = 'a'
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
             if (self.gpt_b_enable == True):
@@ -1869,8 +1873,8 @@ class AzureOaiAPI:
                 if (self.gpt_v_enable == True):
                     if  (len(image_urls) > 0) \
                     and (len(image_urls) == len(upload_files)):
-                        nick_name  = self.ollama_v_nick_name
-                        model_name = self.ollama_v_model
+                        nick_name  = self.gpt_v_nick_name
+                        model_name = self.gpt_v_model
         if (self.gpt_x_nick_name != ''):
             if (inpText.strip()[:len(self.gpt_x_nick_name)+1].lower() == (self.gpt_x_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.gpt_x_nick_name)+1:]
@@ -1886,12 +1890,14 @@ class AzureOaiAPI:
             inpText = inpText.strip()[6:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
             inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
+            inpText = inpText.strip()[7:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):

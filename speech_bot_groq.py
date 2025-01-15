@@ -480,12 +480,14 @@ class _groqAPI:
             inpText = inpText.strip()[6:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
             inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
+            inpText = inpText.strip()[7:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):
@@ -530,12 +532,13 @@ class _groqAPI:
             msg = self.history2msg_vision(history=res_history, image_urls=image_urls,)
 
         # ストリーム実行?
-        if (session_id == 'admin'):
-            stream = True
-        else:
-            stream = False
-        #print(' stream = False, ')
+        #if (session_id == 'admin'):
+        #    stream = True
+        #else:
+        #    stream = False
+        print(' stream = False, ')
         stream = False
+        print(' functions = [], ')
         functions = []
 
         # 実行ループ
@@ -767,10 +770,10 @@ if __name__ == '__main__':
                 print(reqText, inpText )
                 print()
                 res_text, res_path, res_files, res_name, res_api, groqAPI.history = \
-                    groqAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                            session_id='admin', history=groqAPI.history, function_modules=function_modules,
-                                            sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
-                                            inpLang='ja', outLang='ja', )
+                    groqAPI.chatBot(    chat_class='auto', model_select='auto', 
+                                        session_id='admin', history=groqAPI.history, function_modules=function_modules,
+                                        sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
+                                        inpLang='ja', outLang='ja', )
                 print()
                 print(f"[{ res_name }] ({ res_api })")
                 print(str(res_text))
@@ -779,14 +782,15 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'この画像はなんだと思いますか？'
-                filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
+                inpText = '添付画像を説明してください。'
+                filePath = ['_icons/dog.jpg']
+                #filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
                 print()
                 print('[Request]')
                 print(reqText, inpText )
                 print()
                 res_text, res_path, res_files, res_name, res_api, groqAPI.history = \
-                    groqAPI.chatBot(  chat_class='auto', model_select='auto', 
+                    groqAPI.chatBot(    chat_class='auto', model_select='auto', 
                                         session_id='admin', history=groqAPI.history, function_modules=function_modules,
                                         sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
                                         inpLang='ja', outLang='ja', )

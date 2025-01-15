@@ -61,8 +61,9 @@ class _conf_class:
         self.azure_version = 'yyyy-mm-dd'
         self.azure_key_id = '< your azure key >'
         self.claude_key_id = '< your claude key >'
-        self.gemini_key_id = '< your gemini key >'
         self.perplexity_key_id = '< your perplexity key >'
+        self.gemini_key_id = '< your gemini key >'
+        self.openrt_key_id = '< your openrt key >'
         self.ollama_server = 'auto'
         self.ollama_port = 'auto'
         self.freeai_key_id = '< your freeai key >'
@@ -112,8 +113,9 @@ class _conf_class:
             dic['azure_version'] = self.azure_version
             dic['azure_key_id'] = self.azure_key_id
             dic['claude_key_id'] = self.claude_key_id
-            dic['gemini_key_id'] = self.gemini_key_id
             dic['perplexity_key_id'] = self.perplexity_key_id
+            dic['gemini_key_id'] = self.gemini_key_id
+            dic['openrt_key_id'] = self.openrt_key_id
             dic['ollama_server'] = self.ollama_server
             dic['ollama_port'] = self.ollama_port
             dic['freeai_key_id'] = self.freeai_key_id
@@ -141,8 +143,9 @@ class _conf_class:
             self.azure_version = dic['azure_version']
             self.azure_key_id = dic['azure_key_id']
             self.claude_key_id = dic['claude_key_id']
-            self.gemini_key_id = dic['gemini_key_id']
             self.perplexity_key_id = dic['perplexity_key_id']
+            self.gemini_key_id = dic['gemini_key_id']
+            self.openrt_key_id = dic['openrt_key_id']
             self.ollama_server = dic['ollama_server']
             self.ollama_port = dic['ollama_port']
             self.freeai_key_id = dic['freeai_key_id']

@@ -349,6 +349,20 @@ class CoreAiClass:
                 if self.chat_class.geminiAPI.gemini_x_enable and self.chat_class.geminiAPI.gemini_x_nick_name:
                     models[self.chat_class.geminiAPI.gemini_x_nick_name.lower()] = ' ' + self.chat_class.geminiAPI.gemini_x_nick_name
 
+        if (req_mode == 'chat'):
+            if self.chat_class.openrt_enable is None:
+                self.chat_class.openrt_auth()
+            if self.chat_class.openrt_enable:
+                models['[openrt]'] = '[OpenRouter]'
+                if self.chat_class.openrtAPI.openrt_a_enable and self.chat_class.openrtAPI.openrt_a_nick_name:
+                    models[self.chat_class.openrtAPI.openrt_a_nick_name.lower()] = ' ' + self.chat_class.openrtAPI.openrt_a_nick_name
+                if self.chat_class.openrtAPI.openrt_b_enable and self.chat_class.openrtAPI.openrt_b_nick_name:
+                    models[self.chat_class.openrtAPI.openrt_b_nick_name.lower()] = ' ' + self.chat_class.openrtAPI.openrt_b_nick_name
+                if self.chat_class.openrtAPI.openrt_v_enable and self.chat_class.openrtAPI.openrt_v_nick_name:
+                    models[self.chat_class.openrtAPI.openrt_v_nick_name.lower()] = ' ' + self.chat_class.openrtAPI.openrt_v_nick_name
+                if self.chat_class.openrtAPI.openrt_x_enable and self.chat_class.openrtAPI.openrt_x_nick_name:
+                    models[self.chat_class.openrtAPI.openrt_x_nick_name.lower()] = ' ' + self.chat_class.openrtAPI.openrt_x_nick_name
+
         if True:
             if self.chat_class.ollama_enable is None:
                 self.chat_class.ollama_auth()

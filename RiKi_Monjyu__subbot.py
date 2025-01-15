@@ -52,6 +52,8 @@ import speech_bot_claude
 import speech_bot_claude_key as claude_key
 import speech_bot_gemini
 import speech_bot_gemini_key as gemini_key
+import speech_bot_openrt
+import speech_bot_openrt_key as openrt_key
 import speech_bot_ollama
 import speech_bot_ollama_key as ollama_key
 import speech_bot_groq
@@ -113,6 +115,7 @@ class ChatClass:
         self.azureoai_enable = None
         self.claude_enable = None
         self.gemini_enable = None
+        self.openrt_enable = None
         self.ollama_enable = None
         self.groq_enable = None
         self.plamo_enable = None
@@ -440,6 +443,43 @@ class ChatClass:
 
         return self.gemini_enable
 
+    def openrt_auth(self):
+        """
+        openrt 認証
+        """
+
+        # openrt 定義
+        self.openrtAPI = speech_bot_openrt._openrtAPI()
+        self.openrtAPI.init(log_queue=None)
+
+        # openrt 認証情報
+        api_type = openrt_key.getkey('openrt','openrt_api_type')
+        key_id   = openrt_key.getkey('openrt','openrt_key_id')
+        if (self.conf.openrt_key_id not in ['', '< your openrt key >']):
+            key_id = self.conf.openrt_key_id
+
+        # openrt 認証実行
+        res = self.openrtAPI.authenticate('openrt',
+                            api_type,
+                            openrt_key.getkey('openrt','openrt_default_gpt'), openrt_key.getkey('openrt','openrt_default_class'),
+                            openrt_key.getkey('openrt','openrt_auto_continue'),
+                            openrt_key.getkey('openrt','openrt_max_step'), openrt_key.getkey('openrt','openrt_max_session'),
+                            key_id,
+                            openrt_key.getkey('openrt','openrt_a_nick_name'), openrt_key.getkey('openrt','openrt_a_model'), openrt_key.getkey('openrt','openrt_a_token'),
+                            openrt_key.getkey('openrt','openrt_b_nick_name'), openrt_key.getkey('openrt','openrt_b_model'), openrt_key.getkey('openrt','openrt_b_token'),
+                            openrt_key.getkey('openrt','openrt_v_nick_name'), openrt_key.getkey('openrt','openrt_v_model'), openrt_key.getkey('openrt','openrt_v_token'),
+                            openrt_key.getkey('openrt','openrt_x_nick_name'), openrt_key.getkey('openrt','openrt_x_model'), openrt_key.getkey('openrt','openrt_x_token'),
+                            )
+
+        if res == True:
+            self.openrt_enable = True
+            #qLog.log('info', self.proc_id, 'openRouter authenticate OK!')
+        else:
+            self.openrt_enable = False
+            qLog.log('error', self.proc_id, 'openRouter authenticate NG!')
+
+        return self.openrt_enable
+
     def ollama_auth(self):
         """
         ollama 認証
@@ -649,6 +689,8 @@ class ChatClass:
             self.claude_auth()
         if (self.gemini_enable is None):
             self.gemini_auth()
+        if (self.openrt_enable is None):
+            self.openrt_auth()
         if (self.ollama_enable is None):
             self.ollama_auth()
         if (self.groq_enable is None):
@@ -668,7 +710,7 @@ class ChatClass:
 
         if (self.perplexity_enable == True):
             if (engine == '[perplexity]'):
-                engine_text = 'pplx,\n'
+                engine_text = self.perplexityAPI.perplexity_b_nick_name.lower() + ',\n'
             else:
                 model_nick_name1 = 'perplexity'
                 model_nick_name2 = 'pplx'
@@ -742,7 +784,7 @@ class ChatClass:
 
         if (self.openai_enable == True):
             if (engine == '[openai]'):
-                engine_text = 'gpt,\n'
+                engine_text = self.openaiAPI.gpt_b_nick_name.lower() + ',\n'
             else:
                 model_nick_name1 = 'openai'
                 model_nick_name2 = 'riki'
@@ -831,7 +873,7 @@ class ChatClass:
 
         if (self.azureoai_enable == True):
             if (engine == '[azure]'):
-                engine_text = 'azure,\n'
+                engine_text = self.azureAPI.gpt_b_nick_name.lower() + ',\n'
             else:
                 model_nick_name1 = 'azure'
                 a_nick_name = self.azureAPI.gpt_a_nick_name.lower()
@@ -899,7 +941,7 @@ class ChatClass:
 
         if (self.claude_enable == True):
             if (engine == '[claude]'):
-                engine_text = 'sonnet,\n'
+                engine_text = self.claudeAPI.claude_b_nick_name.lower() + ',\n'
             else:
                 model_nick_name = 'claude'
                 a_nick_name = self.claudeAPI.claude_a_nick_name.lower()
@@ -966,7 +1008,7 @@ class ChatClass:
 
         if (self.gemini_enable == True):
             if (engine == '[gemini]'):
-                engine_text = 'flash,\n'
+                engine_text = self.geminiAPI.gemini_b_nick_name.lower() + ',\n'
             else:
                 model_nick_name = 'gemini'
                 a_nick_name = self.geminiAPI.gemini_a_nick_name.lower()
@@ -1031,9 +1073,76 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+        if (self.openrt_enable == True):
+            if (engine == '[openrt]'):
+                engine_text = self.openrtAPI.openrt_b_nick_name.lower() + ',\n'
+            else:
+                model_nick_name = 'openrt'
+                a_nick_name = self.openrtAPI.openrt_a_nick_name.lower()
+                b_nick_name = self.openrtAPI.openrt_b_nick_name.lower()
+                v_nick_name = self.openrtAPI.openrt_v_nick_name.lower()
+                x_nick_name = self.openrtAPI.openrt_x_nick_name.lower()
+                if (engine != ''):
+                    if   ((len(a_nick_name) != 0) and (engine.lower() == a_nick_name)):
+                        engine_text = a_nick_name + ',\n'
+                    elif ((len(b_nick_name) != 0) and (engine.lower() == b_nick_name)):
+                        engine_text = b_nick_name + ',\n'
+                    elif ((len(v_nick_name) != 0) and (engine.lower() == v_nick_name)):
+                        engine_text = v_nick_name + ',\n'
+                    elif ((len(x_nick_name) != 0) and (engine.lower() == x_nick_name)):
+                        engine_text = x_nick_name + ',\n'
+                if (engine_text == '') and (reqText.find(',') >= 1):
+                    req_nick_name = reqText[:reqText.find(',')].lower()
+                    if   (req_nick_name == model_nick_name):
+                        engine_text = model_nick_name + ',\n'
+                        reqText = reqText[len(model_nick_name)+1:].strip()
+                    elif (len(a_nick_name) != 0) and (req_nick_name == a_nick_name):
+                        engine_text = a_nick_name + ',\n'
+                        reqText = reqText[len(a_nick_name)+1:].strip()
+                    elif (len(b_nick_name) != 0) and (req_nick_name == b_nick_name):
+                        engine_text = b_nick_name + ',\n'
+                        reqText = reqText[len(b_nick_name)+1:].strip()
+                    elif (len(v_nick_name) != 0) and (req_nick_name == v_nick_name):
+                        engine_text = v_nick_name + ',\n'
+                        reqText = reqText[len(v_nick_name)+1:].strip()
+                    elif (len(x_nick_name) != 0) and (req_nick_name == x_nick_name):
+                        engine_text = x_nick_name + ',\n'
+                        reqText = reqText[len(x_nick_name)+1:].strip()
+                if (engine_text == '') and (inpText.find(',') >= 1):
+                    inp_nick_name = inpText[:inpText.find(',')].lower()
+                    if   (inp_nick_name == model_nick_name):
+                        engine_text = model_nick_name + ',\n'
+                        inpText = inpText[len(model_nick_name)+1:].strip()
+                    elif (len(a_nick_name) != 0) and (inp_nick_name == a_nick_name):
+                        engine_text = a_nick_name + ',\n'
+                        inpText = inpText[len(a_nick_name)+1:].strip()
+                    elif (len(b_nick_name) != 0) and (inp_nick_name == b_nick_name):
+                        engine_text = b_nick_name + ',\n'
+                        inpText = inpText[len(b_nick_name)+1:].strip()
+                    elif (len(v_nick_name) != 0) and (inp_nick_name == v_nick_name):
+                        engine_text = v_nick_name + ',\n'
+                        inpText = inpText[len(v_nick_name)+1:].strip()
+                    elif (len(x_nick_name) != 0) and (inp_nick_name == x_nick_name):
+                        engine_text = x_nick_name + ',\n'
+                        inpText = inpText[len(x_nick_name)+1:].strip()
+
+            if (engine_text != ''):
+                inpText2 = engine_text + inpText
+                engine_text = ''
+
+                try:
+                    qLog.log('info', self.proc_id, 'chatBot openrt ...')
+                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                        self.openrtAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                    history=history, function_modules=function_modules,
+                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                except Exception as e:
+                    qLog.log('error', self.proc_id, str(e))
+
         if (self.ollama_enable == True):
             if (engine == '[ollama]'):
-                engine_text = 'mini,\n'
+                engine_text = self.ollamaAPI.ollama_b_nick_name.lower() + ',\n'
             else:
                 model_nick_name1 = 'local'
                 model_nick_name2 = 'ollama'
@@ -1107,7 +1216,7 @@ class ChatClass:
 
         if (self.groq_enable == True):
             if (engine == '[groq]'):
-                engine_text = 'groq,\n'
+                engine_text = self.groqAPI.groq_b_nick_name.lower() + ',\n'
             else:
                 model_nick_name = 'groq'
                 a_nick_name = self.groqAPI.groq_a_nick_name.lower()
@@ -1174,7 +1283,7 @@ class ChatClass:
 
         if (self.plamo_enable == True):
             if (engine == '[plamo]'):
-                engine_text = 'plamo,\n'
+                engine_text = self.plamoAPI.plamo_b_nick_name.lower() + ',\n'
             else:
                 model_nick_name = 'plamo'
                 a_nick_name = self.plamoAPI.plamo_a_nick_name.lower()
@@ -1241,6 +1350,7 @@ class ChatClass:
 
         if (self.freeai_enable == True):
             if (engine == '[freeai]') or (engine == ''):
+                #engine_text = self.freeaiAPI.freeai_b_nick_name.lower() + ',\n'
                 if (req_mode != 'session'):
                     engine_text = 'free,\n'
                 else:
