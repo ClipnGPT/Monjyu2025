@@ -93,10 +93,11 @@ class _clip_woker:
 
     # Worker デーモン
     def proc_worker(self):
-        time.sleep(30.0)
+        startTime = time.time()
+        time.sleep(60.0)
         while True:
             hit = False
-            if  (self.main is None) \
+            if ((self.main is None) and ((time.time() - startTime) > 120)) \
             or ((self.main is not None) and (self.main.main_all_ready == True)):
                 batch_string = None
                 batch_image  = None
@@ -376,9 +377,10 @@ class _monjyu_class:
 
     # get_model デーモン
     def get_models(self):
-        time.sleep(30.00)
+        startTime = time.time()
+        time.sleep(60.00)
         while True:
-            if  (self.main is None) \
+            if ((self.main is None) and ((time.time() - startTime) > 120)) \
             or ((self.main is not None) and (self.main.main_all_ready == True)):
 
                 # ファイル添付
