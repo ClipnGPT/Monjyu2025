@@ -400,20 +400,6 @@ class CoreAiClass:
                 if self.chat_class.groqAPI.groq_x_enable and self.chat_class.groqAPI.groq_x_nick_name:
                     models[self.chat_class.groqAPI.groq_x_nick_name.lower()] = ' ' + self.chat_class.groqAPI.groq_x_nick_name
 
-        if True:
-            if self.chat_class.plamo_enable is None:
-                self.chat_class.plamo_auth()
-            if self.chat_class.plamo_enable:
-                models['[plamo]'] = '[PLaMo]'
-                if self.chat_class.plamoAPI.plamo_a_enable and self.chat_class.plamoAPI.plamo_a_nick_name:
-                    models[self.chat_class.plamoAPI.plamo_a_nick_name.lower()] = ' ' + self.chat_class.plamoAPI.plamo_a_nick_name
-                if self.chat_class.plamoAPI.plamo_b_enable and self.chat_class.plamoAPI.plamo_b_nick_name:
-                    models[self.chat_class.plamoAPI.plamo_b_nick_name.lower()] = ' ' + self.chat_class.plamoAPI.plamo_b_nick_name
-                if self.chat_class.plamoAPI.plamo_v_enable and self.chat_class.plamoAPI.plamo_v_nick_name:
-                    models[self.chat_class.plamoAPI.plamo_v_nick_name.lower()] = ' ' + self.chat_class.plamoAPI.plamo_v_nick_name
-                if self.chat_class.plamoAPI.plamo_x_enable and self.chat_class.plamoAPI.plamo_x_nick_name:
-                    models[self.chat_class.plamoAPI.plamo_x_nick_name.lower()] = ' ' + self.chat_class.plamoAPI.plamo_x_nick_name
-
         return models
 
     async def get_subai_info_all(self):

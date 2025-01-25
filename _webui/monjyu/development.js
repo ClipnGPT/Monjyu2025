@@ -168,8 +168,11 @@ async function allJsRequest() {
 $(document).ready(function() {
 
     // デバッグアシスタントボタンのクリックイベント
-    $('#btnDebugAssistant').click(function() {
-        sendMessageToParent('debugRun', 'assistant', '' );
+    $('#btnDebugParallel').click(function() {
+        sendMessageToParent('debugRun', 'parallel', '' );
+    });
+    $('#btnDebugSerial').click(function() {
+        sendMessageToParent('debugRun', 'serial', '' );
     });
     $('#btnDebugChat').click(function() {
         sendMessageToParent('debugRun', 'chat', '' );

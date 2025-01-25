@@ -578,9 +578,6 @@ $(document).ready(function() {
     $('#chat-freeai').click(function() {
         chat_set_engine('[freeai]');
     });
-    $('#chat-plamo').click(function() {
-        chat_set_engine('[plamo]');
-    });
     $('#chat-openrt').click(function() {
         chat_set_engine('[openrt]');
     });
@@ -595,9 +592,6 @@ $(document).ready(function() {
     $('#serial-freeai').click(function() {
         serial_set_engine('[freeai]');
     });
-    $('#serial-plamo').click(function() {
-        serial_set_engine('[plamo]');
-    });
     $('#serial-openrt').click(function() {
         serial_set_engine('[openrt]');
     });
@@ -608,9 +602,6 @@ $(document).ready(function() {
     });
     $('#parallel-freeai').click(function() {
         parallel_set_engine('[freeai]');
-    });
-    $('#parallel-plamo').click(function() {
-        parallel_set_engine('[plamo]');
     });
     $('#parallel-openrt').click(function() {
         parallel_set_engine('[openrt]');

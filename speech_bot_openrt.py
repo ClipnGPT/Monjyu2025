@@ -596,8 +596,6 @@ class _openrtAPI:
             inpText = inpText.strip()[5:]
         elif (inpText.strip()[:5].lower() == ('groq,')):
             inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:6].lower() == ('plamo,')):
-            inpText = inpText.strip()[6:]
 
         # モデル 未設定時
         if (res_api is None):

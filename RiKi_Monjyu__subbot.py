@@ -61,8 +61,6 @@ import speech_bot_ollama
 import speech_bot_ollama_key as ollama_key
 import speech_bot_groq
 import speech_bot_groq_key as groq_key
-import speech_bot_plamo
-import speech_bot_plamo_key as plamo_key
 
 # 定数の定義
 CONNECTION_TIMEOUT = 15
@@ -121,7 +119,6 @@ class ChatClass:
         self.openrt_enable = None
         self.ollama_enable = None
         self.groq_enable = None
-        self.plamo_enable = None
 
         # CANCEL要求
         self.bot_cancel_request = False
@@ -564,43 +561,6 @@ class ChatClass:
 
         return self.groq_enable
 
-    def plamo_auth(self):
-        """
-        plamo 認証
-        """
-
-        # plamo 定義
-        self.plamoAPI = speech_bot_plamo._plamoAPI()
-        self.plamoAPI.init(log_queue=None)
-
-        # plamo 認証情報
-        api_type = plamo_key.getkey('plamo','plamo_api_type')
-        key_id   = plamo_key.getkey('plamo','plamo_key_id')
-        if (self.conf.plamo_key_id not in ['', '< your plamo key >']):
-            key_id = self.conf.plamo_key_id
-
-        # plamo 認証実行
-        res = self.plamoAPI.authenticate('plamo',
-                            api_type,
-                            plamo_key.getkey('plamo','plamo_default_gpt'), plamo_key.getkey('plamo','plamo_default_class'),
-                            plamo_key.getkey('plamo','plamo_auto_continue'),
-                            plamo_key.getkey('plamo','plamo_max_step'), plamo_key.getkey('plamo','plamo_max_session'),
-                            key_id,
-                            plamo_key.getkey('plamo','plamo_a_nick_name'), plamo_key.getkey('plamo','plamo_a_model'), plamo_key.getkey('plamo','plamo_a_token'),
-                            plamo_key.getkey('plamo','plamo_b_nick_name'), plamo_key.getkey('plamo','plamo_b_model'), plamo_key.getkey('plamo','plamo_b_token'),
-                            plamo_key.getkey('plamo','plamo_v_nick_name'), plamo_key.getkey('plamo','plamo_v_model'), plamo_key.getkey('plamo','plamo_v_token'),
-                            plamo_key.getkey('plamo','plamo_x_nick_name'), plamo_key.getkey('plamo','plamo_x_model'), plamo_key.getkey('plamo','plamo_x_token'),
-                            )
-
-        if res == True:
-            self.plamo_enable = True
-            #qLog.log('info', self.proc_id, 'plamo authenticate OK!')
-        else:
-            self.plamo_enable = False
-            qLog.log('error', self.proc_id, 'plamo authenticate NG!')
-
-        return self.plamo_enable
-
     def post_request(self,  user_id: str, from_port: str, to_port: str, 
                             req_mode: str, 
                             system_text: str, request_text: str, input_text: str,
@@ -708,8 +668,6 @@ class ChatClass:
             self.ollama_auth()
         if (self.groq_enable is None):
             self.groq_auth()
-        if (self.plamo_enable is None):
-            self.plamo_auth()
 
         # chatBot 実行
 
@@ -1366,83 +1324,6 @@ class ChatClass:
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
-
-        # plamo
-        if (self.plamo_enable == True):
-
-            # DEBUG
-            if (DEBUG_FLAG == True):
-                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
-                    print('DEBUG', 'plamo, reqText and inpText not nick_name !!!', inpText, )
-
-            engine_text = ''
-            if (engine == '[plamo]'):
-                engine_text = self.plamoAPI.plamo_b_nick_name.lower() + ',\n'
-            else:
-                model_nick_name = 'plamo'
-                a_nick_name = self.plamoAPI.plamo_a_nick_name.lower()
-                b_nick_name = self.plamoAPI.plamo_b_nick_name.lower()
-                v_nick_name = self.plamoAPI.plamo_v_nick_name.lower()
-                x_nick_name = self.plamoAPI.plamo_x_nick_name.lower()
-                if (engine != ''):
-                    if   ((len(a_nick_name) != 0) and (engine.lower() == a_nick_name)):
-                        engine_text = a_nick_name + ',\n'
-                    elif ((len(b_nick_name) != 0) and (engine.lower() == b_nick_name)):
-                        engine_text = b_nick_name + ',\n'
-                    elif ((len(v_nick_name) != 0) and (engine.lower() == v_nick_name)):
-                        engine_text = v_nick_name + ',\n'
-                    elif ((len(x_nick_name) != 0) and (engine.lower() == x_nick_name)):
-                        engine_text = x_nick_name + ',\n'
-                if (engine_text == '') and (reqText.find(',') >= 1):
-                    req_nick_name = reqText[:reqText.find(',')].lower()
-                    if   (req_nick_name == model_nick_name):
-                        engine_text = model_nick_name + ',\n'
-                        reqText = reqText[len(model_nick_name)+1:].strip()
-                    elif (len(a_nick_name) != 0) and (req_nick_name == a_nick_name):
-                        engine_text = a_nick_name + ',\n'
-                        reqText = reqText[len(a_nick_name)+1:].strip()
-                    elif (len(b_nick_name) != 0) and (req_nick_name == b_nick_name):
-                        engine_text = b_nick_name + ',\n'
-                        reqText = reqText[len(b_nick_name)+1:].strip()
-                    elif (len(v_nick_name) != 0) and (req_nick_name == v_nick_name):
-                        engine_text = v_nick_name + ',\n'
-                        reqText = reqText[len(v_nick_name)+1:].strip()
-                    elif (len(x_nick_name) != 0) and (req_nick_name == x_nick_name):
-                        engine_text = x_nick_name + ',\n'
-                        reqText = reqText[len(x_nick_name)+1:].strip()
-                if (engine_text == '') and (inpText.find(',') >= 1):
-                    inp_nick_name = inpText[:inpText.find(',')].lower()
-                    if   (inp_nick_name == model_nick_name):
-                        engine_text = model_nick_name + ',\n'
-                        inpText = inpText[len(model_nick_name)+1:].strip()
-                    elif (len(a_nick_name) != 0) and (inp_nick_name == a_nick_name):
-                        engine_text = a_nick_name + ',\n'
-                        inpText = inpText[len(a_nick_name)+1:].strip()
-                    elif (len(b_nick_name) != 0) and (inp_nick_name == b_nick_name):
-                        engine_text = b_nick_name + ',\n'
-                        inpText = inpText[len(b_nick_name)+1:].strip()
-                    elif (len(v_nick_name) != 0) and (inp_nick_name == v_nick_name):
-                        engine_text = v_nick_name + ',\n'
-                        inpText = inpText[len(v_nick_name)+1:].strip()
-                    elif (len(x_nick_name) != 0) and (inp_nick_name == x_nick_name):
-                        engine_text = x_nick_name + ',\n'
-                        inpText = inpText[len(x_nick_name)+1:].strip()
-
-            if (engine_text != ''):
-                inpText2 = engine_text + inpText
-                engine_text = ''
-
-                try:
-                    qLog.log('info', self.proc_id, 'chatBot plamo ...')
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
-                        self.plamoAPI.chatBot( chat_class=chat_class, model_select=model_select, session_id=session_id, 
-                                                    history=history, function_modules=function_modules,
-                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
-                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
-                except Exception as e:
-                    qLog.log('error', self.proc_id, str(e))
-
-
 
         # freeai
         if (self.freeai_enable == True):

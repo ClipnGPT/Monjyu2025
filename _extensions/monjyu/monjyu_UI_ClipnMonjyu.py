@@ -52,7 +52,7 @@ CONNECTION_TIMEOUT = 15
 REQUEST_TIMEOUT = 30
 
 # 指令文字列
-HEADER_LIST = ["openai", "riki", "assistant", "vision", "claude", "gemini", "perplexity", "pplx", "ollama", "local", "freeai", "free", "plamo", ]
+HEADER_LIST = ["openai", "riki", "assistant", "vision", "claude", "gemini", "perplexity", "pplx", "openrt", "ollama", "local", "freeai", "free", ]
 INNER_LIST  = ["???", "？？？", "!!!", "！！！", ]
 
 
