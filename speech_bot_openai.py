@@ -1185,7 +1185,7 @@ class ChatBotAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" ChatGPT : { res_name }, pass={ n }, tokens={ len_tokens }, ")
+                self.print(session_id, f" ChatGPT : { res_name.lower() }, { res_api }, pass={ n }, tokens={ len_tokens }, ")
 
                 # 結果
                 res_role      = None
@@ -1210,7 +1210,7 @@ class ChatBotAPI:
                                 stream          = stream, 
                                 )
 
-                    elif (functions != []):
+                    elif (len(functions) != 0):
                         # ツール設定
                         tools = []
                         for f in range(len(functions)):
@@ -1283,7 +1283,7 @@ class ChatBotAPI:
                                 timeout         = self.timeOut,
                                 )
 
-                    elif (functions != []):
+                    elif (len(functions) != 0):
                         # ツール設定
                         tools = []
                         for f in range(len(functions)):
@@ -1452,7 +1452,7 @@ class ChatBotAPI:
                 # GPT 会話終了
                 elif (res_role == 'assistant') and (res_content is not None):
                     function_name   = 'exit'
-                    self.print(session_id, f" ChatGPT : { res_name.lower() } complite.")
+                    self.print(session_id, f" ChatGPT : { res_name.lower() }, complete.")
 
                     # 自動で(B)モデル(GPT4)実行
                     if (model_select == 'auto') or (model_select == 'a'):
@@ -1487,7 +1487,7 @@ class ChatBotAPI:
                                                 res_api     = res_api2
                                                 res_role    = res_role2
                                                 res_content = res_content2
-                                                self.print(session_id, f" ChatGPT : { res_name.lower() } complite.")
+                                                self.print(session_id, f" ChatGPT : { res_name.lower() }, complete.")
                                         except Exception as e:
                                             print(e)
                                             self.print(session_id, f" ChatGPT : { res_name2.lower() } error!")
@@ -1744,7 +1744,7 @@ class ChatBotAPI:
             tools = [{"type": "code_interpreter"}]
             if (len(vectorStore_ids) > 0):
                 tools.append({"type": "file_search"})
-            if (functions != []):
+            if (len(functions) != 0):
                 for f in range(len(functions)):
                     tools.append({"type": "function", "function": functions[f]})
             #print(tools)
@@ -2539,7 +2539,7 @@ Respond according to the following criteria:
 
             # GPT
             n += 1
-            self.print(session_id, f" Assistant : { model_name }, pass={ n }, ")
+            self.print(session_id, f" Assistant : { res_name.lower() }, { model_name }, pass={ n }, ")
 
             # Assistant
             res_text2, res_path2, res_files2, nick_name, model_name, res_history = \
@@ -2558,7 +2558,7 @@ Respond according to the following criteria:
             and (res_path2 != ''):
                 res_path = res_path2
             if  (res_files2 is not None):
-                if  (res_files2 != []):
+                if  (len(res_files2) != 0):
                     res_files.extend(res_files2)
                     upload_files.extend(res_files2)
                     res_files    = list(set(res_files))

@@ -93,6 +93,8 @@ class _data_class:
         self.openai_enable = True
         self.mode_setting = {}
         self.addins_setting = {}
+        self.ort_models = {}
+        self.ort_setting = {}
         self.live_voices = {}
         self.live_setting = {}
         self.webAgent_useBrowser = ""
@@ -114,31 +116,31 @@ class _data_class:
             "req_engine": "",
             "req_functions": "", "req_reset": "",
             "max_retry": "0", "max_ai_count": "0",
-            "before_proc": "none,", "before_engine": "[perplexity]",
-            "after_proc": "none,", "after_engine": "[claude]",
-            "check_proc": "none,", "check_engine": "[openai]"
+            "before_proc": "none,", "before_engine": "",
+            "after_proc": "none,", "after_engine": "",
+            "check_proc": "none,", "check_engine": ""
         }
 
         self.mode_setting['websearch'] = {
             "req_engine": "",
             "req_functions": "", "req_reset": "",
             "max_retry": "0", "max_ai_count": "0",
-            "before_proc": "none,", "before_engine": "[perplexity]",
-            "after_proc": "none,", "after_engine": "[claude]",
-            "check_proc": "none,", "check_engine": "[openai]"
+            "before_proc": "none,", "before_engine": "",
+            "after_proc": "none,", "after_engine": "",
+            "check_proc": "none,", "check_engine": ""
         }
 
-        if (self.perplexity_enable != True):
-            self.mode_setting['chat']['before_engine'] = ''
-            self.mode_setting['websearch']['before_engine'] = ''
+        #if (self.perplexity_enable != True):
+        #    self.mode_setting['chat']['before_engine'] = ''
+        #    self.mode_setting['websearch']['before_engine'] = ''
 
-        if (self.claude_enable != True):
-            self.mode_setting['chat']['after_engine'] = ''
-            self.mode_setting['websearch']['after_engine'] = ''
+        #if (self.claude_enable != True):
+        #    self.mode_setting['chat']['after_engine'] = ''
+        #    self.mode_setting['websearch']['after_engine'] = ''
 
-        if (self.openai_enable != True):
-            self.mode_setting['chat']['check_engine'] = ''
-            self.mode_setting['websearch']['check_engine'] = ''
+        #if (self.openai_enable != True):
+        #    self.mode_setting['chat']['check_engine'] = ''
+        #    self.mode_setting['websearch']['check_engine'] = ''
 
         self.mode_setting['serial'] = {
             "req_engine": "", 
@@ -195,6 +197,18 @@ class _data_class:
             "text_pdf_execute": "",
             "image_ocr_execute": "",
             "image_yolo_execute": ""
+        }
+
+        # OpenRouterの設定
+        self.ort_setting = {
+            "ort_a_model": "", 
+            "ort_a_use_tools": "", 
+            "ort_b_model": "", 
+            "ort_b_use_tools": "", 
+            "ort_v_model": "",
+            "ort_v_use_tools": "", 
+            "ort_x_model": "",
+            "ort_x_use_tools": "" 
         }
 
         # liveの設定

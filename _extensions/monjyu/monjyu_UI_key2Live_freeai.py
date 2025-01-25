@@ -816,7 +816,7 @@ class _live_api_freeai:
                         self.play(outFile='_sounds/_sound_accept.mp3')
                         # function 実行
                         dic = {}
-                        dic['runMode'] = 'live'
+                        dic['runMode'] = 'voice'
                         dic['userId'] = 'live'
                         dic['reqText'] = '利用できるFunctions(Tools)と機能内容を要約して報告してください'
                         f_kwargs = json.dumps(dic, ensure_ascii=False, )

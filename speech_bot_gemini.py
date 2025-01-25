@@ -572,7 +572,7 @@ class _geminiAPI:
 
         # tools
         tools = []
-        if True:
+        if (res_api.lower().find('thinking') < 0):
 
             # tools
             #tools.append({"code_execution": {}, })
@@ -653,7 +653,7 @@ class _geminiAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" Gemini  : { res_api }, pass={ n }, ")
+                self.print(session_id, f" Gemini  : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # 結果
                 content_text  = ''
@@ -815,7 +815,7 @@ class _geminiAPI:
                 # GPT 会話終了
                 elif (res_role == 'assistant') and (res_content != ''):
                     function_name   = 'exit'
-                    self.print(session_id, f" Gemini  : { res_name.lower() } complite.")
+                    self.print(session_id, f" Gemini  : { res_name.lower() }, complete.")
 
             # 正常回答
             if (res_content != ''):

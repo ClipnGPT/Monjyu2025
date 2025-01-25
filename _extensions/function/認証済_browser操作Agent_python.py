@@ -198,7 +198,7 @@ class _agent_web_class:
                 self.break_flag = True
 
         def main_thread():
-            print(" Browser-use : [START] ")
+            print(f" Browser-use : [START] { self.ModelAPI } / { self.ModelName } ")
             try:
                 asyncio.run( self._main() )
             except Exception as e:

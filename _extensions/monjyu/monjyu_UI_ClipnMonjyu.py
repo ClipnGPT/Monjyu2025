@@ -68,6 +68,10 @@ class _clip_woker:
         if (not os.path.isdir(qPath_input)):
             os.makedirs(qPath_input)
 
+        # main/data
+        self.main = None
+        self.data = None
+
         # 変数設定
         self.last_string = "Monjyu READY!"
         self.last_image_hash = None
@@ -89,64 +93,68 @@ class _clip_woker:
 
     # Worker デーモン
     def proc_worker(self):
-        time.sleep(45.0)
+        time.sleep(30.0)
         while True:
-            batch_string = None
-            batch_image  = None
-            batch_list   = None
-            with self.thread_lock:
-                
-                # クリップボードの内容を取得
-                clip_string = ''
-                clip_image = None
-                
-                # クリップボードから文字列を取得
-                try:
-                    clip_string = pyperclip.paste()
-                except Exception as e:
-                    print('Clip&Monjyu :', f"Error in getting string from clipboard: {e}")
-                    
-                # クリップボードから画像を取得
-                try:
-                    clip_image = ImageGrab.grabclipboard()
-                    # # 画像が取得できたか確認
-                    # if not isinstance(clip_image, Image.Image):
-                    #     clip_image = None
-                    #else:
-                    #    clip_image = np.array(clip_image)
-                except Exception as e:
-                    print('Clip&Monjyu :', f"Error in getting image from clipboard: {e}")
-                    
-                # 文字列の変更を確認
-                if (clip_string != ''):
-                    if isinstance(clip_string, str) and clip_string != self.last_string:
-                        self.last_string = clip_string
-                        batch_string = clip_string
-
-                # 画像の変更を確認
-                if clip_image is not None:
-                    # 画像が変更された場合、処理
-                    if isinstance(clip_image, Image.Image):
-                        image_hash = hashlib.sha256(clip_image.tobytes()).hexdigest()
-                        if self.last_image_hash is None or image_hash != self.last_image_hash:  # 変更確認
-                            self.last_image_hash = image_hash
-                            batch_image = clip_image
-                    # リストが変更された場合、処理
-                    if isinstance(clip_image, list):
-                        if clip_image != self.last_image_list:  # 変更確認
-                            self.last_image_list = clip_image
-                            batch_list = clip_image
-
             hit = False
-            if (batch_string is not None):
-                hit = True
-                self.string_proc(batch_string)
-            if (batch_image is not None):
-                hit = True
-                self.image_proc(batch_image)
-            if (batch_list is not None):
-                hit = True
-                self.list_proc(batch_list)
+            if  (self.main is None) \
+            or ((self.main is not None) and (self.main.main_all_ready == True)):
+                batch_string = None
+                batch_image  = None
+                batch_list   = None
+                with self.thread_lock:
+                    
+                    # クリップボードの内容を取得
+                    clip_string = ''
+                    clip_image = None
+                    
+                    # クリップボードから文字列を取得
+                    try:
+                        clip_string = pyperclip.paste()
+                    except Exception as e:
+                        print('Clip&Monjyu :', f"Error in getting string from clipboard: {e}")
+                        
+                    # クリップボードから画像を取得
+                    try:
+                        clip_image = ImageGrab.grabclipboard()
+                        # # 画像が取得できたか確認
+                        # if not isinstance(clip_image, Image.Image):
+                        #     clip_image = None
+                        #else:
+                        #    clip_image = np.array(clip_image)
+                    except Exception as e:
+                        print('Clip&Monjyu :', f"Error in getting image from clipboard: {e}")
+                        
+                    # 文字列の変更を確認
+                    if (clip_string != ''):
+                        if isinstance(clip_string, str) and clip_string != self.last_string:
+                            self.last_string = clip_string
+                            batch_string = clip_string
+
+                    # 画像の変更を確認
+                    if clip_image is not None:
+                        # 画像が変更された場合、処理
+                        if isinstance(clip_image, Image.Image):
+                            image_hash = hashlib.sha256(clip_image.tobytes()).hexdigest()
+                            if self.last_image_hash is None or image_hash != self.last_image_hash:  # 変更確認
+                                self.last_image_hash = image_hash
+                                batch_image = clip_image
+                        # リストが変更された場合、処理
+                        if isinstance(clip_image, list):
+                            if clip_image != self.last_image_list:  # 変更確認
+                                self.last_image_list = clip_image
+                                batch_list = clip_image
+
+                hit = False
+                if (batch_string is not None):
+                    hit = True
+                    self.string_proc(batch_string)
+                if (batch_image is not None):
+                    hit = True
+                    self.image_proc(batch_image)
+                if (batch_list is not None):
+                    hit = True
+                    self.list_proc(batch_list)
+
             if hit == True:
                 time.sleep(0.25)
             else:
@@ -350,6 +358,10 @@ class _monjyu_class:
     def __init__(self, runMode='assistant' ):
         self.runMode   = runMode
 
+        # main/data
+        self.main = None
+        self.data = None
+
         # ポート設定等
         self.chat_models = {}
 
@@ -364,29 +376,32 @@ class _monjyu_class:
 
     # get_model デーモン
     def get_models(self):
-        time.sleep(60.00)
+        time.sleep(30.00)
         while True:
-            # ファイル添付
-            self.chat_models = {}
-            try:
-                params = {"req_mode": "chat"}
-                response = requests.get(
-                    self.local_endpoint + '/get_models',
-                    params=params,
-                    timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT)
-                )
-                if response.status_code == 200:
-                    results = response.json()
-                    for key, value in results.items():
-                        key = key.replace('[', '')
-                        key = key.replace(']', '')
-                        self.chat_models[key.lower()] = value.lower()
-                    print('Clip&Monjyu :', 'Clip&Monjyu is READY.')
-                    break
-                else:
-                    print('Clip&Monjyu :', f"Error response ({ CORE_PORT }/get_models) : {response.status_code} - {response.text}")
-            except Exception as e:
-                print('Clip&Monjyu :', f"Error communicating ({ CORE_PORT }/get_models) : {e}")
+            if  (self.main is None) \
+            or ((self.main is not None) and (self.main.main_all_ready == True)):
+
+                # ファイル添付
+                self.chat_models = {}
+                try:
+                    params = {"req_mode": "chat"}
+                    response = requests.get(
+                        self.local_endpoint + '/get_models',
+                        params=params,
+                        timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT)
+                    )
+                    if response.status_code == 200:
+                        results = response.json()
+                        for key, value in results.items():
+                            key = key.replace('[', '')
+                            key = key.replace(']', '')
+                            self.chat_models[key.lower()] = value.lower()
+                        print('Clip&Monjyu :', 'Clip&Monjyu is READY.')
+                        break
+                    else:
+                        print('Clip&Monjyu :', f"Error response ({ CORE_PORT }/get_models) : {response.status_code} - {response.text}")
+                except Exception as e:
+                    print('Clip&Monjyu :', f"Error communicating ({ CORE_PORT }/get_models) : {e}")
 
             time.sleep(10.00)
 
@@ -403,9 +418,8 @@ class _monjyu_class:
             if response.status_code == 200:
                 results = response.json()
                 for f in results['files']:
-                    fx = f.split(' ')
-                    if (fx[3] == 'checked'):
-                        file_names.append(fx[0])
+                    if (f['checked'] == True):
+                        file_names.append(f['file_name'])
             else:
                 print('Clip&Monjyu :', f"Error response ({self.webui_port}/get_input_list) : {response.status_code}")
         except Exception as e:
@@ -618,12 +632,17 @@ class _class:
 
         # クリップボード監視
         self.clipWorker = _clip_woker(runMode=self.runMode, )
-        self.func_reset()
 
         # 結果をクリップボードへ
         self.clip2memo  = _clip_to_memo(runMode=self.runMode, )
 
-    def func_reset(self, ):
+    def func_reset(self, main=None, data=None, ):
+        if main is not None:
+            self.clipWorker.main = main
+            self.clipWorker.monjyu.main = main
+        if data is not None:
+            self.clipWorker.data = data
+            self.clipWorker.monjyu.data = data
         return True
 
     def func_proc(self, json_kwargs=None, ):

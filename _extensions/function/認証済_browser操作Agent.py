@@ -173,11 +173,14 @@ class _class:
         self.useBrowser = 'chromium' # chromium, chrome,
         self.ModelAPI = 'freeai' # freeai, openai, claude,
         self.ModelNames = {}
-        self.ModelNames['freeai'] = { 'gemini-2.0-flash-exp': 'gemini-2.0-flash-exp', }
+        self.ModelNames['freeai'] = { 'gemini-2.0-flash-exp': 'gemini-2.0-flash',
+                                      'gemini-2.0-flash-thinking-exp-01-21': 'gemini-2.0-flash-thinking', }
+        #self.ModelNames['freeai'] = { 'gemini-2.0-flash-thinking-exp-01-21': 'gemini-2.0-flash-thinking',
+        #                              'gemini-2.0-flash-exp': 'gemini-2.0-flash', }
         self.ModelNames['openai'] = { 'gpt-4o-mini': 'gpt-4o-mini',
                                       'gpt-4o': 'gpt-4o', }
         self.ModelNames['claude'] = { 'claude-3-5-sonnet-20241022': 'claude-3-5-sonnet', }
-        self.ModelName = 'gemini-2.0-flash-exp'
+        self.ModelName = list(self.ModelNames['freeai'].keys())[0]
         self.MaxSteps  = '20'
 
     def __del__(self, ):
@@ -398,7 +401,8 @@ if __name__ == '__main__':
     ext = _class()
 
     #json_kwargs= '{ "request_text": "Google検索のページ(https://google.co.jp/)を表示して停止。" }'
-    json_kwargs= '{ "useBrowser": "chrome", "request_text" : "兵庫県三木市の天気を調べてください。" }'
+    json_kwargs= '{ "request_text" : "兵庫県三木市の天気を調べてください。" }'
+    #json_kwargs= '{ "useBrowser": "chrome", "request_text" : "兵庫県三木市の天気を調べてください。" }'
     print(ext.func_proc(json_kwargs))
 
     time.sleep(90)

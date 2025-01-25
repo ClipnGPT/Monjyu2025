@@ -38,7 +38,7 @@
         <h2>【 Writing (執筆) 】</h2>
         <br>
 
-        １）話数設定:
+        １）話数設定☆:
         <select id="n_max" name="n_max">
             <option value="6">6話</option>
             <option value="12">12話</option>
@@ -47,27 +47,27 @@
             <option value="48">48話</option>
         </select>
         <br>
-        ２）プロット:<br>
+        ２）プロット☆:<br>
         <textarea id="plot_text" name="plot_text" style="width: 100%; height: 5vh;"></textarea>
 
         <br><br>
                
         <!-- リクエストボタン群 -->
-        <button type="button" id="btnReq_doc1">３）あらすじ設定</button>
+        <button type="button" id="btnReq_doc1">３）あらすじ設定☆</button>
         <button type="button" id="btnReq_doc2">執筆</button>
         <button type="button" id="btnReq_doc3">更生</button>
         
         <br><br>
 
         <!-- 実行ボタン群 -->
-        <button type="button" id="btnArasuji_all">４）あらすじ全話生成</button>
+        <button type="button" id="btnArasuji_all">４）あらすじ全話生成☆</button>
         <br><br>
         <button type="button" id="btnNovel_parallel">５）並列全話生成</button>
         <br>
-        <button type="button" id="btnNovel_serial1">５）順次１話生成)</button>
+        <button type="button" id="btnNovel_serial1">５）順次１話生成</button>
         <button type="button" id="btnNovel_serial1_TTS">順次１話生成TTS</button>
         <br>
-        <button type="button" id="btnNovel_serial2">５）順次全話生成</button>
+        <button type="button" id="btnNovel_serial2">５）順次全話生成☆</button>
         <button type="button" id="btnNovel_serial2_TTS">順次全話生成TTS</button>
         <br><br>
 
@@ -91,13 +91,15 @@
     <textarea id="req_doc1" name="req_doc1" style="display:none;">
 全{ ***N_MAX*** }話で完結する新規小説のあらすじ作成をお願いします。
 題材は以下の内容でお願いします。
+
 ・{ ***PLOT_TEXT*** }
+
 題名と大まかな物語内容を決めてください。
 主要登場人物の名前と人物像を決めてください。
 時代背景、政治環境などの小説としての場面設定も決めてください。
 各話は1000文字程度を予定しています。
-{ ***N_MAX*** }話のシナリオ内容を、各話10行、200文字を超えるように作成してください。
-ライトノベル風に改行を多く入れて、読みやすい文章でお願いします。
+{ ***N_MAX*** }話であらすじ内容を、各話10行、200文字を超えるように作成してください。
+あらすじは内容は、ライトノベル風に改行を多く入れて、読みやすい文章でお願いします。
     </textarea>
 
     <textarea id="req_doc2" name="req_doc2" style="display:none;">
@@ -108,7 +110,7 @@
 作成する文章は50行、1000文字を超えるように物語を膨らませてください。
 改稿時は、必ず修正前より文章が長くなるようにお願いします。
 読者の好奇心を刺激するとともに、感動を与える表現をお願いします。
-ライトノベル風に改行を多く入れて、読みやすい文章でお願いします。
+執筆は、ライトノベル風に改行を多く入れて、読みやすい文章でお願いします。
     </textarea>
 
     <textarea id="req_doc3" name="req_doc3" style="display:none;">

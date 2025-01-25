@@ -568,7 +568,7 @@ class _claudeAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" claude  : { res_api }, pass={ n }, ")
+                self.print(session_id, f" claude  : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # Stream 表示
                 if (stream == True):
@@ -735,7 +735,7 @@ class _claudeAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" claude  : { res_name.lower() } complite.")
+                self.print(session_id, f" claude  : { res_name.lower() }, complete.")
             else:
                 self.print(session_id,  ' claude  : Error !')
 

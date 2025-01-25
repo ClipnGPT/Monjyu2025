@@ -20,6 +20,8 @@ import json
 import queue
 import base64
 
+import requests
+
 # openrt チャットボット
 import openai
 
@@ -56,22 +58,27 @@ class _openrtAPI:
         self.openrt_a_nick_name     = ''
         self.openrt_a_model         = None
         self.openrt_a_token         = 0
+        self.openrt_a_use_tools     = 'no'
 
         self.openrt_b_enable        = False
         self.openrt_b_nick_name     = ''
         self.openrt_b_model         = None
         self.openrt_b_token         = 0
+        self.openrt_b_use_tools     = 'no'
 
         self.openrt_v_enable        = False
         self.openrt_v_nick_name     = ''
         self.openrt_v_model         = None
         self.openrt_v_token         = 0
+        self.openrt_v_use_tools     = 'no'
 
         self.openrt_x_enable        = False
         self.openrt_x_nick_name     = ''
         self.openrt_x_model         = None
         self.openrt_x_token         = 0
+        self.openrt_x_use_tools     = 'no'
 
+        self.models                 = {}
         self.history                = []
 
         self.seq                    = 0
@@ -110,16 +117,24 @@ class _openrtAPI:
                      openrt_key_id,
 
                      openrt_a_nick_name, openrt_a_model, openrt_a_token, 
+                     openrt_a_use_tools, 
                      openrt_b_nick_name, openrt_b_model, openrt_b_token, 
+                     openrt_b_use_tools, 
                      openrt_v_nick_name, openrt_v_model, openrt_v_token, 
+                     openrt_v_use_tools, 
                      openrt_x_nick_name, openrt_x_model, openrt_x_token, 
+                     openrt_x_use_tools, 
                     ):
 
         # 設定
+        self.models                     = {}
 
         # 認証
         self.bot_auth                   = None
         self.openrt_key_id              = openrt_key_id
+
+        # モデル取得
+        self.get_models()
 
         self.openrt_default_gpt         = openrt_default_gpt
         self.openrt_default_class       = openrt_default_class
@@ -130,30 +145,44 @@ class _openrtAPI:
         if (str(openrt_max_session) != 'auto'):
             self.openrt_max_session     = int(openrt_max_session)
 
+        ymd = datetime.date.today().strftime('%Y/%m/%d')
+
         # openrt チャットボット
         if (openrt_a_nick_name != ''):
             self.openrt_a_enable        = False
             self.openrt_a_nick_name     = openrt_a_nick_name
             self.openrt_a_model         = openrt_a_model
             self.openrt_a_token         = int(openrt_a_token)
+            self.openrt_a_use_tools     = openrt_a_use_tools
+            if (not openrt_a_model in self.models):
+                self.models[openrt_a_model] = {"id": openrt_a_model, "token": str(openrt_a_token), "modality": "text", "date": ymd, }
 
         if (openrt_b_nick_name != ''):
             self.openrt_b_enable        = False
             self.openrt_b_nick_name     = openrt_b_nick_name
             self.openrt_b_model         = openrt_b_model
             self.openrt_b_token         = int(openrt_b_token)
+            self.openrt_b_use_tools     = openrt_b_use_tools
+            if (not openrt_b_model in self.models):
+                self.models[openrt_b_model] = {"id": openrt_b_model, "token": str(openrt_b_token), "modality": "text", "date": ymd, }
 
         if (openrt_v_nick_name != ''):
             self.openrt_v_enable        = False
             self.openrt_v_nick_name     = openrt_v_nick_name
             self.openrt_v_model         = openrt_v_model
             self.openrt_v_token         = int(openrt_v_token)
+            self.openrt_v_use_tools     = openrt_v_use_tools
+            if (not openrt_v_model in self.models):
+                self.models[openrt_v_model] = {"id": openrt_v_model, "token": str(openrt_v_token), "modality": "text+image", "date": ymd, }
 
         if (openrt_x_nick_name != ''):
             self.openrt_x_enable        = False
             self.openrt_x_nick_name     = openrt_x_nick_name
             self.openrt_x_model         = openrt_x_model
             self.openrt_x_token         = int(openrt_x_token)
+            self.openrt_x_use_tools     = openrt_x_use_tools
+            if (not openrt_x_model in self.models):
+                self.models[openrt_x_model] = {"id": openrt_x_model, "token": str(openrt_x_token), "modality": "text+image", "date": ymd, }
 
         # API-KEYの設定
         self.client = None
@@ -188,6 +217,67 @@ class _openrtAPI:
             return True
         else:
             return False
+
+    def get_models(self, ):
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.openrt_key_id}"
+            }
+            response = requests.get("https://openrouter.ai/api/v1/models", headers=headers)
+
+            if response.status_code == 200:
+                self.models = {}
+                models = response.json()
+                for model in models['data']:
+                    key = model["id"]
+                    token = str(model["context_length"])
+                    modality = model["architecture"]["modality"]
+                    unix_timestamp = model["created"]
+                    ymd = datetime.datetime.fromtimestamp(unix_timestamp).strftime("%Y/%m/%d")
+                    #print(key, token, modality, )
+                    self.models[key] = {"id":key, "token":token, "modality":modality, "date": ymd, }
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def set_models(self, a_model='', a_use_tools='',
+                         b_model='', b_use_tools='',
+                         v_model='', v_use_tools='',
+                         x_model='', x_use_tools='', ):
+        try:
+            if (a_model != ''):
+                if (a_model in self.models):
+                    self.openrt_a_enable = True
+                    self.openrt_a_model = a_model
+                    self.openrt_a_token = self.models[a_model]['token']
+            if (a_use_tools != ''):
+                self.openrt_a_use_tools = a_use_tools
+            if (b_model != ''):
+                if (b_model in self.models):
+                    self.openrt_b_enable = True
+                    self.openrt_b_model = b_model
+                    self.openrt_b_token = self.models[b_model]['token']
+            if (b_use_tools != ''):
+                self.openrt_b_use_tools = b_use_tools
+            if (v_model != ''):
+                if (v_model in self.models):
+                    self.openrt_v_enable = True
+                    self.openrt_v_model = v_model
+                    self.openrt_v_token = self.models[v_model]['token']
+            if (v_use_tools != ''):
+                self.openrt_v_use_tools = v_use_tools
+            if (x_model != ''):
+                if (x_model in self.models):
+                    self.openrt_x_enable = True
+                    self.openrt_x_model = x_model
+                    self.openrt_x_token = self.models[x_model]['token']
+            if (x_use_tools != ''):
+                self.openrt_x_use_tools = x_use_tools
+        except Exception as e:
+            print(e)
+            return False
+        return True
 
     def setTimeOut(self, timeOut=60, ):
         self.timeOut = timeOut
@@ -397,16 +487,14 @@ class _openrtAPI:
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
-        res_name = self.openrt_a_nick_name
-        res_api  = self.openrt_a_model
+        res_name  = self.openrt_a_nick_name
+        res_api   = self.openrt_a_model
+        use_tools = self.openrt_a_use_tools
         if  (chat_class == 'openrt'):
             if (self.openrt_b_enable == True):
-                res_name = self.openrt_b_nick_name
-                res_api  = self.openrt_b_model
-        if  (chat_class == 'pplx'):
-            if (self.openrt_x_enable == True):
-                res_name = self.openrt_x_nick_name
-                res_api  = self.openrt_x_model
+                res_name  = self.openrt_b_nick_name
+                res_api   = self.openrt_b_model
+                use_tools = self.openrt_b_use_tools
 
         # モデル 補正 (assistant)
         if ((chat_class == 'assistant') \
@@ -417,8 +505,9 @@ class _openrtAPI:
         or  (chat_class == 'アシスタント') \
         or  (model_select == 'x')):
             if (self.openrt_x_enable == True):
-                res_name = self.openrt_x_nick_name
-                res_api  = self.openrt_x_model
+                res_name  = self.openrt_x_nick_name
+                res_api   = self.openrt_x_model
+                use_tools = self.openrt_x_use_tools
 
         # model 指定
         if (self.openrt_a_nick_name != ''):
@@ -428,51 +517,61 @@ class _openrtAPI:
             if (inpText.strip()[:len(self.openrt_b_nick_name)+1].lower() == (self.openrt_b_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.openrt_b_nick_name)+1:]
                 if   (self.openrt_b_enable == True):
-                        res_name = self.openrt_b_nick_name
-                        res_api  = self.openrt_b_model
+                        res_name  = self.openrt_b_nick_name
+                        res_api   = self.openrt_b_model
+                        use_tools = self.openrt_b_use_tools
         if (self.openrt_v_nick_name != ''):
             if (inpText.strip()[:len(self.openrt_v_nick_name)+1].lower() == (self.openrt_v_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.openrt_v_nick_name)+1:]
                 if   (self.openrt_v_enable == True):
                     if  (len(image_urls) > 0) \
                     and (len(image_urls) == len(upload_files)):
-                        res_name = self.openrt_v_nick_name
-                        res_api  = self.openrt_v_model
+                        res_name  = self.openrt_v_nick_name
+                        res_api   = self.openrt_v_model
+                        use_tools = self.openrt_v_use_tools
                 elif (self.openrt_x_enable == True):
-                        res_name = self.openrt_x_nick_name
-                        res_api  = self.openrt_x_model
+                        res_name  = self.openrt_x_nick_name
+                        res_api   = self.openrt_x_model
+                        use_tools = self.openrt_x_use_tools
         if (self.openrt_x_nick_name != ''):
             if (inpText.strip()[:len(self.openrt_x_nick_name)+1].lower() == (self.openrt_x_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.openrt_x_nick_name)+1:]
                 if   (self.openrt_x_enable == True):
-                        res_name = self.openrt_x_nick_name
-                        res_api  = self.openrt_x_model
+                        res_name  = self.openrt_x_nick_name
+                        res_api   = self.openrt_x_model
+                        use_tools = self.openrt_x_use_tools
                 elif (self.openrt_b_enable == True):
-                        res_name = self.openrt_b_nick_name
-                        res_api  = self.openrt_b_model
+                        res_name  = self.openrt_b_nick_name
+                        res_api   = self.openrt_b_model
+                        use_tools = self.openrt_b_use_tools
         if   (inpText.strip()[:5].lower() == ('riki,')):
             inpText = inpText.strip()[5:]
             if   (self.openrt_x_enable == True):
-                        res_name = self.openrt_x_nick_name
-                        res_api  = self.openrt_x_model
+                        res_name  = self.openrt_x_nick_name
+                        res_api   = self.openrt_x_model
+                        use_tools = self.openrt_x_use_tools
             elif (self.openrt_b_enable == True):
-                        res_name = self.openrt_b_nick_name
-                        res_api  = self.openrt_b_model
+                        res_name  = self.openrt_b_nick_name
+                        res_api   = self.openrt_b_model
+                        use_tools = self.openrt_b_use_tools
         elif (inpText.strip()[:7].lower() == ('vision,')):
             inpText = inpText.strip()[7:]
             if   (self.openrt_v_enable == True):
                 if  (len(image_urls) > 0) \
                 and (len(image_urls) == len(upload_files)):
-                        res_name = self.openrt_v_nick_name
-                        res_api  = self.openrt_v_model
+                        res_name  = self.openrt_v_nick_name
+                        res_api   = self.openrt_v_model
+                        use_tools = self.openrt_v_use_tools
             elif (self.openrt_x_enable == True):
-                        res_name = self.openrt_x_nick_name
-                        res_api  = self.openrt_x_model
+                        res_name  = self.openrt_x_nick_name
+                        res_api   = self.openrt_x_model
+                        use_tools = self.openrt_x_use_tools
         elif (inpText.strip()[:10].lower() == ('assistant,')):
             inpText = inpText.strip()[10:]
             if (self.openrt_b_enable == True):
-                        res_name = self.openrt_b_nick_name
-                        res_api  = self.openrt_b_model
+                        res_name  = self.openrt_b_nick_name
+                        res_api   = self.openrt_b_model
+                        use_tools = self.openrt_b_use_tools
         elif (inpText.strip()[:7].lower() == ('openai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
@@ -502,23 +601,27 @@ class _openrtAPI:
 
         # モデル 未設定時
         if (res_api is None):
-            res_name = self.openrt_a_nick_name
-            res_api  = self.openrt_a_model
+            res_name  = self.openrt_a_nick_name
+            res_api   = self.openrt_a_model
+            use_tools = self.openrt_a_use_tools
             if (self.openrt_b_enable == True):
                 if (len(upload_files) > 0) \
                 or (len(inpText) > 1000):
-                    res_name = self.openrt_b_nick_name
-                    res_api  = self.openrt_b_model
+                    res_name  = self.openrt_b_nick_name
+                    res_api   = self.openrt_b_model
+                    use_tools = self.openrt_b_use_tools
 
         # モデル 補正 (vision)
         if  (len(image_urls) > 0) \
         and (len(image_urls) == len(upload_files)):
             if   (self.openrt_v_enable == True):
-                res_name = self.openrt_v_nick_name
-                res_api  = self.openrt_v_model
+                res_name  = self.openrt_v_nick_name
+                res_api   = self.openrt_v_model
+                use_tools = self.openrt_v_use_tools
             elif (self.openrt_x_enable == True):
-                res_name = self.openrt_x_nick_name
-                res_api  = self.openrt_x_model
+                res_name  = self.openrt_x_nick_name
+                res_api   = self.openrt_x_model
+                use_tools = self.openrt_x_use_tools
 
         # history 追加・圧縮 (古いメッセージ)
         res_history = self.history_add(history=res_history, sysText=sysText, reqText=reqText, inpText=inpText, )
@@ -531,21 +634,22 @@ class _openrtAPI:
             msg = self.history2msg_vision(history=res_history, image_urls=image_urls,)
 
         # ストリーム実行?
-        if (session_id == 'admin'):
-            stream = True
-        else:
-            stream = False
+        #if (session_id == 'admin'):
+        #    stream = True
+        #else:
+        #    stream = False
         #print(' stream = False, ')
-        #stream = False
+        stream = False
 
         # ツール設定
         #print(' functions = [], ')
         functions = []
-        for module_dic in function_modules:
-            functions.append(module_dic['function'])
         tools = []
-        for f in range(len(functions)):
-            tools.append({"type": "function", "function": functions[f]})
+        if (use_tools.lower().find('yes') >= 0):
+            for module_dic in function_modules:
+                functions.append(module_dic['function'])
+            for f in range(len(functions)):
+                tools.append({"type": "function", "function": functions[f]})
 
         # 実行ループ
         #try:
@@ -562,7 +666,7 @@ class _openrtAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" openrt  : { res_api }, pass={ n }, ")
+                self.print(session_id, f" openrt  : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # 画像指定
                 if   (res_name == self.openrt_v_nick_name) and (len(image_urls) > 0):
@@ -577,7 +681,7 @@ class _openrtAPI:
                             )
 
                 # ツール指定
-                elif (tools != []):
+                elif (len(tools) != 0):
                     response = self.client.chat.completions.create(
                             model           = res_api,
                             messages        = msg,
@@ -765,7 +869,7 @@ class _openrtAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" openrt  : { res_name.lower() } complite.")
+                self.print(session_id, f" openrt  : { res_name.lower() }, complete.")
             else:
                 self.print(session_id,  ' openrt  : Error !')
 
@@ -849,9 +953,13 @@ if __name__ == '__main__':
                             openrt_key.getkey('openrt','openrt_max_step'), openrt_key.getkey('openrt','openrt_max_session'),
                             openrt_key.getkey('openrt','openrt_key_id'),
                             openrt_key.getkey('openrt','openrt_a_nick_name'), openrt_key.getkey('openrt','openrt_a_model'), openrt_key.getkey('openrt','openrt_a_token'),
+                            openrt_key.getkey('openrt','openrt_a_use_tools'),
                             openrt_key.getkey('openrt','openrt_b_nick_name'), openrt_key.getkey('openrt','openrt_b_model'), openrt_key.getkey('openrt','openrt_b_token'),
+                            openrt_key.getkey('openrt','openrt_b_use_tools'),
                             openrt_key.getkey('openrt','openrt_v_nick_name'), openrt_key.getkey('openrt','openrt_v_model'), openrt_key.getkey('openrt','openrt_v_token'),
+                            openrt_key.getkey('openrt','openrt_v_use_tools'),
                             openrt_key.getkey('openrt','openrt_x_nick_name'), openrt_key.getkey('openrt','openrt_x_model'), openrt_key.getkey('openrt','openrt_x_token'),
+                            openrt_key.getkey('openrt','openrt_x_use_tools'),
                             )
         print('authenticate:', res, )
         if (res == True):

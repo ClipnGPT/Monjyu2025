@@ -1,4 +1,4 @@
-// setting.js
+// setting1.js
 
 // サブAI設定のコンボボックスを取得する関数
 function get_subai_info_all() {
@@ -125,19 +125,6 @@ let last_mode_setting = {
     clip: null,
     voice: null
 };
-let last_addins_setting = null;
-let last_live_setting = {
-    freeai: null,
-    openai: null,
-}
-let last_webAgent_engine = {
-    useBrowser: null,
-    modelAPI: null,
-}
-let last_webAgent_setting = {
-    modelName: null,
-    maxSteps: null,
-}
 
 // サーバーから設定値を取得する関数
 function get_mode_setting_all() {
@@ -438,285 +425,6 @@ function post_mode_setting(req_mode) {
     });
 }
 
-// サーバーから設定値を取得する関数
-function get_addins_setting() {
-    // 設定値をサーバーから受信
-    $.ajax({
-        url: '/get_addins_setting',
-        method: 'GET',
-        success: function(data) {
-            if (JSON.stringify(data) !== last_addins_setting) {
-                $('#result_text_save').val(data.result_text_save || '');
-                $('#speech_stt_engine').val(data.speech_stt_engine || '');
-                $('#speech_tts_engine').val(data.speech_tts_engine || '');
-                $('#text_clip_input').val(data.text_clip_input || '');
-                $('#text_url_execute').val(data.text_url_execute || '');
-                $('#text_pdf_execute').val(data.text_pdf_execute || '');
-                $('#image_ocr_execute').val(data.image_ocr_execute || '');
-                $('#image_yolo_execute').val(data.image_yolo_execute || '');
-                last_addins_setting = JSON.stringify(data);
-            }    
-        },
-        error: function(xhr, status, error) {
-            console.error('get_addins_setting error:', error);
-        }
-    });
-}
-
-// サーバーへ設定値を保存する関数
-function post_addins_setting() {
-    var formData = {};
-    formData = {
-        result_text_save: $('#result_text_save').val(),
-        speech_stt_engine: $('#speech_stt_engine').val(),
-        speech_tts_engine: $('#speech_tts_engine').val(),
-        text_clip_input: $('#text_clip_input').val(),
-        text_url_execute: $('#text_url_execute').val(),
-        text_pdf_execute: $('#text_pdf_execute').val(),
-        image_ocr_execute: $('#image_ocr_execute').val(),
-        image_yolo_execute: $('#image_yolo_execute').val(),
-    }
-    // 設定値をサーバーに送信
-    $.ajax({
-        url: '/post_addins_setting',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
-        success: function(response) {
-            console.log('post_addins_setting:', response);
-        },
-        error: function(xhr, status, error) {
-            console.error('post_addins_setting error:', error);
-        }
-    });
-}
-
-// Voiceの情報を取得してコンボボックスを設定する関数
-function get_live_voices() {
-    // freeai
-    $.ajax({
-        url: '/get_live_voices',
-        method: 'GET',
-        data: { req_mode: 'freeai' },
-        dataType: 'json',
-        async: false, // 同期処理
-        success: function(data) {
-            // 取得した選択肢を設定
-            for (var [key, value] of Object.entries(data)) {
-                $('#freeai_voice').append(`<option value="${key}">${value}</option>`);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('get_live_voices (freeai) error:', error);
-        }
-    });
-    // openai
-    $.ajax({
-        url: '/get_live_voices',
-        method: 'GET',
-        data: { req_mode: 'openai' },
-        dataType: 'json',
-        async: false, // 同期処理
-        success: function(data) {
-            // 取得した選択肢を設定
-            for (var [key, value] of Object.entries(data)) {
-                $('#openai_voice').append(`<option value="${key}">${value}</option>`);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('get_live_voices (openai) error:', error);
-        }
-    });
-}
-
-// サーバーからLive設定を取得する関数
-function get_live_setting_all() {
-    get_live_setting('freeai');
-    get_live_setting('openai');
-}
-
-// サーバーからLive設定を取得する関数
-function get_live_setting(req_mode) {
-    // Live設定をサーバーから受信
-    $.ajax({
-        url: '/get_live_setting',
-        method: 'GET',
-        data: { req_mode: req_mode },
-        dataType: 'json',
-        success: function(data) {
-
-            // freeai
-            if (req_mode === 'freeai') {
-                if (JSON.stringify(data) !== last_live_setting.freeai) {
-                    $('#freeai_voice').val(data.voice || '');
-                    last_live_setting.freeai = JSON.stringify(data);
-                }
-            }
-
-            // openai
-            if (req_mode === 'openai') {
-                if (JSON.stringify(data) !== last_live_setting.openai) {
-                    $('#openai_voice').val(data.voice || '');
-                    last_live_setting.openai = JSON.stringify(data);
-                }
-            }
-
-        },
-        error: function(xhr, status, error) {
-            console.error('get_live_setting error:', error);
-        }
-    });
-}
-
-// サーバーへLive設定を保存する関数
-function post_live_setting(req_mode) {
-    var formData = {};
-
-    // freeai
-    if (req_mode === 'freeai') {
-        formData = {
-            req_mode: req_mode,
-            voice: $('#freeai_voice').val(),
-        };
-    }
-
-    // openai
-    if (req_mode === 'openai') {
-        formData = {
-            req_mode: req_mode,
-            voice: $('#openai_voice').val(),
-        };
-    }
-
-    // Live設定をサーバーに送信
-    $.ajax({
-        url: '/post_live_setting',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
-        success: function(response) {
-            console.log('post_live_setting:', response);
-        },
-        error: function(xhr, status, error) {
-            console.error('post_live_setting error:', error);
-        }
-    });
-}
-
-// サーバーからAgent設定を取得する関数
-function get_agent_setting_all() {
-    get_webAgent_engine();
-    get_webAgent_setting( $('#webAgent_modelAPI').val() );
-}
-
-// サーバーからwebAgent engine設定を取得する関数
-function get_webAgent_engine() {
-    // webAgent API設定をサーバーから受信
-    $.ajax({
-        url: '/get_webAgent_engine',
-        method: 'GET',
-        dataType: 'json',
-        success: function(data) {
-
-            if (JSON.stringify(data) !== last_webAgent_engine) {
-                $('#webAgent_useBrowser').val(data.useBrowser || '');
-                $('#webAgent_modelAPI').val(data.modelAPI || '');
-                const element = document.getElementById("webAgent_modelName");
-                for (let i=element.length-1;i >= 0; i--) {
-                   element.remove( i );
-                }
-                $('#webAgent_modelName').append(`<option value="">Auto (自動)</option>`);
-                for (var [key, value] of Object.entries(data.modelNames)) {
-                    $('#webAgent_modelName').append(`<option value="${key}">${value}</option>`);
-                }
-                $('#webAgent_modelName').val('');
-                $('#webAgent_maxSteps').val('');
-                last_webAgent_setting = {
-                    modelName: null,
-                    maxSteps: null,
-                }
-                last_webAgent_engine = JSON.stringify(data);
-            }
-
-        },
-        error: function(xhr, status, error) {
-            console.error('get_webAgent_engine error:', error);
-        }
-    });
-}
-
-// サーバーからwebAgent設定を取得する関数
-function get_webAgent_setting(modelAPI) {
-    // webAgent設定をサーバーから受信
-    $.ajax({
-        url: '/get_webAgent_setting',
-        method: 'GET',
-        data: { modelAPI: modelAPI },
-        dataType: 'json',
-        success: function(data) {
-
-            if (JSON.stringify(data) !== last_webAgent_setting) {
-                $('#webAgent_modelName').val(data.modelName || '');
-                $('#webAgent_maxSteps').val(data.maxSteps || '');
-                last_webAgent_setting = JSON.stringify(data);
-            }
-
-        },
-        error: function(xhr, status, error) {
-            console.error('get_webAgent_setting error:', error);
-        }
-    });
-}
-
-// サーバーへwebAgent engine設定を保存する関数
-function post_webAgent_engine() {
-    var formData = {};
-
-    formData = {
-        useBrowser: $('#webAgent_useBrowser').val(),
-        modelAPI: $('#webAgent_modelAPI').val(),
-    };
-
-    // webAgent設定をサーバーに送信
-    $.ajax({
-        url: '/post_webAgent_engine',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
-        success: function(response) {
-            console.log('post_webAgent_engine:', response);
-        },
-        error: function(xhr, status, error) {
-            console.error('post_webAgent_engine error:', error);
-        }
-    });
-}
-
-// サーバーへwebAgent setting設定を保存する関数
-function post_webAgent_setting(modelAPI) {
-    var formData = {};
-
-    formData = {
-        modelAPI: modelAPI,
-        modelName: $('#webAgent_modelName').val(),
-        maxSteps:  $('#webAgent_maxSteps').val(),
-    };
-
-    // webAgent設定をサーバーに送信
-    $.ajax({
-        url: '/post_webAgent_setting',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
-        success: function(response) {
-            console.log('post_webAgent_setting:', response);
-        },
-        error: function(xhr, status, error) {
-            console.error('post_webAgent_setting error:', error);
-        }
-    });
-}
-
 // chat-engineのセット
 function chat_set_engine(engine) {
     $('#chat_req_engine').val(engine);
@@ -764,32 +472,11 @@ function parallel_set_engine(engine) {
         post_mode_setting('session');
 }
 
-// Reactを差し替える関数
-function post_set_react(filename) {
-    var formData = {};
-    formData = {
-        filename: filename,
-    }
-    // 設定値をサーバーに送信
-    $.ajax({
-        url: '/post_set_react',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
-        success: function(response) {
-            console.log('post_set_react:', response);
-        },
-        error: function(xhr, status, error) {
-            console.error('post_set_react error:', error);
-        }
-    });
-}
-
 // ドキュメントが読み込まれた時に実行される処理
 $(document).ready(function() {
 
     // ページ遷移時にlocalStorageから復元
-    const storedData = JSON.parse(localStorage.getItem('setting_formData'));
+    const storedData = JSON.parse(localStorage.getItem('setting1_formData'));
     if (storedData) {
         // ページ開始時に保存されたタブを復元
         var activeTab = storedData.activeTab || 'reset';
@@ -805,7 +492,7 @@ $(document).ready(function() {
             // ページ遷移時にlocalStorageに保存
             activeTab: $('.tab-header button.active').data('target')
         };
-        localStorage.setItem('setting_formData', JSON.stringify(formData)); // localStorageに保存
+        localStorage.setItem('setting1_formData', JSON.stringify(formData)); // localStorageに保存
     };
 
     // サブAI設定を取得
@@ -817,16 +504,9 @@ $(document).ready(function() {
     // リトライの設定を行う
     set_max_retry();
 
-    // Liveのvoice設定を取得
-    get_live_voices();
-
     // 定期的に設定値を取得する処理
     get_mode_setting_all();
-    get_addins_setting();
     setInterval(get_mode_setting_all, 3000);
-    setInterval(get_addins_setting, 3000);
-    setInterval(get_live_setting_all, 3000);
-    setInterval(get_agent_setting_all, 3000);
 
     // 設定項目が変更された際に保存
     $('#chat_req_engine, #chat_req_functions, #chat_req_reset, #chat_max_retry, #chat_max_ai_count').change(function() {
@@ -871,22 +551,6 @@ $(document).ready(function() {
     $('#voice_before_proc, #voice_before_engine, #voice_after_proc, #voice_after_engine, #voice_check_proc, #voice_check_engine').change(function() {
         post_mode_setting('voice');
     });
-    $('#result_text_save, #speech_stt_engine, #speech_tts_engine, #text_clip_input, #text_url_execute, #text_pdf_execute, #image_ocr_execute, #image_yolo_execute').change(function() {
-        post_addins_setting();
-    });
-    $('#freeai_voice').change(function() {
-        post_live_setting('freeai');
-    });
-    $('#openai_voice').change(function() {
-        post_live_setting('openai');
-    });
-    $('#webAgent_useBrowser, #webAgent_modelAPI').change(function() {
-        post_webAgent_engine();
-        get_agent_setting_all();
-    });
-    $('#webAgent_modelName, #webAgent_maxSteps').change(function() {
-        post_webAgent_setting( $('#webAgent_modelAPI').val() );
-    });
     
     // リセットボタンのクリックイベント
     $('#reset-button').click(function() {
@@ -911,45 +575,47 @@ $(document).ready(function() {
     $('#chat-auto').click(function() {
         chat_set_engine('');
     });
-    $('#chat-flash').click(function() {
-        chat_set_engine('f-flash');
+    $('#chat-freeai').click(function() {
+        chat_set_engine('[freeai]');
     });
     $('#chat-plamo').click(function() {
-        chat_set_engine('plamo');
+        chat_set_engine('[plamo]');
     });
-    $('#chat-gpt').click(function() {
-        chat_set_engine('gpt');
+    $('#chat-openrt').click(function() {
+        chat_set_engine('[openrt]');
+    });
+    $('#chat-openai').click(function() {
+        chat_set_engine('[openai]');
     });
 
     // serial-engineボタンのクリックイベント
     $('#serial-auto').click(function() {
         serial_set_engine('');
     });
-    $('#serial-flash').click(function() {
-        serial_set_engine('f-flash');
+    $('#serial-freeai').click(function() {
+        serial_set_engine('[freeai]');
     });
     $('#serial-plamo').click(function() {
-        serial_set_engine('plamo');
+        serial_set_engine('[plamo]');
+    });
+    $('#serial-openrt').click(function() {
+        serial_set_engine('[openrt]');
     });
 
     // parallel-engineボタンのクリックイベント
     $('#parallel-auto').click(function() {
         parallel_set_engine('');
     });
-    $('#parallel-flash').click(function() {
-        parallel_set_engine('f-flash');
+    $('#parallel-freeai').click(function() {
+        parallel_set_engine('[freeai]');
     });
     $('#parallel-plamo').click(function() {
-        parallel_set_engine('plamo');
+        parallel_set_engine('[plamo]');
+    });
+    $('#parallel-openrt').click(function() {
+        parallel_set_engine('[openrt]');
     });
     
-    $('#react-halloWorld').click(function() {
-        post_set_react('react-sample-halloWorld.zip');
-    });
-    $('#react-realtimeConsole').click(function() {
-        post_set_react('openai-realtime-console-main.zip');
-    });
-
     // タブ切り替え処理
     $('.frame-tab .tab-header button').click(function() {
         var target = $(this).data('target');

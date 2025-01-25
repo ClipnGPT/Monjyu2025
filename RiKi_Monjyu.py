@@ -232,6 +232,17 @@ if __name__ == '__main__':
             print(msg)
             print()
 
+        # ClipnMonjyu
+        ext_module = addin.addin_modules.get('monjyu_UI_ClipnMonjyu', None)
+        if (ext_module is not None):
+            try:
+                if (ext_module['onoff'] == 'on'):
+                    func_reset = ext_module['func_reset']
+                    res  = func_reset(main=main, data=data, )
+                    print('reset', 'monjyu_UI_ClipnMonjyu')
+            except Exception as e:
+                print(e)
+
         # key2Live_freeai
         liveai_enable = False
         ext_module = addin.addin_modules.get('monjyu_UI_key2Live_freeai', None)

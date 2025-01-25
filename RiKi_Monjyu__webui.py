@@ -94,6 +94,17 @@ class postAddinsDataModel(BaseModel):
     image_ocr_execute: str
     image_yolo_execute: str
 
+# OpenRouter設定データモデル
+class postOpenRouterDataModel(BaseModel):
+    ort_a_model: str
+    ort_a_use_tools: str
+    ort_b_model: str
+    ort_b_use_tools: str
+    ort_v_model: str
+    ort_v_use_tools: str
+    ort_x_model: str
+    ort_x_use_tools: str
+
 # Live設定データモデル
 class postLiveDataModel(BaseModel):
     req_mode: str
@@ -206,6 +217,9 @@ class WebUiClass:
         self.app.post("/post_mode_setting")(self.post_mode_setting)
         self.app.get("/get_addins_setting")(self.get_addins_setting)
         self.app.post("/post_addins_setting")(self.post_addins_setting)
+        self.app.get("/get_ort_models")(self.get_ort_models)
+        self.app.get("/get_ort_setting")(self.get_ort_setting)
+        self.app.post("/post_ort_setting")(self.post_ort_setting)
         self.app.get("/get_live_voices")(self.get_live_voices)
         self.app.get("/get_live_setting")(self.get_live_setting)
         self.app.post("/post_live_setting")(self.post_live_setting)
@@ -312,6 +326,43 @@ class WebUiClass:
                                         "image_ocr_execute": image_ocr_execute, 
                                         "image_yolo_execute": image_yolo_execute, }
         return JSONResponse(content={'message': 'post_addins_setting successfully'})
+
+    async def get_ort_models(self, ) -> Dict[str, str]:
+        # 設定情報を返す
+        if (self.data is not None):
+            result = self.data.ort_models
+        else:
+            result = {}
+        return JSONResponse(content=result)
+
+    async def get_ort_setting(self):
+        # 設定情報を返す
+        if (self.data is not None):
+            result = self.data.ort_setting
+        else:
+            result = {}
+        return JSONResponse(content=result)
+
+    async def post_ort_setting(self, data: postOpenRouterDataModel):
+        # 設定情報を更新する
+        ort_a_model = str(data.ort_a_model) if data.ort_a_model else ""
+        ort_a_use_tools = str(data.ort_a_use_tools) if data.ort_a_use_tools else ""
+        ort_b_model = str(data.ort_b_model) if data.ort_b_model else ""
+        ort_b_use_tools = str(data.ort_b_use_tools) if data.ort_b_use_tools else ""
+        ort_v_model = str(data.ort_v_model) if data.ort_v_model else ""
+        ort_v_use_tools = str(data.ort_v_use_tools) if data.ort_v_use_tools else ""
+        ort_x_model = str(data.ort_x_model) if data.ort_x_model else ""
+        ort_x_use_tools = str(data.ort_x_use_tools) if data.ort_x_use_tools else ""
+        if (self.data is not None):
+            self.data.ort_setting = {   "ort_a_model": ort_a_model,
+                                        "ort_a_use_tools": ort_a_use_tools,
+                                        "ort_b_model": ort_b_model,
+                                        "ort_b_use_tools": ort_b_use_tools,
+                                        "ort_v_model": ort_v_model,
+                                        "ort_v_use_tools": ort_v_use_tools,
+                                        "ort_x_model": ort_x_model,
+                                        "ort_x_use_tools": ort_x_use_tools, }
+        return JSONResponse(content={'message': 'post_ort_setting successfully'})
 
     async def get_live_voices(self, req_mode: str) -> Dict[str, str]:
         # 設定情報を返す

@@ -30,7 +30,7 @@ REQUEST_TIMEOUT = 30
 
 
 class _monjyu_class:
-    def __init__(self, runMode='assistant' ):
+    def __init__(self, runMode='chat' ):
         self.runMode   = runMode
 
         # ポート設定等
@@ -65,8 +65,9 @@ class _monjyu_class:
 
         # AI要求送信
         try:
-            #res_port = ''
-            res_port = CORE_PORT
+            res_port = ''
+            if (req_mode in ['clip', 'voice']):
+                res_port = CORE_PORT
             response = requests.post(
                 self.local_endpoint + '/post_req',
                 json={'user_id': user_id, 'from_port': CORE_PORT, 'to_port': res_port,
@@ -135,7 +136,7 @@ class _class:
                 "properties": {
                     "runMode": {
                         "type": "string",
-                        "description": "実行モード 例) assistant"
+                        "description": "実行モード chat 例) chat"
                     },
                     "userId": {
                         "type": "string",
@@ -151,7 +152,7 @@ class _class:
         }
 
         # 初期設定
-        self.runMode = 'assistant'
+        self.runMode = 'chat'
         self.monjyu  = _monjyu_class()
         
     def func_reset(self, ):
@@ -176,7 +177,9 @@ class _class:
             self.runMode = runMode
 
         # 処理
-        req_mode = 'clip'
+        req_mode = self.runMode
+        if (req_mode not in ['clip', 'voice']):
+            req_mode = 'chat'
         sysText  = 'あなたは美しい日本語を話す賢いアシスタントです。'
         reqText  = reqText
         inpText  = ''
@@ -197,7 +200,7 @@ if __name__ == '__main__':
 
     ext = _class()
     json_dic = {}
-    json_dic['runMode'] = "assistant"
+    json_dic['runMode'] = "chat"
     json_dic['userId']  = "admin"
     json_dic['reqText'] = "おはようございます"
     json_kwargs = json.dumps(json_dic, ensure_ascii=False, )

@@ -555,7 +555,7 @@ class _groqAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" groq  : { res_api }, pass={ n }, ")
+                self.print(session_id, f" groq  : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # Stream 表示
                 if (stream == True):
@@ -598,7 +598,7 @@ class _groqAPI:
                                 stream          = stream, 
                                 )
 
-                    elif (functions != []):
+                    elif (len(functions) != 0):
                         # ツール設定
                         tools = []
                         for f in range(len(functions)):
@@ -667,7 +667,7 @@ class _groqAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" groq  : { res_name.lower() } complite.")
+                self.print(session_id, f" groq  : { res_name.lower() }, complete.")
             else:
                 self.print(session_id,  ' groq  : Error !')
 

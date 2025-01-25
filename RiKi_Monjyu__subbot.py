@@ -38,6 +38,9 @@ qPath_output = 'temp/output/'
 import _v6__qLog
 qLog = _v6__qLog.qLog_class()
 
+# DEBUG
+DEBUG_FLAG = False
+
 # freeai チャットボット
 import speech_bot_function
 import speech_bot_freeai
@@ -466,9 +469,13 @@ class ChatClass:
                             openrt_key.getkey('openrt','openrt_max_step'), openrt_key.getkey('openrt','openrt_max_session'),
                             key_id,
                             openrt_key.getkey('openrt','openrt_a_nick_name'), openrt_key.getkey('openrt','openrt_a_model'), openrt_key.getkey('openrt','openrt_a_token'),
+                            openrt_key.getkey('openrt','openrt_a_use_tools'),
                             openrt_key.getkey('openrt','openrt_b_nick_name'), openrt_key.getkey('openrt','openrt_b_model'), openrt_key.getkey('openrt','openrt_b_token'),
+                            openrt_key.getkey('openrt','openrt_b_use_tools'),
                             openrt_key.getkey('openrt','openrt_v_nick_name'), openrt_key.getkey('openrt','openrt_v_model'), openrt_key.getkey('openrt','openrt_v_token'),
+                            openrt_key.getkey('openrt','openrt_v_use_tools'),
                             openrt_key.getkey('openrt','openrt_x_nick_name'), openrt_key.getkey('openrt','openrt_x_model'), openrt_key.getkey('openrt','openrt_x_token'),
+                            openrt_key.getkey('openrt','openrt_x_use_tools'),
                             )
 
         if res == True:
@@ -664,6 +671,12 @@ class ChatClass:
                         history=[], function_modules=[],
                         sysText='', reqText='', inpText='',
                         filePath=[], jsonSchema=None, inpLang='ja', outLang='ja'):
+
+        # debug
+        if (DEBUG_FLAG == True):
+            print('DEBUG', 'subbot.chatBot:reqText', )
+            print('DEBUG', reqText, )
+
         # cancel
         self.bot_cancel_request = False
         
@@ -708,7 +721,15 @@ class ChatClass:
         #         if (self.openai_enable == True):
         #             engine = '[openai]'
 
+        # perplexity
         if (self.perplexity_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'perplexity, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
             if (engine == '[perplexity]'):
                 engine_text = self.perplexityAPI.perplexity_b_nick_name.lower() + ',\n'
             else:
@@ -782,7 +803,15 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+        # openai
         if (self.openai_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'openai, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
             if (engine == '[openai]'):
                 engine_text = self.openaiAPI.gpt_b_nick_name.lower() + ',\n'
             else:
@@ -859,7 +888,6 @@ class ChatClass:
             if (engine_text != ''):
                 inpText2 = engine_text + inpText
                 engine_text = ''
-                # run_gptでなくchatBotなのでモデル自動選択されます。
 
                 try:
                     qLog.log('info', self.proc_id, 'chatBot openai ...')
@@ -871,7 +899,15 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+        # azureoai
         if (self.azureoai_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'azureoai, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
             if (engine == '[azure]'):
                 engine_text = self.azureAPI.gpt_b_nick_name.lower() + ',\n'
             else:
@@ -927,7 +963,6 @@ class ChatClass:
             if (engine_text != ''):
                 inpText2 = engine_text + inpText
                 engine_text = ''
-                # run_gptでなくchatBotなのでモデル自動選択されます。
 
                 try:
                     qLog.log('info', self.proc_id, 'chatBot azure ...')
@@ -939,7 +974,15 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+        # claude
         if (self.claude_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'claude, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
             if (engine == '[claude]'):
                 engine_text = self.claudeAPI.claude_b_nick_name.lower() + ',\n'
             else:
@@ -1006,7 +1049,15 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+        # gemini
         if (self.gemini_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'gemini, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
             if (engine == '[gemini]'):
                 engine_text = self.geminiAPI.gemini_b_nick_name.lower() + ',\n'
             else:
@@ -1073,7 +1124,15 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+        # openrt
         if (self.openrt_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'openrt, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
             if (engine == '[openrt]'):
                 engine_text = self.openrtAPI.openrt_b_nick_name.lower() + ',\n'
             else:
@@ -1132,6 +1191,17 @@ class ChatClass:
 
                 try:
                     qLog.log('info', self.proc_id, 'chatBot openrt ...')
+
+                    if (self.data is not None):
+                        self.openrtAPI.set_models(  a_model=self.data.ort_setting['ort_a_model'],
+                                                    a_use_tools=self.data.ort_setting['ort_a_use_tools'],
+                                                    b_model=self.data.ort_setting['ort_b_model'],
+                                                    b_use_tools=self.data.ort_setting['ort_b_use_tools'],
+                                                    v_model=self.data.ort_setting['ort_v_model'],
+                                                    v_use_tools=self.data.ort_setting['ort_v_use_tools'],
+                                                    x_model=self.data.ort_setting['ort_x_model'],
+                                                    x_use_tools=self.data.ort_setting['ort_x_use_tools'], )
+
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.openrtAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,
@@ -1140,7 +1210,15 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+        # ollama
         if (self.ollama_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'ollama, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
             if (engine == '[ollama]'):
                 engine_text = self.ollamaAPI.ollama_b_nick_name.lower() + ',\n'
             else:
@@ -1214,7 +1292,15 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+        # groq
         if (self.groq_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'groq, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
             if (engine == '[groq]'):
                 engine_text = self.groqAPI.groq_b_nick_name.lower() + ',\n'
             else:
@@ -1281,7 +1367,15 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+        # plamo
         if (self.plamo_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'plamo, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
             if (engine == '[plamo]'):
                 engine_text = self.plamoAPI.plamo_b_nick_name.lower() + ',\n'
             else:
@@ -1348,14 +1442,18 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
+
+
+        # freeai
         if (self.freeai_enable == True):
-            if (engine == '[freeai]') or (engine == ''):
-                #engine_text = self.freeaiAPI.freeai_b_nick_name.lower() + ',\n'
-                if (req_mode != 'session'):
-                    engine_text = 'free,\n'
-                else:
-                    engine_text = 'f-flash,\n'
-            else:
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'freeai, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
+            if True:
                 model_nick_name1 = 'free'
                 model_nick_name2 = 'freeai'
                 a_nick_name = self.freeaiAPI.freeai_a_nick_name.lower()
@@ -1371,6 +1469,23 @@ class ChatClass:
                         engine_text = v_nick_name + ',\n'
                     elif ((len(x_nick_name) != 0) and (engine.lower() == x_nick_name)):
                         engine_text = x_nick_name + ',\n'
+                if (reqText.find(',') >= 1):
+                    req_nick_name = reqText[:reqText.find(',')].lower()
+                    if   (req_nick_name == model_nick_name):
+                        engine_text = model_nick_name + ',\n'
+                        reqText = reqText[len(model_nick_name)+1:].strip()
+                    elif (len(a_nick_name) != 0) and (req_nick_name == a_nick_name):
+                        engine_text = a_nick_name + ',\n'
+                        reqText = reqText[len(a_nick_name)+1:].strip()
+                    elif (len(b_nick_name) != 0) and (req_nick_name == b_nick_name):
+                        engine_text = b_nick_name + ',\n'
+                        reqText = reqText[len(b_nick_name)+1:].strip()
+                    elif (len(v_nick_name) != 0) and (req_nick_name == v_nick_name):
+                        engine_text = v_nick_name + ',\n'
+                        reqText = reqText[len(v_nick_name)+1:].strip()
+                    elif (len(x_nick_name) != 0) and (req_nick_name == x_nick_name):
+                        engine_text = x_nick_name + ',\n'
+                        reqText = reqText[len(x_nick_name)+1:].strip()
                 elif (inpText.find(',') >= 1):
                     inp_nick_name = inpText[:inpText.find(',')].lower()
                     if   (inp_nick_name == model_nick_name1):
@@ -1391,6 +1506,13 @@ class ChatClass:
                     elif (len(x_nick_name) != 0) and (inp_nick_name == x_nick_name):
                         engine_text = x_nick_name + ',\n'
                         inpText = inpText[len(x_nick_name)+1:].strip()
+
+            if (engine_text == ''):
+                #engine_text = self.freeaiAPI.freeai_b_nick_name.lower() + ',\n'
+                if (req_mode == 'session'):
+                    engine_text = a_nick_name + ',\n'
+                else:
+                    engine_text = b_nick_name + ',\n'
 
             inpText2 = inpText
             if (engine_text != ''):
@@ -1431,6 +1553,13 @@ class ChatClass:
 
         if (res_text == ''):
             res_text = '!'
+
+        # DEBUG
+        if (DEBUG_FLAG == True):
+            print('DEBUG', 'subbot.chatBot:model_name', )
+            print('DEBUG', model_name, )
+            print('DEBUG', 'subbot.chatBot:res_text', )
+            print('DEBUG', res_text, )
 
         return res_text, res_path, res_files, nick_name, model_name, res_history
 

@@ -349,9 +349,18 @@ class CoreAiClass:
                 if self.chat_class.geminiAPI.gemini_x_enable and self.chat_class.geminiAPI.gemini_x_nick_name:
                     models[self.chat_class.geminiAPI.gemini_x_nick_name.lower()] = ' ' + self.chat_class.geminiAPI.gemini_x_nick_name
 
-        if (req_mode == 'chat'):
+        if True:
             if self.chat_class.openrt_enable is None:
                 self.chat_class.openrt_auth()
+
+                if self.chat_class.openrt_enable:
+                    self.data.ort_models = {}
+                    for key,value in self.chat_class.openrtAPI.models.items():
+                        self.data.ort_models[key] = self.chat_class.openrtAPI.models[key]["date"] + " : " \
+                                                  + self.chat_class.openrtAPI.models[key]["id"] + ", " \
+                                                  + self.chat_class.openrtAPI.models[key]["token"] + ", " \
+                                                  + self.chat_class.openrtAPI.models[key]["modality"] + ", "
+
             if self.chat_class.openrt_enable:
                 models['[openrt]'] = '[OpenRouter]'
                 if self.chat_class.openrtAPI.openrt_a_enable and self.chat_class.openrtAPI.openrt_a_nick_name:
@@ -377,7 +386,7 @@ class CoreAiClass:
                 if self.chat_class.ollamaAPI.ollama_x_enable and self.chat_class.ollamaAPI.ollama_x_nick_name:
                     models[self.chat_class.ollamaAPI.ollama_x_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_x_nick_name
 
-        if True:
+        if (req_mode == 'chat'):
             if self.chat_class.groq_enable is None:
                 self.chat_class.groq_auth()
             if self.chat_class.groq_enable:
@@ -626,6 +635,8 @@ class CoreAiClass:
         user_id = str(postData.user_id) if postData.user_id else "debug"
         from_port = str(postData.from_port) if postData.from_port else self.core_port
         to_port = str(postData.to_port) if postData.to_port else self._get_available_port()
+        #if to_port is None:
+        #    raise HTTPException(status_code=503, detail='Service Unavailable')
         req_mode = str(postData.req_mode) if postData.req_mode else "chat"
         req_engine = self.data.mode_setting[req_mode]['req_engine']
         req_functions = self.data.mode_setting[req_mode]['req_functions']
@@ -650,7 +661,7 @@ class CoreAiClass:
             req_reset = 'yes,'
 
         # シンプル実行
-        if  (req_mode in ['clip', 'voice']):
+        if  (req_mode in ['clip', 'voice']) or (to_port is None):
             if  ((max_retry == '') or (max_retry == '0')) \
             and (before_proc.find('profile,' ) < 0) \
             and (before_proc.find('prompt,'  ) < 0) \
@@ -752,6 +763,8 @@ class CoreAiClass:
         user_id = str(postData.user_id) if postData.user_id else "debug"
         from_port = str(postData.from_port) if postData.from_port else self.core_port
         to_port = str(postData.to_port) if postData.to_port else self._get_available_port()
+        if to_port is None:
+            raise HTTPException(status_code=503, detail='Service Unavailable')
         req_mode = str(postData.req_mode) if postData.req_mode else "chat"
         req_engine = str(postData.req_engine) if postData.req_engine else ""
         req_functions = str(postData.req_functions) if postData.req_functions else ""
@@ -876,15 +889,15 @@ class CoreAiClass:
         空いているサブAIのポートを返す。
         """
         if (self.data is None):
-            raise HTTPException(status_code=503, detail='Service Unavailable')
-
+            return None
+        
         with self.thread_lock:
             for _ in range(self.num_subais):
                 port = self.random_order[self.current_order_index]
                 self.current_order_index = (self.current_order_index + 1) % self.num_subais
                 if self.data.subai_info[port]['status'] == 'READY':
                     return port
-        raise HTTPException(status_code=503, detail='Service Unavailable')
+        return None
     
     def _web_search(self, request_text: str, input_text: str, ):
         ext_module = self.addin.addin_modules.get('addin_web_search', None)

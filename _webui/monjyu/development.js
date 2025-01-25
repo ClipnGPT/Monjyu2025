@@ -110,7 +110,8 @@ async function allHtmlRequest() {
     get_source_request('_webui/monjyu/index.html');
     get_source_request('_webui/monjyu/mainui.html');
     get_source_request('_webui/monjyu/input.html');
-    get_source_request('_webui/monjyu/setting.html');
+    get_source_request('_webui/monjyu/setting1.html');
+    get_source_request('_webui/monjyu/setting2.html');
     get_source_request('_webui/monjyu/statuses.html');
     get_source_request('_webui/monjyu/output.html');
     get_source_request('_webui/monjyu/histories.html');
@@ -138,7 +139,8 @@ async function allJsRequest() {
     get_source_request('_webui/monjyu/index.js');
     get_source_request('_webui/monjyu/mainui.js');
     get_source_request('_webui/monjyu/input.js');
-    get_source_request('_webui/monjyu/setting.js');
+    get_source_request('_webui/monjyu/setting1.js');
+    get_source_request('_webui/monjyu/setting2.js');
     get_source_request('_webui/monjyu/statuses.js');
     get_source_request('_webui/monjyu/output.js');
     get_source_request('_webui/monjyu/histories.js');
@@ -199,6 +201,16 @@ $(document).ready(function() {
     });
 
     // 全Pythonソースコードリクエストボタンのクリックイベント
+    $('#btnSource_allPy2Text').click(function() {
+        get_source_input('RiKi_Monjyu.py');
+        get_source_input('RiKi_Monjyu__conf.py');
+        get_source_input('RiKi_Monjyu__data.py');
+        get_source_input('RiKi_Monjyu__addin.py');
+        get_source_input('RiKi_Monjyu__coreai.py');
+        get_source_input('RiKi_Monjyu__subai.py');
+        get_source_input('RiKi_Monjyu__subbot.py');
+        get_source_input('RiKi_Monjyu__webui.py');
+    });
     $('#btnSource_allPyRequest').click(function() {
         if (confirm("全てのpythonソースで実行しますか?")) {
             allPyRequest();
@@ -206,6 +218,23 @@ $(document).ready(function() {
     });
 
     // 全HTMLソースコードリクエストボタンのクリックイベント
+    $('#btnSource_allHtml2Text').click(function() {
+        get_source_input('_webui/monjyu/index.html');
+        get_source_input('_webui/monjyu/mainui.html');
+        get_source_input('_webui/monjyu/input.html');
+        get_source_input('_webui/monjyu/setting1.html');
+        get_source_input('_webui/monjyu/setting2.html');
+        get_source_input('_webui/monjyu/statuses.html');
+        get_source_input('_webui/monjyu/output.html');
+        get_source_input('_webui/monjyu/histories.html');
+        get_source_input('_webui/monjyu/sessions.html');
+        get_source_input('_webui/monjyu/debug_live.html');
+        get_source_input('_webui/monjyu/debug_log.html');
+        get_source_input('_webui/monjyu/writing.html');
+        get_source_input('_webui/monjyu/development.html');
+        get_source_input('_webui/monjyu/react.html');
+        get_source_input('_webui/monjyu/links.html');
+    });
     $('#btnSource_allHtmlRequest').click(function() {
         if (confirm("全てのhtmlソースで実行しますか?")) {
             allHtmlRequest();
@@ -213,6 +242,21 @@ $(document).ready(function() {
     });
 
     // 全JavaScriptソースコードリクエストボタンのクリックイベント
+    $('#btnSource_allJs2Text').click(function() {
+        get_source_input('_webui/monjyu/index.js');
+        get_source_input('_webui/monjyu/mainui.js');
+        get_source_input('_webui/monjyu/input.js');
+        get_source_input('_webui/monjyu/setting1.js');
+        get_source_input('_webui/monjyu/setting2.js');
+        get_source_input('_webui/monjyu/statuses.js');
+        get_source_input('_webui/monjyu/output.js');
+        get_source_input('_webui/monjyu/histories.js');
+        get_source_input('_webui/monjyu/sessions.js');
+        get_source_input('_webui/monjyu/debug_live.js');
+        get_source_input('_webui/monjyu/debug_log.js');
+        get_source_input('_webui/monjyu/writing.js');
+        get_source_input('_webui/monjyu/development.js');
+    });
     $('#btnSource_allJsRequest').click(function() {
         if (confirm("全てのjsソースで実行しますか?")) {
             allJsRequest();
@@ -255,8 +299,11 @@ $(document).ready(function() {
     $('#btnSource_input').click(function() {
         get_source_input('_webui/monjyu/input.html');
     });
-    $('#btnSource_setting').click(function() {
-        get_source_input('_webui/monjyu/setting.html');
+    $('#btnSource_setting1').click(function() {
+        get_source_input('_webui/monjyu/setting1.html');
+    });
+    $('#btnSource_setting2').click(function() {
+        get_source_input('_webui/monjyu/setting2.html');
     });
     $('#btnSource_statuses').click(function() {
         get_source_input('_webui/monjyu/statuses.html');
@@ -299,8 +346,11 @@ $(document).ready(function() {
     $('#btnSource_input_js').click(function() {
         get_source_input('_webui/monjyu/input.js');
     });
-    $('#btnSource_setting_js').click(function() {
-        get_source_input('_webui/monjyu/setting.js');
+    $('#btnSource_setting1_js').click(function() {
+        get_source_input('_webui/monjyu/setting1.js');
+    });
+    $('#btnSource_setting2_js').click(function() {
+        get_source_input('_webui/monjyu/setting2.js');
     });
     $('#btnSource_statuses_js').click(function() {
         get_source_input('_webui/monjyu/statuses.js');
