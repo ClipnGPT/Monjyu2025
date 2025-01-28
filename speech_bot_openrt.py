@@ -22,6 +22,8 @@ import base64
 
 import requests
 
+
+
 # openrt チャットボット
 import openai
 
@@ -43,7 +45,6 @@ class _openrtAPI:
         self.bot_auth               = None
 
         self.temperature            = 0.8
-        self.timeOut                = 60
 
         self.openrt_api_type        = 'openrt'
         self.openrt_default_gpt     = 'auto'
@@ -51,6 +52,7 @@ class _openrtAPI:
         self.openrt_auto_continue   = 3
         self.openrt_max_step        = 10
         self.openrt_max_session     = 5
+        self.openrt_max_wait_sec    = 120
        
         self.openrt_key_id          = None
 
@@ -113,6 +115,7 @@ class _openrtAPI:
                      openrt_default_gpt, openrt_default_class,
                      openrt_auto_continue,
                      openrt_max_step, openrt_max_session,
+                     openrt_max_wait_sec,
 
                      openrt_key_id,
 
@@ -126,26 +129,27 @@ class _openrtAPI:
                      openrt_x_use_tools, 
                     ):
 
-        # 設定
-        self.models                     = {}
-
         # 認証
         self.bot_auth                   = None
         self.openrt_key_id              = openrt_key_id
 
-        # モデル取得
-        self.get_models()
-
         self.openrt_default_gpt         = openrt_default_gpt
         self.openrt_default_class       = openrt_default_class
-        if (str(openrt_auto_continue) != 'auto'):
+        if (not str(openrt_auto_continue) in ['', 'auto']):
             self.openrt_auto_continue   = int(openrt_auto_continue)
-        if (str(openrt_max_step)      != 'auto'):
+        if (not str(openrt_max_step)      in ['', 'auto']):
             self.openrt_max_step        = int(openrt_max_step)
-        if (str(openrt_max_session) != 'auto'):
+        if (not str(openrt_max_session)   in ['', 'auto']):
             self.openrt_max_session     = int(openrt_max_session)
+        if (not str(openrt_max_wait_sec)  in ['', 'auto']):
+            self.openrt_max_wait_sec    = int(openrt_max_wait_sec)
 
-        ymd = datetime.date.today().strftime('%Y/%m/%d')
+        #ymd = datetime.date.today().strftime('%Y/%m/%d')
+        ymd = 'yyyy/mm/dd'
+
+        # モデル取得
+        self.models                     = {}
+        self.get_models()
 
         # openrt チャットボット
         if (openrt_a_nick_name != ''):
@@ -155,7 +159,7 @@ class _openrtAPI:
             self.openrt_a_token         = int(openrt_a_token)
             self.openrt_a_use_tools     = openrt_a_use_tools
             if (not openrt_a_model in self.models):
-                self.models[openrt_a_model] = {"id": openrt_a_model, "token": str(openrt_a_token), "modality": "text", "date": ymd, }
+                self.models[openrt_a_model] = {"id": openrt_a_model, "token": str(openrt_a_token), "modality": "text?", "date": ymd, }
 
         if (openrt_b_nick_name != ''):
             self.openrt_b_enable        = False
@@ -164,7 +168,7 @@ class _openrtAPI:
             self.openrt_b_token         = int(openrt_b_token)
             self.openrt_b_use_tools     = openrt_b_use_tools
             if (not openrt_b_model in self.models):
-                self.models[openrt_b_model] = {"id": openrt_b_model, "token": str(openrt_b_token), "modality": "text", "date": ymd, }
+                self.models[openrt_b_model] = {"id": openrt_b_model, "token": str(openrt_b_token), "modality": "text?", "date": ymd, }
 
         if (openrt_v_nick_name != ''):
             self.openrt_v_enable        = False
@@ -173,7 +177,7 @@ class _openrtAPI:
             self.openrt_v_token         = int(openrt_v_token)
             self.openrt_v_use_tools     = openrt_v_use_tools
             if (not openrt_v_model in self.models):
-                self.models[openrt_v_model] = {"id": openrt_v_model, "token": str(openrt_v_token), "modality": "text+image", "date": ymd, }
+                self.models[openrt_v_model] = {"id": openrt_v_model, "token": str(openrt_v_token), "modality": "text+image?", "date": ymd, }
 
         if (openrt_x_nick_name != ''):
             self.openrt_x_enable        = False
@@ -182,7 +186,7 @@ class _openrtAPI:
             self.openrt_x_token         = int(openrt_x_token)
             self.openrt_x_use_tools     = openrt_x_use_tools
             if (not openrt_x_model in self.models):
-                self.models[openrt_x_model] = {"id": openrt_x_model, "token": str(openrt_x_token), "modality": "text+image", "date": ymd, }
+                self.models[openrt_x_model] = {"id": openrt_x_model, "token": str(openrt_x_token), "modality": "text+image?", "date": ymd, }
 
         # API-KEYの設定
         self.client = None
@@ -241,46 +245,47 @@ class _openrtAPI:
             return False
         return True
 
-    def set_models(self, a_model='', a_use_tools='',
+    def set_models(self, max_wait_sec='',
+                         a_model='', a_use_tools='',
                          b_model='', b_use_tools='',
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
+            if (not max_wait_sec in ['', 'auto']):
+                if (str(max_wait_sec) != str(self.openrt_max_wait_sec)):
+                    self.openrt_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
-                if (a_model in self.models):
+                if (a_model != self.openrt_a_model) and (a_model in self.models):
                     self.openrt_a_enable = True
                     self.openrt_a_model = a_model
-                    self.openrt_a_token = self.models[a_model]['token']
+                    self.openrt_a_token = int(self.models[a_model]['token'])
             if (a_use_tools != ''):
                 self.openrt_a_use_tools = a_use_tools
             if (b_model != ''):
-                if (b_model in self.models):
+                if (b_model != self.openrt_b_model) and (b_model in self.models):
                     self.openrt_b_enable = True
                     self.openrt_b_model = b_model
-                    self.openrt_b_token = self.models[b_model]['token']
+                    self.openrt_b_token = int(self.models[b_model]['token'])
             if (b_use_tools != ''):
                 self.openrt_b_use_tools = b_use_tools
             if (v_model != ''):
-                if (v_model in self.models):
+                if (v_model != self.openrt_v_model) and (v_model in self.models):
                     self.openrt_v_enable = True
                     self.openrt_v_model = v_model
-                    self.openrt_v_token = self.models[v_model]['token']
+                    self.openrt_v_token = int(self.models[v_model]['token'])
             if (v_use_tools != ''):
                 self.openrt_v_use_tools = v_use_tools
             if (x_model != ''):
-                if (x_model in self.models):
+                if (x_model != self.openrt_x_model) and (x_model in self.models):
                     self.openrt_x_enable = True
                     self.openrt_x_model = x_model
-                    self.openrt_x_token = self.models[x_model]['token']
+                    self.openrt_x_token = int(self.models[x_model]['token'])
             if (x_use_tools != ''):
                 self.openrt_x_use_tools = x_use_tools
         except Exception as e:
             print(e)
             return False
         return True
-
-    def setTimeOut(self, timeOut=60, ):
-        self.timeOut = timeOut
 
     def text_replace(self, text=''):
         if "```" not in text:
@@ -674,7 +679,7 @@ class _openrtAPI:
                             model           = res_api,
                             messages        = msg,
                             temperature     = float(temperature),
-                            timeout         = self.timeOut, 
+                            timeout         = self.openrt_max_wait_sec, 
                             stream          = stream, 
                             )
 
@@ -686,7 +691,7 @@ class _openrtAPI:
                             temperature     = float(temperature),
                             tools           = tools,
                             tool_choice     = 'auto',
-                            timeout         = self.timeOut,
+                            timeout         = self.openrt_max_wait_sec,
                             stream          = stream, 
                             )
 
@@ -697,7 +702,7 @@ class _openrtAPI:
                             model           = res_api,
                             messages        = msg,
                             temperature     = float(temperature),
-                            timeout         = self.timeOut,
+                            timeout         = self.openrt_max_wait_sec,
                             stream          = stream, 
                             )
                     else:
@@ -712,7 +717,7 @@ class _openrtAPI:
                                 model           = res_api,
                                 messages        = msg,
                                 temperature     = float(temperature),
-                                timeout         = self.timeOut, 
+                                timeout         = self.openrt_max_wait_sec, 
                                 response_format = { "type": "json_object" },
                                 stream          = stream, 
                                 )
@@ -722,7 +727,7 @@ class _openrtAPI:
                                 model           = res_api,
                                 messages        = msg,
                                 temperature     = float(temperature),
-                                timeout         = self.timeOut, 
+                                timeout         = self.openrt_max_wait_sec, 
                                 response_format = { "type": "json_schema", "json_schema": schema },
                                 stream          = stream, 
                                 )
@@ -732,7 +737,7 @@ class _openrtAPI:
 
                     chkTime     = time.time()
                     for chunk in response:
-                        if ((time.time() - chkTime) > self.timeOut):
+                        if ((time.time() - chkTime) > self.openrt_max_wait_sec):
                             break
                         delta   = chunk.choices[0].delta
                         if (delta is not None):
@@ -949,6 +954,7 @@ if __name__ == '__main__':
                             openrt_key.getkey('openrt','openrt_default_gpt'), openrt_key.getkey('openrt','openrt_default_class'),
                             openrt_key.getkey('openrt','openrt_auto_continue'),
                             openrt_key.getkey('openrt','openrt_max_step'), openrt_key.getkey('openrt','openrt_max_session'),
+                            openrt_key.getkey('openrt','openrt_max_wait_sec'),
                             openrt_key.getkey('openrt','openrt_key_id'),
                             openrt_key.getkey('openrt','openrt_a_nick_name'), openrt_key.getkey('openrt','openrt_a_model'), openrt_key.getkey('openrt','openrt_a_token'),
                             openrt_key.getkey('openrt','openrt_a_use_tools'),

@@ -275,11 +275,19 @@ class _key2Action:
 class _live_api_openai:
     def __init__(self, api_key, ):
         self.mixer_enable = False
+
+        # 実行パラメータ
         self.MODEL = MODEL
         self.VOICE = VOICE
         self.VOICE_LEVEL = VOICE_LEVEL
         sec60 = int( (INPUT_RATE/INPUT_CHUNK) * 60) # 60sec
         self.VOICE_BASE = [0 for _ in range(sec60)]
+
+        # イメージ送信タイミング
+        self.SHOT_INTERVAL_SEC = 2      # 送信間隔
+        self.CLIP_INTERVAL_SEC = 30     # クリップボード送信後のアイドル秒数
+        self.shot_last_time = time.time() - self.SHOT_INTERVAL_SEC
+        self.clip_last_time = time.time() - self.CLIP_INTERVAL_SEC
 
         # API情報
         #self.WS_URL = f"wss://api.openai.com/v1/realtime?model={ self.MODEL }"
@@ -445,6 +453,7 @@ class _live_api_openai:
                             jpeg_io.seek(0)
                             jpeg_bytes = jpeg_io.read()
 
+                            self.clip_last_time = time.time()
                             self.image_send_queue.put(jpeg_bytes)
                 except:
                     pass
@@ -465,36 +474,40 @@ class _live_api_openai:
             while (self.session is not None) and (not self.break_flag):
                 if (self.image_input_number is not None):
                     if self.image_send_queue.empty():
-                        try:
-                            if (self.image_input_number == 0):
-                                new_image = self.imageShot.screen_shot(screen_number='auto')
-                            else:
-                                new_image = self.imageShot.cv2capture(dev=str(self.image_input_number - 1))
-                                if (new_image is None):
-                                    self.image_input_number = None
-                                    self.visualizer.update_image(None)
 
-                            if new_image is not None:
-                                image_hash = hashlib.sha256(new_image.tobytes()).hexdigest()
-                                if (last_image_hash is None) or (image_hash != last_image_hash):  # 変更確認
-                                    last_image_hash = image_hash
-                                    #print(" Live(openai) : [IMAGE] Detected ")
+                        if  ((time.time() - self.clip_last_time) > self.CLIP_INTERVAL_SEC) \
+                        and ((time.time() - self.shot_last_time) > self.SHOT_INTERVAL_SEC):
 
-                                    pil_image = self.imageShot.cv2pil(new_image)
+                            try:
+                                if (self.image_input_number == 0):
+                                    new_image = self.imageShot.screen_shot(screen_number='auto')
+                                else:
+                                    new_image = self.imageShot.cv2capture(dev=str(self.image_input_number - 1))
+                                    if (new_image is None):
+                                        self.image_input_number = None
+                                        self.visualizer.update_image(None)
 
-                                    # jpeg変換
-                                    jpeg_io = io.BytesIO()
-                                    rgb = pil_image.convert("RGB")
-                                    rgb.thumbnail([1024, 1024])
-                                    rgb.save(jpeg_io, format="jpeg")
-                                    jpeg_io.seek(0)
-                                    jpeg_bytes = jpeg_io.read()
+                                if new_image is not None:
+                                    image_hash = hashlib.sha256(new_image.tobytes()).hexdigest()
+                                    if (last_image_hash is None) or (image_hash != last_image_hash):  # 変更確認
+                                        last_image_hash = image_hash
+                                        #print(" Live(openai) : [IMAGE] Detected ")
 
-                                    self.image_send_queue.put(jpeg_bytes)
-                                    time.sleep(2.00)
-                        except:
-                            pass
-                time.sleep(1.00)
+                                        pil_image = self.imageShot.cv2pil(new_image)
+
+                                        # jpeg変換
+                                        jpeg_io = io.BytesIO()
+                                        rgb = pil_image.convert("RGB")
+                                        rgb.thumbnail([1024, 1024])
+                                        rgb.save(jpeg_io, format="jpeg")
+                                        jpeg_io.seek(0)
+                                        jpeg_bytes = jpeg_io.read()
+
+                                        self.shot_last_time = time.time()
+                                        self.image_send_queue.put(jpeg_bytes)
+                            except:
+                                pass
+                time.sleep(0.25)
 
         except Exception as e:
             print(f"input_image: {e}")
@@ -860,12 +873,20 @@ class _live_api_openai:
             # 起動
             if (self.session is None):
 
-                # voice 設定
-                voice = ''
+                # UI設定
                 if self.data is not None:
                     voice = self.data.live_setting['openai'].get('voice', '')
-                if voice == '':
-                    voice == self.VOICE
+                    shot_interval_sec = self.data.live_setting['openai'].get('shot_interval_sec', str(self.SHOT_INTERVAL_SEC))
+                    clip_interval_sec = self.data.live_setting['openai'].get('clip_interval_sec', str(self.CLIP_INTERVAL_SEC))
+                    if voice != '':
+                        self.VOICE = voice
+                    if (shot_interval_sec != ''):
+                        self.SHOT_INTERVAL_SEC = int(shot_interval_sec)
+                    if (clip_interval_sec != ''):
+                        self.CLIP_INTERVAL_SEC = int(clip_interval_sec)
+
+                # voice 設定
+                voice = self.VOICE
                 print(f" Live(openai) : [VOICE] { voice } ")
 
                 instructions = \
@@ -1553,6 +1574,9 @@ class _class:
             self.sub_proc.liveAPI.botFunc = botFunc
         if data is not None:
             self.sub_proc.liveAPI.data = data
+            self.sub_proc.liveAPI.data.live_setting['openai'] = {   "voice": self.sub_proc.liveAPI.VOICE, 
+                                                                    "shot_interval_sec": str(self.sub_proc.liveAPI.SHOT_INTERVAL_SEC),
+                                                                    "clip_interval_sec": str(self.sub_proc.liveAPI.CLIP_INTERVAL_SEC), }
         return True
 
     def func_proc(self, json_kwargs=None, ):

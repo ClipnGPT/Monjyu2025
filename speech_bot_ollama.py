@@ -21,6 +21,8 @@ import queue
 import base64
 import subprocess
 
+import requests
+
 
 
 # ollama チャットボット
@@ -44,7 +46,6 @@ class _ollamaAPI:
         self.bot_auth               = None
 
         self.temperature            = 0.8
-        self.timeOut                = 120
 
         self.ollama_api_type        = 'ollama'
         self.ollama_default_gpt     = 'auto'
@@ -52,6 +53,7 @@ class _ollamaAPI:
         self.ollama_auto_continue   = 3
         self.ollama_max_step        = 10
         self.ollama_max_session     = 5
+        self.ollama_max_wait_sec    = 120
        
         self.ollama_server          = 'localhost'
         self.ollama_port            = '11434'
@@ -60,22 +62,27 @@ class _ollamaAPI:
         self.ollama_a_nick_name     = ''
         self.ollama_a_model         = None
         self.ollama_a_token         = 0
+        self.ollama_a_use_tools     = 'no'
 
         self.ollama_b_enable        = False
         self.ollama_b_nick_name     = ''
         self.ollama_b_model         = None
         self.ollama_b_token         = 0
+        self.ollama_b_use_tools     = 'no'
 
         self.ollama_v_enable        = False
         self.ollama_v_nick_name     = ''
         self.ollama_v_model         = None
         self.ollama_v_token         = 0
+        self.ollama_v_use_tools     = 'no'
 
         self.ollama_x_enable        = False
         self.ollama_x_nick_name     = ''
         self.ollama_x_model         = None
         self.ollama_x_token         = 0
+        self.ollama_x_use_tools     = 'no'
 
+        self.models                 = {}
         self.history                = []
 
         self.seq                    = 0
@@ -110,34 +117,144 @@ class _ollamaAPI:
                      ollama_default_gpt, ollama_default_class,
                      ollama_auto_continue,
                      ollama_max_step, ollama_max_session,
+                     ollama_max_wait_sec,
 
                      ollama_server, ollama_port,
 
                      ollama_a_nick_name, ollama_a_model, ollama_a_token, 
+                     ollama_a_use_tools, 
                      ollama_b_nick_name, ollama_b_model, ollama_b_token, 
+                     ollama_b_use_tools, 
                      ollama_v_nick_name, ollama_v_model, ollama_v_token, 
+                     ollama_v_use_tools, 
                      ollama_x_nick_name, ollama_x_model, ollama_x_token, 
+                     ollama_x_use_tools, 
                     ):
 
         # 設定
-        self.bot_auth                 = None
+        self.bot_auth                   = None
 
-        self.ollama_default_gpt       = ollama_default_gpt
-        self.ollama_default_class     = ollama_default_class
-        if (str(ollama_auto_continue) != 'auto'):
-            self.ollama_auto_continue = int(ollama_auto_continue)
-        if (str(ollama_max_step)      != 'auto'):
-            self.ollama_max_step      = int(ollama_max_step)
-        if (str(ollama_max_session) != 'auto'):
-            self.ollama_max_session   = int(ollama_max_session)
+        self.ollama_default_gpt         = ollama_default_gpt
+        self.ollama_default_class       = ollama_default_class
+        if (not str(ollama_auto_continue) in ['', 'auto']):
+            self.ollama_auto_continue   = int(ollama_auto_continue)
+        if (not str(ollama_max_step)      in ['', 'auto']):
+            self.ollama_max_step        = int(ollama_max_step)
+        if (not str(ollama_max_session)   in ['', 'auto']):
+            self.ollama_max_session     = int(ollama_max_session)
+        if (not str(ollama_max_wait_sec)  in ['', 'auto']):
+            self.ollama_max_wait_sec    = int(ollama_max_wait_sec)
 
         # ollama サーバー
-        if (str(ollama_server) != 'auto'):
-            self.ollama_server       = ollama_server
-        if (str(ollama_port) != 'auto'):
-            self.ollama_port         = ollama_port
+        if (not str(ollama_server)        in ['', 'auto']):
+            self.ollama_server          = ollama_server
+        if (not str(ollama_port)          in ['', 'auto']):
+            self.ollama_port            = ollama_port
 
         # 認証
+        self.ollama_client = None
+        self.ollama_models = []
+        self.ollama_auth()
+
+        if (self.ollama_client is not None):
+
+            #ymd = datetime.date.today().strftime('%Y/%m/%d')
+            ymd = 'yyyy/mm/dd'
+
+            # モデル取得
+            self.get_models()
+            for model_name in self.ollama_models:
+                if (not model_name in self.models):
+                    self.models[model_name] = {"id": model_name, "token": "9999", "modality": "text?", "date": ymd, }
+
+            # ollama チャットボット
+            if (ollama_a_nick_name != ''):
+                self.ollama_a_enable     = False
+                self.ollama_a_nick_name  = ollama_a_nick_name
+                self.ollama_a_model      = ollama_a_model
+                self.ollama_a_token      = int(ollama_a_token)
+                self.ollama_a_use_tools  = ollama_a_use_tools
+                if (not ollama_a_model in self.models):
+                    self.models[ollama_a_model] = {"id": ollama_a_model, "token": str(ollama_a_token), "modality": "text?", "date": ymd, }
+
+                if (self.ollama_a_model in self.ollama_models):
+                    self.ollama_a_enable = True
+                    self.bot_auth        = True
+                else:
+                    self.ollama_a_enable = False
+                    hit, model = self.model_load(model_name=self.ollama_a_model, )
+                    if (hit == True):
+                        self.ollama_a_enable = True
+                        self.ollama_a_model  = model
+                        self.bot_auth        = True
+
+            if (ollama_b_nick_name != ''):
+                self.ollama_b_enable     = False
+                self.ollama_b_nick_name  = ollama_b_nick_name
+                self.ollama_b_model      = ollama_b_model
+                self.ollama_b_token      = int(ollama_b_token)
+                self.ollama_b_use_tools  = ollama_b_use_tools
+                if (not ollama_b_model in self.models):
+                    self.models[ollama_b_model] = {"id": ollama_b_model, "token": str(ollama_b_token), "modality": "text?", "date": ymd, }
+
+                if (self.ollama_b_model in self.ollama_models):
+                    self.ollama_b_enable = True
+                    self.bot_auth        = True
+                else:
+                    self.ollama_b_enable = False
+                    hit, model = self.model_load(model_name=self.ollama_b_model, )
+                    if (hit == True):
+                        self.ollama_b_enable = True
+                        self.ollama_b_model  = model
+                        self.bot_auth        = True
+
+            if (ollama_v_nick_name != ''):
+                self.ollama_v_enable     = False
+                self.ollama_v_nick_name  = ollama_v_nick_name
+                self.ollama_v_model      = ollama_v_model
+                self.ollama_v_token      = int(ollama_v_token)
+                self.ollama_v_use_tools  = ollama_v_use_tools
+                if (not ollama_v_model in self.models):
+                    self.models[ollama_v_model] = {"id": ollama_v_model, "token": str(ollama_v_token), "modality": "text+image?", "date": ymd, }
+
+                if (self.ollama_v_model in self.ollama_models):
+                    self.ollama_v_enable = True
+                    self.bot_auth        = True
+                else:
+                    self.ollama_v_enable = False
+                    hit, model = self.model_load(model_name=self.ollama_v_model, )
+                    if (hit == True):
+                        self.ollama_v_enable = True
+                        self.ollama_v_model  = model
+                        self.bot_auth        = True
+
+            if (ollama_x_nick_name != ''):
+                self.ollama_x_enable     = False
+                self.ollama_x_nick_name  = ollama_x_nick_name
+                self.ollama_x_model      = ollama_x_model
+                self.ollama_x_token      = int(ollama_x_token)
+                self.ollama_x_use_tools  = ollama_x_use_tools
+                if (not ollama_x_model in self.models):
+                    self.models[ollama_x_model] = {"id": ollama_x_model, "token": str(ollama_x_token), "modality": "text+image?", "date": ymd, }
+
+                if (self.ollama_x_model in self.ollama_models):
+                    self.ollama_x_enable = True
+                    self.bot_auth        = True
+                else:
+                    self.ollama_x_enable = False
+                    hit, model = self.model_load(model_name=self.ollama_x_model, )
+                    if (hit == True):
+                        self.ollama_x_enable = True
+                        self.ollama_x_model  = model
+                        self.bot_auth        = True
+
+        # 戻り値
+        if (self.bot_auth == True):
+            return True
+        else:
+            return False
+
+    def ollama_auth(self, ):
         self.ollama_client = None
         self.ollama_models = []
         try:
@@ -162,113 +279,162 @@ class _ollamaAPI:
                 except:
                     self.ollama_client = None
 
-        if (self.ollama_client is not None):
-
-            # ollama チャットボット
-            if (ollama_a_nick_name != ''):
-                self.ollama_a_enable     = False
-                self.ollama_a_nick_name  = ollama_a_nick_name
-                self.ollama_a_model      = ollama_a_model
-                self.ollama_a_token      = int(ollama_a_token)
-                if (self.ollama_a_model in self.ollama_models):
-                    self.ollama_a_enable = True
-                    self.bot_auth        = True
-                else:
-                    try:
-                        print(' ollama  : model download ... (' + self.ollama_a_model + ') ')
-                        if (os.name == 'nt'):
-                            try:
-                                subprocess.Popen(['cmd.exe', '/c', 'ollama', 'pull', self.ollama_a_model, ])
-                            except:
-                                pass
-                        self.ollama_client.pull(self.ollama_a_model, )
-                        self.ollama_a_enable = True
-                        self.bot_auth        = True
-                        self.ollama_models.append(self.ollama_a_model)
-                        print(' ollama  : model download complete.')
-                    except:
-                        print(' ollama  : model download error!')
-
-            if (ollama_b_nick_name != ''):
-                self.ollama_b_enable     = False
-                self.ollama_b_nick_name  = ollama_b_nick_name
-                self.ollama_b_model      = ollama_b_model
-                self.ollama_b_token      = int(ollama_b_token)
-                if (self.ollama_b_model in self.ollama_models):
-                    self.ollama_b_enable = True
-                    self.bot_auth        = True
-                else:
-                    try:
-                        print(' ollama  : model download ... (' + self.ollama_b_model + ') ')
-                        if (os.name == 'nt'):
-                            try:
-                                subprocess.Popen(['cmd.exe', '/c', 'ollama', 'pull', self.ollama_b_model, ])
-                            except:
-                                pass
-                        self.ollama_client.pull(self.ollama_b_model, )
-                        self.ollama_b_enable = True
-                        self.bot_auth        = True
-                        self.ollama_models.append(self.ollama_b_model)
-                        print(' ollama  : model download complete.')
-                    except:
-                        print(' ollama  : model download error!')
-
-            if (ollama_v_nick_name != ''):
-                self.ollama_v_enable     = False
-                self.ollama_v_nick_name  = ollama_v_nick_name
-                self.ollama_v_model      = ollama_v_model
-                self.ollama_v_token      = int(ollama_v_token)
-                if (self.ollama_v_model in self.ollama_models):
-                    self.ollama_v_enable = True
-                    self.bot_auth        = True
-                else:
-                    try:
-                        print(' ollama  : model download ... (' + self.ollama_v_model + ') ')
-                        if (os.name == 'nt'):
-                            try:
-                                subprocess.Popen(['cmd.exe', '/c', 'ollama', 'pull', self.ollama_v_model, ])
-                            except:
-                                pass
-                        self.ollama_client.pull(self.ollama_v_model, )
-                        self.ollama_v_enable = True
-                        self.bot_auth        = True
-                        self.ollama_models.append(self.ollama_v_model)
-                        print(' ollama  : model download complete.')
-                    except:
-                        print(' ollama  : model download error!')
-
-            if (ollama_x_nick_name != ''):
-                self.ollama_x_enable     = False
-                self.ollama_x_nick_name  = ollama_x_nick_name
-                self.ollama_x_model      = ollama_x_model
-                self.ollama_x_token      = int(ollama_x_token)
-                if (self.ollama_x_model in self.ollama_models):
-                    self.ollama_x_enable = True
-                    self.bot_auth        = True
-                else:
-                    try:
-                        print(' ollama  : model download ... (' + self.ollama_x_model + ') ')
-                        if (os.name == 'nt'):
-                            try:
-                                subprocess.Popen(['cmd.exe', '/c', 'ollama', 'pull', self.ollama_x_model, ])
-                            except:
-                                pass
-                        self.ollama_client.pull(self.ollama_x_model, )
-                        self.ollama_x_enable = True
-                        self.bot_auth        = True
-                        self.ollama_models.append(self.ollama_x_model)
-                        print(' ollama  : model download complete.')
-                    except:
-                        print(' ollama  : model download error!')
-
-        # 戻り値
-        if (self.bot_auth == True):
+        if self.ollama_client is not None:
             return True
         else:
             return False
 
-    def setTimeOut(self, timeOut=60, ):
-        self.timeOut = timeOut
+    def update_ollama_models(self, ):
+        self.ollama_models = []
+        get_models  = self.ollama_client.list().get('models')
+        for model in get_models:
+            self.ollama_models.append(model.get('model'))
+        return True
+
+    def model_load(self, model_name):
+        if (model_name in self.ollama_models):
+            return True, model_name
+        if (model_name.find(':') == 0):
+            for olm_model in self.ollama_models:
+                olm_model_hit = olm_model.find(':')
+                if (olm_model_hit >= 0):
+                    if (model_name == olm_model[:olm_model_hit]):
+                        return True, olm_model
+                else:
+                    if (model_name == olm_model):
+                        return True, olm_model
+
+        print(' ollama  : model download ... (' + model_name + ') ')
+
+        def download(self, down_name):
+            try:
+                if (os.name == 'nt'):
+                    try:
+                        subprocess.call(['cmd.exe', '/c', 'ollama', 'pull', down_name, ])
+                        self.ollama_client.pull(down_name, )
+                        time.sleep(2.00)
+                        self.update_ollama_models()
+                    except:
+                        pass
+                else:
+                    self.ollama_client.pull(down_name, )
+                    time.sleep(2.00)
+                    self.update_ollama_models()
+                if (down_name in self.ollama_models):
+                    return True, down_name
+            except:
+                pass
+            return False, down_name
+
+        hit = False
+        model = model_name
+        if (model_name.find(':') >= 0):
+
+            hit, model = download(self=self, down_name=model_name, )
+
+        else:
+
+            if (hit == False):
+                hit, model = download(self=self, down_name=model_name+':1b', )
+
+            if (hit == False):
+                hit, model = download(self=self, down_name=model_name+':1.5b', )
+
+            if (hit == False):
+                hit, model = download(self=self, down_name=model_name+':2b', )
+
+            if (hit == False):
+                hit, model = download(self=self, down_name=model_name+':3b', )
+
+            if (hit == False):
+                hit, model = download(self=self, down_name=model_name+':7b', )
+
+            if (hit == False):
+                hit, model = download(self=self, down_name=model_name+':8b', )
+
+            if (hit == False):
+                hit, model = download(self=self, down_name=model_name+':11b', )
+
+        if (hit == True):
+            print(' ollama  : model download complete.')
+            return True, model
+        else:
+            print(' ollama  : model download error!')
+            return False, model_name
+
+    def get_models(self, ):
+        try:
+            response = requests.get("https://ollamadb.dev/api/v1/models")
+
+            if response.status_code == 200:
+                self.models = {}
+                models = response.json()
+                for model in models['models']:
+                    model_name = model["model_name"]
+                    labels = model["labels"]
+                    if model["capability"] is not None:
+                        modality = model["capability"]
+                    else:
+                        modality = ''
+                    ymd = model["last_updated"].replace('-', '/')
+                    #print(model_name, modality, labels)
+                    if (len(labels) != 0):
+                        for label in labels:
+                            key = model_name + ':' + label
+                            self.models[key] = {"id":key, "token":"9999", "modality":modality, "date": ymd, }
+                    else:
+                            key = model_name
+                            self.models[key] = {"id":key, "token":"9999", "modality":modality, "date": ymd, }
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def set_models(self, max_wait_sec='',
+                         a_model='', a_use_tools='',
+                         b_model='', b_use_tools='',
+                         v_model='', v_use_tools='',
+                         x_model='', x_use_tools='', ):
+        try:
+            if (not max_wait_sec in ['', 'auto']):
+                if (str(max_wait_sec) != str(self.ollama_max_wait_sec)):
+                    self.ollama_max_wait_sec = int(max_wait_sec)
+            if (a_model != ''):
+                if (a_model != self.ollama_a_model) and (a_model in self.models):
+                    hit, model = self.model_load(a_model)
+                    self.ollama_a_enable = hit
+                    self.ollama_a_model = model
+                    self.ollama_a_token = int(self.models[a_model]['token'])
+            if (a_use_tools != ''):
+                self.ollama_a_use_tools = a_use_tools
+            if (b_model != ''):
+                if (b_model != self.ollama_b_model) and (b_model in self.models):
+                    hit, model = self.model_load(b_model)
+                    self.ollama_b_enable = hit
+                    self.ollama_b_model = model
+                    self.ollama_b_token = int(self.models[b_model]['token'])
+            if (b_use_tools != ''):
+                self.ollama_b_use_tools = b_use_tools
+            if (v_model != ''):
+                if (v_model != self.ollama_v_model) and (v_model in self.models):
+                    hit, model = self.model_load(v_model)
+                    self.ollama_v_enable = hit
+                    self.ollama_v_model = model
+                    self.ollama_v_token = int(self.models[v_model]['token'])
+            if (v_use_tools != ''):
+                self.ollama_v_use_tools = v_use_tools
+            if (x_model != ''):
+                if (x_model != self.ollama_x_model) and (x_model in self.models):
+                    hit, model = self.model_load(x_model)
+                    self.ollama_x_enable = hit
+                    self.ollama_x_model = model
+                    self.ollama_x_token = int(self.models[x_model]['token'])
+            if (x_use_tools != ''):
+                self.ollama_x_use_tools = x_use_tools
+        except Exception as e:
+            print(e)
+            return False
+        return True
 
     def text_replace(self, text=''):
         if "```" not in text:
@@ -456,12 +622,14 @@ class _ollamaAPI:
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
-        res_name = self.ollama_a_nick_name
-        res_api  = self.ollama_a_model
+        res_name  = self.ollama_a_nick_name
+        res_api   = self.ollama_a_model
+        use_tools = self.ollama_a_use_tools
         if  (chat_class == 'ollama'):
             if (self.ollama_b_enable == True):
-                res_name = self.ollama_b_nick_name
-                res_api  = self.ollama_b_model
+                res_name  = self.ollama_b_nick_name
+                res_api   = self.ollama_b_model
+                use_tools = self.ollama_b_use_tools
 
         # モデル 補正 (assistant)
         if ((chat_class == 'assistant') \
@@ -472,8 +640,9 @@ class _ollamaAPI:
         or  (chat_class == 'アシスタント') \
         or  (model_select == 'x')):
             if (self.ollama_x_enable == True):
-                res_name = self.ollama_x_nick_name
-                res_api  = self.ollama_x_model
+                res_name  = self.ollama_x_nick_name
+                res_api   = self.ollama_x_model
+                use_tools = self.ollama_x_use_tools
 
         # model 指定
         if (self.ollama_a_nick_name != ''):
@@ -483,54 +652,65 @@ class _ollamaAPI:
             if (inpText.strip()[:len(self.ollama_b_nick_name)+1].lower() == (self.ollama_b_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.ollama_b_nick_name)+1:]
                 if (self.ollama_b_enable == True):
-                        res_name = self.ollama_b_nick_name
-                        res_api  = self.ollama_b_model
+                        res_name  = self.ollama_b_nick_name
+                        res_api   = self.ollama_b_model
+                        use_tools = self.ollama_b_use_tools
         if (self.ollama_v_nick_name != ''):
             if (inpText.strip()[:len(self.ollama_v_nick_name)+1].lower() == (self.ollama_v_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.ollama_v_nick_name)+1:]
                 if   (self.ollama_v_enable == True):
                     if  (len(image_urls) > 0) \
                     and (len(image_urls) == len(upload_files)):
-                        res_name = self.ollama_v_nick_name
-                        res_api  = self.ollama_v_model
+                        res_name  = self.ollama_v_nick_name
+                        res_api   = self.ollama_v_model
+                        use_tools = self.ollama_v_use_tools
                 elif (self.ollama_x_enable == True):
-                        res_name = self.ollama_x_nick_name
-                        res_api  = self.ollama_x_model
+                        res_name  = self.ollama_x_nick_name
+                        res_api   = self.ollama_x_model
+                        use_tools = self.ollama_x_use_tools
         if (self.ollama_x_nick_name != ''):
             if (inpText.strip()[:len(self.ollama_x_nick_name)+1].lower() == (self.ollama_x_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.ollama_x_nick_name)+1:]
                 if   (self.ollama_x_enable == True):
-                        res_name = self.ollama_x_nick_name
-                        res_api  = self.ollama_x_model
+                        res_name  = self.ollama_x_nick_name
+                        res_api   = self.ollama_x_model
+                        use_tools = self.ollama_x_use_tools
                 elif (self.ollama_b_enable == True):
-                        res_name = self.ollama_b_nick_name
-                        res_api  = self.ollama_b_model
+                        res_name  = self.ollama_b_nick_name
+                        res_api   = self.ollama_b_model
+                        use_tools = self.ollama_b_use_tools
         if   (inpText.strip()[:5].lower() == ('riki,')):
             inpText = inpText.strip()[5:]
             if   (self.ollama_x_enable == True):
-                        res_name = self.ollama_x_nick_name
-                        res_api  = self.ollama_x_model
+                        res_name  = self.ollama_x_nick_name
+                        res_api   = self.ollama_x_model
+                        use_tools = self.ollama_x_use_tools
             elif (self.ollama_b_enable == True):
-                        res_name = self.ollama_b_nick_name
-                        res_api  = self.ollama_b_model
+                        res_name  = self.ollama_b_nick_name
+                        res_api   = self.ollama_b_model
+                        use_tools = self.ollama_b_use_tools
         elif (inpText.strip()[:7].lower() == ('vision,')):
             inpText = inpText.strip()[7:]
             if   (self.ollama_v_enable == True):
                 if  (len(image_urls) > 0) \
                 and (len(image_urls) == len(upload_files)):
-                        res_name = self.ollama_v_nick_name
-                        res_api  = self.ollama_v_model
+                        res_name  = self.ollama_v_nick_name
+                        res_api   = self.ollama_v_model
+                        use_tools = self.ollama_v_use_tools
             elif (self.ollama_x_enable == True):
-                        res_name = self.ollama_x_nick_name
-                        res_api  = self.ollama_x_model
+                        res_name  = self.ollama_x_nick_name
+                        res_api   = self.ollama_x_model
+                        use_tools = self.ollama_x_use_tools
         elif (inpText.strip()[:10].lower() == ('assistant,')):
             inpText = inpText.strip()[10:]
             if   (self.ollama_x_enable == True):
-                        res_name = self.ollama_x_nick_name
-                        res_api  = self.ollama_x_model
+                        res_name  = self.ollama_x_nick_name
+                        res_api   = self.ollama_x_model
+                        use_tools = self.ollama_x_use_tools
             elif (self.ollama_b_enable == True):
-                        res_name = self.ollama_b_nick_name
-                        res_api  = self.ollama_b_model
+                        res_name  = self.ollama_b_nick_name
+                        res_api   = self.ollama_b_model
+                        use_tools = self.ollama_b_use_tools
         elif (inpText.strip()[:7].lower() == ('openai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
@@ -558,23 +738,27 @@ class _ollamaAPI:
 
         # モデル 未設定時
         if (res_api is None):
-            res_name = self.ollama_a_nick_name
-            res_api  = self.ollama_a_model
+            res_name  = self.ollama_a_nick_name
+            res_api   = self.ollama_a_model
+            use_tools = self.ollama_a_use_tools
             if (self.ollama_b_enable == True):
                 if (len(upload_files) > 0) \
                 or (len(inpText) > 1000):
-                    res_name = self.ollama_b_nick_name
-                    res_api  = self.ollama_b_model
+                    res_name  = self.ollama_b_nick_name
+                    res_api   = self.ollama_b_model
+                    use_tools = self.ollama_b_use_tools
 
         # モデル 補正 (vision)
         if  (len(image_urls) > 0) \
         and (len(image_urls) == len(upload_files)):
             if   (self.ollama_v_enable == True):
-                res_name = self.ollama_v_nick_name
-                res_api  = self.ollama_v_model
+                res_name  = self.ollama_v_nick_name
+                res_api   = self.ollama_v_model
+                use_tools = self.ollama_v_use_tools
             elif (self.ollama_x_enable == True):
-                res_name = self.ollama_x_nick_name
-                res_api  = self.ollama_x_model
+                res_name  = self.ollama_x_nick_name
+                res_api   = self.ollama_x_model
+                use_tools = self.ollama_x_use_tools
 
         # history 追加・圧縮 (古いメッセージ)
         res_history = self.history_add(history=res_history, sysText=sysText, reqText=reqText, inpText=inpText, )
@@ -611,11 +795,11 @@ class _ollamaAPI:
             messages.append(msg)
 
         # ストリーム実行?
-        if (session_id == 'admin'):
-            stream = True
-        else:
-            stream = False
-        print(' stream = False, ')
+        #if (session_id == 'admin'):
+        #    stream = True
+        #else:
+        #    stream = False
+        #print(' stream = False, ')
         stream = False
 
         # 実行ループ
@@ -646,7 +830,7 @@ class _ollamaAPI:
                     try:
                         chkTime     = time.time()
                         for chunk in response:
-                            if ((time.time() - chkTime) > self.timeOut):
+                            if ((time.time() - chkTime) > self.ollama_max_wait_sec):
                                 break
                             #print(chunk)
 
@@ -770,11 +954,16 @@ if __name__ == '__main__':
                             ollama_key.getkey('ollama','ollama_default_gpt'), ollama_key.getkey('ollama','ollama_default_class'),
                             ollama_key.getkey('ollama','ollama_auto_continue'),
                             ollama_key.getkey('ollama','ollama_max_step'), ollama_key.getkey('ollama','ollama_max_session'),
+                            ollama_key.getkey('ollama','ollama_max_wait_sec'),
                             ollama_key.getkey('ollama','ollama_server'), ollama_key.getkey('ollama','ollama_port'),
                             ollama_key.getkey('ollama','ollama_a_nick_name'), ollama_key.getkey('ollama','ollama_a_model'), ollama_key.getkey('ollama','ollama_a_token'),
+                            ollama_key.getkey('ollama','ollama_a_use_tools'),
                             ollama_key.getkey('ollama','ollama_b_nick_name'), ollama_key.getkey('ollama','ollama_b_model'), ollama_key.getkey('ollama','ollama_b_token'),
+                            ollama_key.getkey('ollama','ollama_b_use_tools'),
                             ollama_key.getkey('ollama','ollama_v_nick_name'), ollama_key.getkey('ollama','ollama_v_model'), ollama_key.getkey('ollama','ollama_v_token'),
+                            ollama_key.getkey('ollama','ollama_v_use_tools'),
                             ollama_key.getkey('ollama','ollama_x_nick_name'), ollama_key.getkey('ollama','ollama_x_model'), ollama_key.getkey('ollama','ollama_x_token'),
+                            ollama_key.getkey('ollama','ollama_x_use_tools'),
                             )
         print('authenticate:', res, )
         if (res == True):
@@ -799,8 +988,7 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'mini,おはようございます。'
-                #inpText = 'phi3,おはようございます。'
+                inpText = 'おはようございます。'
                 print()
                 print('[Request]')
                 print(reqText, inpText )

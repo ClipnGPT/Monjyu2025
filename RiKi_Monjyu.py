@@ -295,20 +295,20 @@ if __name__ == '__main__':
         subai_thread = {}
         for n in range(int(numSubAIs)):
             self_port = str(SUB_BASE + n + 1)
-            subai_class[n] = RiKi_Monjyu__subai.SubAiClass(runMode=runMode, qLog_fn=qLog_fn,
-                                                        main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
-                                                        core_port=core_port, sub_base=sub_base, num_subais=numSubAIs,
-                                                        self_port=self_port, profile_number=subai_profiles[n])
+            subai_class[n] = RiKi_Monjyu__subai.SubAiClass( runMode=runMode, qLog_fn=qLog_fn,
+                                                            main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
+                                                            core_port=core_port, sub_base=sub_base, num_subais=numSubAIs,
+                                                            self_port=self_port, profile_number=subai_profiles[n])
             subai_thread[n] = threading.Thread(target=subai_class[n].run)
             subai_thread[n].daemon = True
             subai_thread[n].start()
 
     # コアAI起動
     if True:
-        coreai_class = RiKi_Monjyu__coreai.CoreAiClass(runMode=runMode, qLog_fn=qLog_fn,
+        coreai = RiKi_Monjyu__coreai.CoreAiClass(   runMode=runMode, qLog_fn=qLog_fn,
                                                     main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
                                                     core_port=core_port, sub_base=sub_base, num_subais=numSubAIs)
-        coreai_thread = threading.Thread(target=coreai_class.run)
+        coreai_thread = threading.Thread(target=coreai.run)
         coreai_thread.daemon = True
         coreai_thread.start()
 
@@ -317,6 +317,7 @@ if __name__ == '__main__':
         self_port = str(CORE_PORT + 8)
         webui_class = RiKi_Monjyu__webui.WebUiClass(runMode=runMode, qLog_fn=qLog_fn,
                                                     main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
+                                                    coreai=coreai, 
                                                     core_port=core_port, sub_base=sub_base, num_subais=numSubAIs,
                                                     self_port=self_port)
         webui_thread = threading.Thread(target=webui_class.run)

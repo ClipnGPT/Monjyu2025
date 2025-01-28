@@ -352,15 +352,6 @@ class CoreAiClass:
         if True:
             if self.chat_class.openrt_enable is None:
                 self.chat_class.openrt_auth()
-
-                if self.chat_class.openrt_enable:
-                    self.data.ort_models = {}
-                    for key,value in self.chat_class.openrtAPI.models.items():
-                        self.data.ort_models[key] = self.chat_class.openrtAPI.models[key]["date"] + " : " \
-                                                  + self.chat_class.openrtAPI.models[key]["id"] + ", " \
-                                                  + self.chat_class.openrtAPI.models[key]["token"] + ", " \
-                                                  + self.chat_class.openrtAPI.models[key]["modality"] + ", "
-
             if self.chat_class.openrt_enable:
                 models['[openrt]'] = '[OpenRouter]'
                 if self.chat_class.openrtAPI.openrt_a_enable and self.chat_class.openrtAPI.openrt_a_nick_name:

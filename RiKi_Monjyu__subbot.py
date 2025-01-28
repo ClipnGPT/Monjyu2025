@@ -464,6 +464,7 @@ class ChatClass:
                             openrt_key.getkey('openrt','openrt_default_gpt'), openrt_key.getkey('openrt','openrt_default_class'),
                             openrt_key.getkey('openrt','openrt_auto_continue'),
                             openrt_key.getkey('openrt','openrt_max_step'), openrt_key.getkey('openrt','openrt_max_session'),
+                            openrt_key.getkey('openrt','openrt_max_wait_sec'),
                             key_id,
                             openrt_key.getkey('openrt','openrt_a_nick_name'), openrt_key.getkey('openrt','openrt_a_model'), openrt_key.getkey('openrt','openrt_a_token'),
                             openrt_key.getkey('openrt','openrt_a_use_tools'),
@@ -508,11 +509,16 @@ class ChatClass:
                             ollama_key.getkey('ollama','ollama_default_gpt'), ollama_key.getkey('ollama','ollama_default_class'),
                             ollama_key.getkey('ollama','ollama_auto_continue'),
                             ollama_key.getkey('ollama','ollama_max_step'), ollama_key.getkey('ollama','ollama_max_session'),
+                            ollama_key.getkey('ollama','ollama_max_wait_sec'),
                             server, port,
                             ollama_key.getkey('ollama','ollama_a_nick_name'), ollama_key.getkey('ollama','ollama_a_model'), ollama_key.getkey('ollama','ollama_a_token'),
+                            ollama_key.getkey('ollama','ollama_a_use_tools'),
                             ollama_key.getkey('ollama','ollama_b_nick_name'), ollama_key.getkey('ollama','ollama_b_model'), ollama_key.getkey('ollama','ollama_b_token'),
+                            ollama_key.getkey('ollama','ollama_b_use_tools'),
                             ollama_key.getkey('ollama','ollama_v_nick_name'), ollama_key.getkey('ollama','ollama_v_model'), ollama_key.getkey('ollama','ollama_v_token'),
+                            ollama_key.getkey('ollama','ollama_v_use_tools'),
                             ollama_key.getkey('ollama','ollama_x_nick_name'), ollama_key.getkey('ollama','ollama_x_model'), ollama_key.getkey('ollama','ollama_x_token'),
+                            ollama_key.getkey('ollama','ollama_x_use_tools'),
                             )
 
         if res == True:
@@ -1151,14 +1157,14 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot openrt ...')
 
                     if (self.data is not None):
-                        self.openrtAPI.set_models(  a_model=self.data.ort_setting['ort_a_model'],
-                                                    a_use_tools=self.data.ort_setting['ort_a_use_tools'],
-                                                    b_model=self.data.ort_setting['ort_b_model'],
-                                                    b_use_tools=self.data.ort_setting['ort_b_use_tools'],
-                                                    v_model=self.data.ort_setting['ort_v_model'],
-                                                    v_use_tools=self.data.ort_setting['ort_v_use_tools'],
-                                                    x_model=self.data.ort_setting['ort_x_model'],
-                                                    x_use_tools=self.data.ort_setting['ort_x_use_tools'], )
+                        self.openrtAPI.set_models(  a_model=self.data.engine_setting['openrt']['a_model'],
+                                                    a_use_tools=self.data.engine_setting['openrt']['a_use_tools'],
+                                                    b_model=self.data.engine_setting['openrt']['b_model'],
+                                                    b_use_tools=self.data.engine_setting['openrt']['b_use_tools'],
+                                                    v_model=self.data.engine_setting['openrt']['v_model'],
+                                                    v_use_tools=self.data.engine_setting['openrt']['v_use_tools'],
+                                                    x_model=self.data.engine_setting['openrt']['x_model'],
+                                                    x_use_tools=self.data.engine_setting['openrt']['x_use_tools'], )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.openrtAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
@@ -1242,6 +1248,17 @@ class ChatClass:
 
                 try:
                     qLog.log('info', self.proc_id, 'chatBot ollama ...')
+
+                    if (self.data is not None):
+                        self.ollamaAPI.set_models(  a_model=self.data.engine_setting['ollama']['a_model'],
+                                                    a_use_tools=self.data.engine_setting['ollama']['a_use_tools'],
+                                                    b_model=self.data.engine_setting['ollama']['b_model'],
+                                                    b_use_tools=self.data.engine_setting['ollama']['b_use_tools'],
+                                                    v_model=self.data.engine_setting['ollama']['v_model'],
+                                                    v_use_tools=self.data.engine_setting['ollama']['v_use_tools'],
+                                                    x_model=self.data.engine_setting['ollama']['x_model'],
+                                                    x_use_tools=self.data.engine_setting['ollama']['x_use_tools'], )
+
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.ollamaAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,

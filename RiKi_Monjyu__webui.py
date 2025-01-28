@@ -94,21 +94,25 @@ class postAddinsDataModel(BaseModel):
     image_ocr_execute: str
     image_yolo_execute: str
 
-# OpenRouter設定データモデル
-class postOpenRouterDataModel(BaseModel):
-    ort_a_model: str
-    ort_a_use_tools: str
-    ort_b_model: str
-    ort_b_use_tools: str
-    ort_v_model: str
-    ort_v_use_tools: str
-    ort_x_model: str
-    ort_x_use_tools: str
+# エンジン設定データモデル
+class postEngineSettingDataModel(BaseModel):
+    engine: str
+    max_wait_sec: str
+    a_model: str
+    a_use_tools: str
+    b_model: str
+    b_use_tools: str
+    v_model: str
+    v_use_tools: str
+    x_model: str
+    x_use_tools: str
 
 # Live設定データモデル
 class postLiveDataModel(BaseModel):
-    req_mode: str
+    engine: str
     voice: str
+    shot_interval_sec: str
+    clip_interval_sec: str
 
 # webAgent engine設定データモデル
 class postWebAgentEngine(BaseModel):
@@ -149,12 +153,14 @@ class WebUiProcess:
     """
     def __init__(self,  runMode: str = 'debug', qLog_fn: str = '',
                         main=None, conf=None, data=None, addin=None, botFunc=None,
+                        coreai=None,
                         core_port: str = '8000', sub_base: str = '8100', num_subais: str = '48', 
                         self_port: str = '8008'):
 
         # Web UIクラスのインスタンス化とスレッドの開始
         webui_class = WebUiClass(   runMode=runMode, qLog_fn=qLog_fn,
                                     main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
+                                    coreai=coreai,
                                     core_port=core_port, sub_base=sub_base, num_subais=num_subais, 
                                     self_port=self_port, )
         webui_thread = threading.Thread(target=webui_class.run)
@@ -171,6 +177,7 @@ class WebUiClass:
     """
     def __init__(self,  runMode: str = 'debug', qLog_fn: str = '',
                         main=None, conf=None, data=None, addin=None, botFunc=None,
+                        coreai=None,
                         core_port: str = '8000', sub_base: str = '8100', num_subais: str = '48', 
                         self_port: str = '8008', ):
         self.runMode = runMode
@@ -192,6 +199,7 @@ class WebUiClass:
         self.data      = data
         self.addin     = addin
         self.botFunc   = botFunc
+        self.coreai    = coreai
         self.core_port = core_port
         self.sub_base  = sub_base
         self.self_port = self_port
@@ -217,9 +225,9 @@ class WebUiClass:
         self.app.post("/post_mode_setting")(self.post_mode_setting)
         self.app.get("/get_addins_setting")(self.get_addins_setting)
         self.app.post("/post_addins_setting")(self.post_addins_setting)
-        self.app.get("/get_ort_models")(self.get_ort_models)
-        self.app.get("/get_ort_setting")(self.get_ort_setting)
-        self.app.post("/post_ort_setting")(self.post_ort_setting)
+        self.app.get("/get_engine_models")(self.get_engine_models)
+        self.app.get("/get_engine_setting")(self.get_engine_setting)
+        self.app.post("/post_engine_setting")(self.post_engine_setting)
         self.app.get("/get_live_voices")(self.get_live_voices)
         self.app.get("/get_live_setting")(self.get_live_setting)
         self.app.post("/post_live_setting")(self.post_live_setting)
@@ -327,65 +335,146 @@ class WebUiClass:
                                         "image_yolo_execute": image_yolo_execute, }
         return JSONResponse(content={'message': 'post_addins_setting successfully'})
 
-    async def get_ort_models(self, ) -> Dict[str, str]:
+    async def get_engine_models(self, engine: str) -> Dict[str, str]:
         # 設定情報を返す
-        if (self.data is not None):
-            result = self.data.ort_models
+        if (self.data is not None) and (self.coreai is not None):
+
+            if (engine == 'openrt'):
+                if (len(self.data.engine_models['openrt']) != len(self.coreai.chat_class.openrtAPI.models)):
+                    self.data.engine_models['openrt'] = {}
+                    for key,value in self.coreai.chat_class.openrtAPI.models.items():
+                        self.data.engine_models['openrt'][key]  = self.coreai.chat_class.openrtAPI.models[key]["date"] + " : " \
+                                                                + self.coreai.chat_class.openrtAPI.models[key]["id"] + ", " \
+                                                                + self.coreai.chat_class.openrtAPI.models[key]["token"] + ", " \
+                                                                + self.coreai.chat_class.openrtAPI.models[key]["modality"] + ", "
+
+            if (engine == 'ollama'):
+                if (len(self.data.engine_models['ollama']) != len(self.coreai.chat_class.ollamaAPI.models)):
+                    self.data.engine_models['ollama'] = {}
+                    for key,value in self.coreai.chat_class.ollamaAPI.models.items():
+                        self.data.engine_models['ollama'][key]  = self.coreai.chat_class.ollamaAPI.models[key]["date"] + " : " \
+                                                                + self.coreai.chat_class.ollamaAPI.models[key]["id"] + ", " \
+                                                                + self.coreai.chat_class.ollamaAPI.models[key]["token"] + ", " \
+                                                                + self.coreai.chat_class.ollamaAPI.models[key]["modality"] + ", "
+
+            result = self.data.engine_models[engine]
         else:
             result = {}
         return JSONResponse(content=result)
 
-    async def get_ort_setting(self):
+    async def get_engine_setting(self, engine: str):
         # 設定情報を返す
-        if (self.data is not None):
-            result = self.data.ort_setting
+        if (self.data is not None) and (self.coreai is not None):
+
+            if (engine == 'openrt'):
+                self.data.engine_setting['openrt'] = {
+                    "max_wait_sec": str(self.coreai.chat_class.openrtAPI.openrt_max_wait_sec),
+                    "a_model": self.coreai.chat_class.openrtAPI.openrt_a_model,
+                    "a_use_tools": self.coreai.chat_class.openrtAPI.openrt_a_use_tools,
+                    "b_model": self.coreai.chat_class.openrtAPI.openrt_b_model,
+                    "b_use_tools": self.coreai.chat_class.openrtAPI.openrt_b_use_tools,
+                    "v_model": self.coreai.chat_class.openrtAPI.openrt_v_model,
+                    "v_use_tools": self.coreai.chat_class.openrtAPI.openrt_v_use_tools,
+                    "x_model": self.coreai.chat_class.openrtAPI.openrt_x_model,
+                    "x_use_tools": self.coreai.chat_class.openrtAPI.openrt_x_use_tools,
+                }
+
+            if (engine == 'ollama'):
+                self.data.engine_setting['ollama'] = {
+                    "max_wait_sec": str(self.coreai.chat_class.ollamaAPI.ollama_max_wait_sec),
+                    "a_model": self.coreai.chat_class.ollamaAPI.ollama_a_model,
+                    "a_use_tools": self.coreai.chat_class.ollamaAPI.ollama_a_use_tools,
+                    "b_model": self.coreai.chat_class.ollamaAPI.ollama_b_model,
+                    "b_use_tools": self.coreai.chat_class.ollamaAPI.ollama_b_use_tools,
+                    "v_model": self.coreai.chat_class.ollamaAPI.ollama_v_model,
+                    "v_use_tools": self.coreai.chat_class.ollamaAPI.ollama_v_use_tools,
+                    "x_model": self.coreai.chat_class.ollamaAPI.ollama_x_model,
+                    "x_use_tools": self.coreai.chat_class.ollamaAPI.ollama_x_use_tools,
+                }
+
+            result = self.data.engine_setting[engine]
         else:
             result = {}
         return JSONResponse(content=result)
 
-    async def post_ort_setting(self, data: postOpenRouterDataModel):
+    async def post_engine_setting(self, data: postEngineSettingDataModel):
         # 設定情報を更新する
-        ort_a_model = str(data.ort_a_model) if data.ort_a_model else ""
-        ort_a_use_tools = str(data.ort_a_use_tools) if data.ort_a_use_tools else ""
-        ort_b_model = str(data.ort_b_model) if data.ort_b_model else ""
-        ort_b_use_tools = str(data.ort_b_use_tools) if data.ort_b_use_tools else ""
-        ort_v_model = str(data.ort_v_model) if data.ort_v_model else ""
-        ort_v_use_tools = str(data.ort_v_use_tools) if data.ort_v_use_tools else ""
-        ort_x_model = str(data.ort_x_model) if data.ort_x_model else ""
-        ort_x_use_tools = str(data.ort_x_use_tools) if data.ort_x_use_tools else ""
+        engine = str(data.engine) if data.engine else ""
+        max_wait_sec = str(data.max_wait_sec) if data.max_wait_sec else ""
+        a_model = str(data.a_model) if data.a_model else ""
+        a_use_tools = str(data.a_use_tools) if data.a_use_tools else ""
+        b_model = str(data.b_model) if data.b_model else ""
+        b_use_tools = str(data.b_use_tools) if data.b_use_tools else ""
+        v_model = str(data.v_model) if data.v_model else ""
+        v_use_tools = str(data.v_use_tools) if data.v_use_tools else ""
+        x_model = str(data.x_model) if data.x_model else ""
+        x_use_tools = str(data.x_use_tools) if data.x_use_tools else ""
         if (self.data is not None):
-            self.data.ort_setting = {   "ort_a_model": ort_a_model,
-                                        "ort_a_use_tools": ort_a_use_tools,
-                                        "ort_b_model": ort_b_model,
-                                        "ort_b_use_tools": ort_b_use_tools,
-                                        "ort_v_model": ort_v_model,
-                                        "ort_v_use_tools": ort_v_use_tools,
-                                        "ort_x_model": ort_x_model,
-                                        "ort_x_use_tools": ort_x_use_tools, }
-        return JSONResponse(content={'message': 'post_ort_setting successfully'})
+            self.data.engine_setting[engine] = {"max_wait_sec": max_wait_sec,
+                                                "a_model": a_model, "a_use_tools": a_use_tools,
+                                                "b_model": b_model, "b_use_tools": b_use_tools,
+                                                "v_model": v_model, "v_use_tools": v_use_tools,
+                                                "x_model": x_model, "x_use_tools": x_use_tools, }
+            try:
+                if (self.coreai is not None):
+                    if (engine == 'openrt'):
+                        #self.coreai.chat_class.openrtAPI.set_models(max_wait_sec=max_wait_sec,
+                        #                                            a_model=a_model, a_use_tools=a_use_tools,
+                        #                                            b_model=b_model, b_use_tools=b_use_tools,
+                        #                                            v_model=v_model, v_use_tools=v_use_tools,
+                        #                                            x_model=x_model, x_use_tools=x_use_tools, )
+                        engine_set_thread = threading.Thread(
+                            target=self.coreai.chat_class.openrtAPI.set_models,
+                            args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
+                                                v_model, v_use_tools, x_model, x_use_tools, ),
+                            daemon=True, )
+                        engine_set_thread.start()
 
-    async def get_live_voices(self, req_mode: str) -> Dict[str, str]:
+                    if (engine == 'ollama'):
+                        #self.coreai.chat_class.ollamaAPI.set_models(max_wait_sec=max_wait_sec,
+                        #                                            a_model=a_model, a_use_tools=a_use_tools,
+                        #                                            b_model=b_model, b_use_tools=b_use_tools,
+                        #                                            v_model=v_model, v_use_tools=v_use_tools,
+                        #                                            x_model=x_model, x_use_tools=x_use_tools, )
+                        engine_set_thread = threading.Thread(
+                            target=self.coreai.chat_class.ollamaAPI.set_models,
+                            args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
+                                                v_model, v_use_tools, x_model, x_use_tools, ),
+                            daemon=True, )
+                        engine_set_thread.start()
+
+            except Exception as e:
+                print(e)
+                raise HTTPException(status_code=500, detail='post_engine_setting error:' + e)
+
+        return JSONResponse(content={'message': 'post_engine_setting successfully'})
+
+    async def get_live_voices(self, engine: str) -> Dict[str, str]:
         # 設定情報を返す
         if (self.data is not None):
-            result = self.data.live_voices[req_mode]
+            result = self.data.live_voices[engine]
         else:
             result = {}
         return JSONResponse(content=result)
 
-    async def get_live_setting(self, req_mode: str):
+    async def get_live_setting(self, engine: str):
         # 設定情報を返す
         if (self.data is not None):
-            result = self.data.live_setting[req_mode]
+            result = self.data.live_setting[engine]
         else:
             result = {}
         return JSONResponse(content=result)
 
     async def post_live_setting(self, data: postLiveDataModel):
         # 設定情報を更新する
-        req_mode = str(data.req_mode) if data.req_mode else ""
+        engine = str(data.engine) if data.engine else ""
         voice = str(data.voice) if data.voice else ""
+        shot_interval_sec = str(data.shot_interval_sec) if data.shot_interval_sec else ""
+        clip_interval_sec = str(data.clip_interval_sec) if data.clip_interval_sec else ""
         if (self.data is not None):
-            self.data.live_setting[req_mode] = {"voice": voice }
+            self.data.live_setting[engine] = {  "voice": voice,
+                                                "shot_interval_sec": shot_interval_sec,
+                                                "clip_interval_sec": clip_interval_sec, }
         return JSONResponse(content={'message': 'post_live_setting successfully'})
 
     async def get_webAgent_engine(self):

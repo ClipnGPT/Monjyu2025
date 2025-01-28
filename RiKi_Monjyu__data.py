@@ -93,8 +93,10 @@ class _data_class:
         self.openai_enable = True
         self.mode_setting = {}
         self.addins_setting = {}
-        self.ort_models = {}
-        self.ort_setting = {}
+        self.engine_models = {}
+        self.engine_models['openrt'] = {}
+        self.engine_models['ollama'] = {}
+        self.engine_setting = {}
         self.live_voices = {}
         self.live_setting = {}
         self.webAgent_useBrowser = ""
@@ -199,34 +201,40 @@ class _data_class:
             "image_yolo_execute": ""
         }
 
-        # OpenRouterの設定
-        self.ort_setting = {
-            "ort_a_model": "", 
-            "ort_a_use_tools": "", 
-            "ort_b_model": "", 
-            "ort_b_use_tools": "", 
-            "ort_v_model": "",
-            "ort_v_use_tools": "", 
-            "ort_x_model": "",
-            "ort_x_use_tools": "" 
+        # engineの設定
+        self.engine_setting['openrt'] = {
+            "max_wait_sec": "", 
+            "a_model": "", 
+            "a_use_tools": "", 
+            "b_model": "", 
+            "b_use_tools": "", 
+            "v_model": "",
+            "v_use_tools": "", 
+            "x_model": "",
+            "x_use_tools": "" 
         }
+        self.engine_setting['ollama'] = self.engine_setting['openrt']
 
         # liveの設定
-        self.live_voices[ 'freeai'] = {"Puck": "Puck", 
-                                       "Charon": "Charon", 
-                                       "Kore": "Kore", 
-                                       "Fenrir": "Fenrir", 
-                                       "Aoede": "Aoede" }
-        self.live_setting['freeai'] = { "voice": "Aoede", }
-        self.live_voices[ 'openai'] = {"alloy": "Alloy", 
-                                       "ash": "Ash",
-                                       "ballad": "Ballad",
-                                       "coral": "Coral", 
-                                       "echo": "Echo", 
-                                       "sage": "Sage", 
-                                       "shimmer": "Shimmer",
-                                       "verse": "Verse" }
-        self.live_setting['openai'] = { "voice": "alloy", }
+        self.live_voices[ 'freeai'] = { "Puck": "Puck", 
+                                        "Charon": "Charon", 
+                                        "Kore": "Kore", 
+                                        "Fenrir": "Fenrir", 
+                                        "Aoede": "Aoede" }
+        self.live_setting['freeai'] = { "voice": "Aoede", 
+                                        "shot_interval_sec":"",
+                                        "clip_interval_sec":"", }
+        self.live_voices[ 'openai'] = { "alloy": "Alloy", 
+                                        "ash": "Ash",
+                                        "ballad": "Ballad",
+                                        "coral": "Coral", 
+                                        "echo": "Echo", 
+                                        "sage": "Sage", 
+                                        "shimmer": "Shimmer",
+                                        "verse": "Verse" }
+        self.live_setting['openai'] = { "voice": "alloy",
+                                        "shot_interval_sec":"",
+                                        "clip_interval_sec":"", }
 
         # Agentの設定
         self.webAgent_useBrowser =  ""

@@ -83,7 +83,8 @@
             <div class="tab-header">
                 <button data-target="reset">Reset</button>
                 <button data-target="addins">Addins</button>
-                <button data-target="openrt">OpenRouter</button>
+                <button data-target="ort">OpenRT</button>
+                <button data-target="olm">Ollama</button>
                 <button data-target="live">Live</button>
                 <button data-target="agent">Agent</button>
                 <button data-target="reacts">Reacts</button>
@@ -194,11 +195,31 @@
             </div>
 
             <!-- OpenRouterタブ -->
-            <div class="tab-content" id="openrt" style="justify-content: center;">
+            <div class="tab-content" id="ort" style="justify-content: center;">
                 <table>
                     <tr><td align="right">　</td><td>　</td></tr>
                     <tr>
                         <td align="right">【OpenRouter】</td>
+                        <td>(setting)</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Timeout :</td>
+                        <td>
+                            <select id="ort_max_wait_sec" name="ort_max_wait_sec">
+                                <option value="">Auto (自動)</option>
+                                <option value="30"> 30秒</option>
+                                <option value="60"> 60秒</option>
+                                <option value="120">120秒</option>
+                                <option value="180">180秒</option>
+                                <option value="300">300秒</option>
+                                <option value="600">600秒</option>
+                                <option value="999">999秒</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr><td align="right">　</td><td>　</td></tr>
+                    <tr>
+                        <td align="right">　</td>
                         <td>(models)</td>
                     </tr>
                     <tr>
@@ -277,6 +298,110 @@
                 </table>
             </div>
 
+            <!-- Ollamaタブ -->
+            <div class="tab-content" id="olm" style="justify-content: center;">
+                <table>
+                    <tr><td align="right">　</td><td>　</td></tr>
+                    <tr>
+                        <td align="right">【Ollama】</td>
+                        <td>(setting)</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Timeout :</td>
+                        <td>
+                            <select id="olm_max_wait_sec" name="olm_max_wait_sec">
+                                <option value="">Auto (自動)</option>
+                                <option value="30"> 30秒</option>
+                                <option value="60"> 60秒</option>
+                                <option value="120">120秒</option>
+                                <option value="180">180秒</option>
+                                <option value="300">300秒</option>
+                                <option value="600">600秒</option>
+                                <option value="999">999秒</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr><td align="right">　</td><td>　</td></tr>
+                    <tr>
+                        <td align="right">　</td>
+                        <td>(models)</td>
+                    </tr>
+                    <tr>
+                        <td align="right">(olm-)a, :</td>
+                        <td>
+                            <select id="olm_a_model" name="olm_a_model">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">use_tools:</td>
+                        <td>
+                            <select id="olm_a_use_tools" name="olm_a_use_tools">
+                                <option value="">Auto (自動)</option>
+                                <option value="yes">Yes (有効)</option>
+                                <option value="no">No (無効)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr><td align="right">　</td><td align="center"><button type="button" id="olm-a2bvx-button">↓ (a to b,v,x,)</button></td></tr>
+                    <tr>
+                        <td align="right">(olm-)b, :</td>
+                        <td>
+                            <select id="olm_b_model" name="olm_b_model">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">use_tools:</td>
+                        <td>
+                            <select id="olm_b_use_tools" name="olm_b_use_tools">
+                                <option value="">Auto (自動)</option>
+                                <option value="yes">Yes (有効)</option>
+                                <option value="no">No (無効)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">(olm-)v, :</td>
+                        <td>
+                            <select id="olm_v_model" name="olm_v_model">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">use_tools:</td>
+                        <td>
+                            <select id="olm_v_use_tools" name="olm_v_use_tools">
+                                <option value="">Auto (自動)</option>
+                                <option value="yes">Yes (有効)</option>
+                                <option value="no">No (無効)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">(olm-)x, :</td>
+                        <td>
+                            <select id="olm_x_model" name="olm_x_model">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">use_tools:</td>
+                        <td>
+                            <select id="olm_x_use_tools" name="olm_x_use_tools">
+                                <option value="">Auto (自動)</option>
+                                <option value="yes">Yes (有効)</option>
+                                <option value="no">No (無効)</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
             <!-- Liveタブ -->
             <div class="tab-content" id="live" style="justify-content: center;">
                 <table>
@@ -293,6 +418,29 @@
                             </select>
                         </td>
                     </tr>
+                    <tr>
+                        <td align="right">画像送信間隔(秒):</td>
+                        <td>
+                            <select id="freeai_shot_interval_sec" name="freeai_shot_interval_sec">
+                                <option value="">Auto (自動)</option>
+                                <option value="1">1秒間隔</option>
+                                <option value="2">2秒間隔</option>
+                                <option value="3">3秒間隔</option>
+                                <option value="5">5秒間隔</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">クリップ送信後アイドル(秒):</td>
+                        <td>
+                            <select id="freeai_clip_interval_sec" name="freeai_clip_interval_sec">
+                                <option value="">Auto (自動)</option>
+                                <option value="15">15秒待機</option>
+                                <option value="30">30秒待機</option>
+                                <option value="60">60秒待機</option>
+                            </select>
+                        </td>
+                    </tr>
                     <tr><td align="right">　</td><td>　</td></tr>
                     <tr>
                         <td align="right">【openai】</td>
@@ -303,6 +451,29 @@
                         <td>
                             <select id="openai_voice" name="openai_voice">
                                 <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">画像送信間隔(秒):</td>
+                        <td>
+                            <select id="openai_shot_interval_sec" name="openai_shot_interval_sec">
+                                <option value="">Auto (自動)</option>
+                                <option value="1">1秒間隔</option>
+                                <option value="2">2秒間隔</option>
+                                <option value="3">3秒間隔</option>
+                                <option value="5">5秒間隔</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">クリップ送信後アイドル(秒):</td>
+                        <td>
+                            <select id="openai_clip_interval_sec" name="openai_clip_interval_sec">
+                                <option value="">Auto (自動)</option>
+                                <option value="15">15秒待機</option>
+                                <option value="30">30秒待機</option>
+                                <option value="60">60秒待機</option>
                             </select>
                         </td>
                     </tr>
