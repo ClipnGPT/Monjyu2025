@@ -217,7 +217,6 @@ class _claudeAPI:
         try:
             models = self.client.models.list()
             for model in models.data:
-                print(model)
                 key = model.id
                 create_ymd = model.created_at.strftime("%Y/%m/%d")
                 #print(key, create_ymd)
@@ -540,12 +539,18 @@ class _claudeAPI:
                 n += 1
                 self.print(session_id, f" claude  : { res_name.lower() }, { res_api }, pass={ n }, ")
 
+                # max_tokens
+                max_tokens = 8192
+                if (res_api.lower().find('opus') >= 0):
+                    max_tokens = 4096
+                    print('opus max_token=4096 !')
+
                 # Stream 表示
                 if (stream == True):
 
                     chkTime = time.time()
                     with self.client.messages.stream(   model=res_api, 
-                                                        max_tokens=4096,
+                                                        max_tokens=max_tokens,
                                                         temperature=temperature,
                                                         system=sysText,
                                                         messages=messages,
@@ -594,7 +599,7 @@ class _claudeAPI:
                 # 通常実行
                 if (stream == False):
                     response = self.client.messages.create( model=res_api, 
-                                                            #max_tokens=4096,
+                                                            max_tokens=max_tokens,
                                                             temperature=temperature,
                                                             system=sysText,
                                                             messages=messages,
