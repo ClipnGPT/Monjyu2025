@@ -183,9 +183,13 @@ class ChatClass:
                             perplexity_key.getkey('perplexity','perplexity_max_step'), perplexity_key.getkey('perplexity','perplexity_max_session'),
                             key_id,
                             perplexity_key.getkey('perplexity','perplexity_a_nick_name'), perplexity_key.getkey('perplexity','perplexity_a_model'), perplexity_key.getkey('perplexity','perplexity_a_token'),
+                            perplexity_key.getkey('perplexity','perplexity_a_use_tools'),
                             perplexity_key.getkey('perplexity','perplexity_b_nick_name'), perplexity_key.getkey('perplexity','perplexity_b_model'), perplexity_key.getkey('perplexity','perplexity_b_token'),
+                            perplexity_key.getkey('perplexity','perplexity_b_use_tools'),
                             perplexity_key.getkey('perplexity','perplexity_v_nick_name'), perplexity_key.getkey('perplexity','perplexity_v_model'), perplexity_key.getkey('perplexity','perplexity_v_token'),
+                            perplexity_key.getkey('perplexity','perplexity_v_use_tools'),
                             perplexity_key.getkey('perplexity','perplexity_x_nick_name'), perplexity_key.getkey('perplexity','perplexity_x_model'), perplexity_key.getkey('perplexity','perplexity_x_token'),
+                            perplexity_key.getkey('perplexity','perplexity_x_use_tools'),
                             )
 
         if res == True:
@@ -567,6 +571,65 @@ class ChatClass:
 
         return self.groq_enable
 
+    def text_replace(self, text=''):
+        if "```" not in text:
+            return self.text_replace_sub(text)
+        else:
+            # ```が2か所以上含まれている場合の処理
+            first_triple_quote_index = text.find("```")
+            last_triple_quote_index = text.rfind("```")
+            if first_triple_quote_index == last_triple_quote_index:
+                return self.text_replace_sub(text)
+            # textの先頭から最初の```までをtext_replace_subで成形
+            text_before_first_triple_quote = text[:first_triple_quote_index]
+            formatted_before = self.text_replace_sub(text_before_first_triple_quote)
+            formatted_before = formatted_before.strip() + '\n'
+            # 最初の```から最後の```の直前までを文字列として抽出
+            code_block = text[first_triple_quote_index : last_triple_quote_index]
+            code_block = code_block.strip() + '\n'
+            # 最後の```以降の部分をtext_replace_subで成形
+            text_after_last_triple_quote = text[last_triple_quote_index:]
+            formatted_after = self.text_replace_sub(text_after_last_triple_quote)
+            formatted_after = formatted_after.strip() + '\n'
+            # 結果を結合して戻り値とする
+            return (formatted_before + code_block + formatted_after).strip()
+
+    def text_replace_sub(self, text='', ):
+        if (text.strip() == ''):
+            return ''
+
+        text = text.replace('\r', '')
+
+        text = text.replace('。', '。\n')
+        text = text.replace('?', '?\n')
+        text = text.replace('？', '?\n')
+        text = text.replace('!', '!\n')
+        text = text.replace('！', '!\n')
+        text = text.replace('。\n」','。」')
+        text = text.replace('。\n"' ,'。"')
+        text = text.replace("。\n'" ,"。'")
+        text = text.replace('?\n」','?」')
+        text = text.replace('?\n"' ,'?"')
+        text = text.replace("?\n'" ,"?'")
+        text = text.replace('!\n」','!」')
+        text = text.replace('!\n"' ,'!"')
+        text = text.replace("!\n'" ,"!'")
+        text = text.replace("!\n=" ,"!=")
+        text = text.replace("!\n--" ,"!--")
+
+        text = text.replace('\n \n ' ,'\n')
+        text = text.replace('\n \n' ,'\n')
+
+        hit = True
+        while (hit == True):
+            if (text.find('\n\n')>0):
+                hit = True
+                text = text.replace('\n\n', '\n')
+            else:
+                hit = False
+
+        return text.strip()
+
     def post_request(self,  user_id: str, from_port: str, to_port: str, 
                             req_mode: str, 
                             system_text: str, request_text: str, input_text: str,
@@ -648,8 +711,10 @@ class ChatClass:
         
         # 戻り値
         res_text        = ''
+        res_data        = ''
         res_path        = ''
         res_files       = []
+        res_engine      = ''
         nick_name       = None
         model_name      = None
         res_history     = history
@@ -686,7 +751,8 @@ class ChatClass:
         #             engine = '[openai]'
 
         # perplexity
-        if (self.perplexity_enable == True):
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.perplexity_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
@@ -763,12 +829,16 @@ class ChatClass:
                         self.perplexityAPI.chatBot( chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
-                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )                    
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'perplexity'
+                        res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
         # openai
-        if (self.openai_enable == True):
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.openai_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
@@ -860,11 +930,15 @@ class ChatClass:
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'openai'
+                        res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
         # azureoai
-        if (self.azureoai_enable == True):
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.azureoai_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
@@ -931,15 +1005,19 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot azure ...')
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
-                        self.azureAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                        self.azureAPI.chatBot(      chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'azure'
+                        res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
         # claude
-        if (self.claude_enable == True):
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.claude_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
@@ -1010,11 +1088,15 @@ class ChatClass:
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'claude'
+                        res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
         # gemini
-        if (self.gemini_enable == True):
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.gemini_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
@@ -1085,11 +1167,15 @@ class ChatClass:
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'gemini'
+                        res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
         # openrt
-        if (self.openrt_enable == True):
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.openrt_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
@@ -1171,11 +1257,15 @@ class ChatClass:
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'openrt'
+                        res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
         # ollama
-        if (self.ollama_enable == True):
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.ollama_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
@@ -1264,11 +1354,15 @@ class ChatClass:
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'ollama'
+                        res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
         # groq
-        if (self.groq_enable == True):
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.groq_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
@@ -1339,11 +1433,15 @@ class ChatClass:
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'groq'
+                        res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
         # freeai
-        if (self.freeai_enable == True):
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.freeai_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
@@ -1433,6 +1531,9 @@ class ChatClass:
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'freeai'
+                        res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
                     if (n >= n_max):
@@ -1449,8 +1550,28 @@ class ChatClass:
                         if (self.bot_cancel_request == True):
                             break
 
-        if (res_text == ''):
+        if (res_text == '') or (res_text == '!'):
             res_text = '!'
+            res_data = '!'
+        else:
+            st = str('\n' + res_data).find('\n```')
+            if (st >= 0):
+                en = str('\n' + res_data).rfind('\n```')
+                if (en > st):
+                    res_data = str('\n' + res_data)[st+1:en+4]
+            else:
+                if (model_name.lower().find('sonar') >= 0):
+                    st = str(res_data).find('<think>')
+                    if (st >= 0):
+                        en = str(res_data).rfind('</think>')
+                        if (en > st):
+                            res_data = res_data[:st] + res_data[en+8:]
+                res_data = self.text_replace(text=res_data, )
+                if (res_data.strip() == ''):
+                    res_data = '!'
+
+        if (res_path is None):
+            res_path = ''
 
         # DEBUG
         if (DEBUG_FLAG == True):
@@ -1459,7 +1580,7 @@ class ChatClass:
             print('DEBUG', 'subbot.chatBot:res_text', )
             print('DEBUG', res_text, )
 
-        return res_text, res_path, res_files, nick_name, model_name, res_history
+        return res_text, res_data, res_path, res_files, res_engine, nick_name, model_name, res_history
 
 
 
@@ -1591,24 +1712,17 @@ class ChatClass:
                 return '', '', '', []
 
             # chatBot処理
-            res_text, res_path, res_files, res_name, res_api, self.history = \
+            res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
                 self.chatBot(   req_mode=req_mode, engine=req_engine,
                                 chat_class='auto', model_select='auto', session_id=self.self_port, 
                                 history=self.history, function_modules=function_modules,
                                 sysText=system_text, reqText=request_text, inpText=input_text,
                                 filePath=filePath, jsonSchema=result_schema, inpLang='ja', outLang='ja', )
-            if (res_path is None):
-                res_path = ''
 
             output_text = ''
             output_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
             output_text += res_text
-            output_data = output_text
-            st = str('\n' + output_text).find('\n```')
-            if (st >= 0):
-                en = str('\n' + output_text).rfind('\n```')
-                if (en > st):
-                    output_data = str('\n' + output_text)[st+1:en+4]
+            output_data = res_data
             output_path  = res_path
             output_files = res_files
 
@@ -1707,16 +1821,14 @@ $$$ user_text $$$
                 return '', '', '', []
 
             # chatBot処理
-            res_text, res_path, res_files, res_name, res_api, self.history = \
+            res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
                 self.chatBot(   req_mode=req_mode, engine=before_engine,
                                 chat_class='auto', model_select='auto', session_id=self.self_port, 
                                 history=self.history, function_modules=[],
                                 sysText=sysText, reqText=reqText, inpText=inpText,
                                 filePath=filePath, jsonSchema=None, inpLang='ja', outLang='ja', )
-            if (res_path is None):
-                res_path = ''
 
-            if (res_text == '') and (res_text == '!'):
+            if (res_text == '') or (res_text == '!'):
                 proc_cancel = True
             else:
                 res_text = res_text.replace('\n\n', '\n')
@@ -1786,14 +1898,12 @@ $$$ res_text $$$
                     engine = after_engine
 
                 # chatBot処理
-                res_text, res_path, res_files, res_name, res_api, self.history = \
+                res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
                     self.chatBot(   req_mode=req_mode, engine=engine,
                                     chat_class='auto', model_select='auto', session_id=self.self_port, 
                                     history=self.history, function_modules=function_modules,
                                     sysText=sysText, reqText=reqText, inpText=inpText,
                                     filePath=filePath, jsonSchema=result_schema, inpLang='ja', outLang='ja', )
-                if (res_path is None):
-                    res_path = ''
 
                 # デバッグ報告
                 if (parent_self is not None):
@@ -1814,12 +1924,7 @@ $$$ res_text $$$
         output_text = ''
         output_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
         output_text += res_text
-        output_data = output_text
-        st = str('\n' + output_text).find('\n```')
-        if (st >= 0):
-            en = str('\n' + output_text).rfind('\n```')
-            if (en > st):
-                output_data = str('\n' + output_text)[st+1:en+4]
+        output_data = res_data
         output_path = res_path
         output_files = res_files
 
@@ -1889,14 +1994,12 @@ $$$ inpBase2 $$$
                     return '', '', '', []
 
                 # chatBot処理
-                res_text, res_path, res_files, res_name, res_api, self.history = \
+                res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
                     self.chatBot(   req_mode=req_mode, engine=after_engine,
                                     chat_class='auto', model_select='auto', session_id=self.self_port, 
                                     history=self.history, function_modules=function_modules,
                                     sysText=sysText, reqText=reqText, inpText=inpText,
                                     filePath=filePath, jsonSchema=result_schema, inpLang='ja', outLang='ja', )
-                if (res_path is None):
-                    res_path = ''
 
                 chat_text += inpBase1.rstrip() + '\n' + inpBase2.rstrip() + '\n\n'
                 chat_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
@@ -1906,7 +2009,7 @@ $$$ inpBase2 $$$
                 output_raw  = res_text
                 output_data = ''
                 output_data += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
-                output_data += res_text
+                output_data += res_data
                 output_path  = res_path
                 output_files = res_files
 
@@ -2202,16 +2305,14 @@ AIメンバー毎に重複しても構わないし総合的なことでもよい
                 return '', '', '', []
 
             # chatBot処理
-            res_text, res_path, res_files, res_name, res_api, self.history = \
+            res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
                 self.chatBot(   req_mode=req_mode, engine=before_engine,
                                 chat_class='auto', model_select='auto', session_id=self.self_port, 
                                 history=self.history, function_modules=[],
                                 sysText=sysText, reqText=reqText, inpText=inpText,
                                 filePath=filePath, jsonSchema=None, inpLang='ja', outLang='ja', )
-            if (res_path is None):
-                res_path = ''
 
-            if (res_text == '') and (res_text == '!'):
+            if (res_text == '') or (res_text == '!'):
                 proc_cancel = True
             else:
                 res_text = res_text.replace('\n\n', '\n')
@@ -2362,16 +2463,14 @@ $$$ user_text $$$
                         engine = after_engine
 
                     # chatBot 処理
-                    res_text, res_path, res_files, res_name, res_api, self.history = \
+                    res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
                         self.chatBot(   req_mode=req_mode, engine=engine,
                                         chat_class='auto', model_select='auto', session_id=self.self_port, 
                                         history=self.history, function_modules=function_modules,
                                         sysText=sysText, reqText=reqText, inpText=inpText,
                                         filePath=filePath, jsonSchema=result_schema, inpLang='ja', outLang='ja', )
-                    if (res_path is None):
-                        res_path = ''
 
-                    if (res_text == '') and (res_text == '!'):
+                    if (res_text == '') or (res_text == '!'):
                         proc_cancel = True
                         break
 
@@ -2394,12 +2493,9 @@ $$$ user_text $$$
         output_text = ''
         output_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
         output_text += res_text
-        output_data = output_text
-        st = str('\n' + output_text).find('\n```')
-        if (st >= 0):
-            en = str('\n' + output_text).rfind('\n```')
-            if (en > st):
-                output_data = str('\n' + output_text)[st+1:en+4]
+        output_data = ''
+        output_data += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
+        output_data += res_data
         output_path = res_path
         output_files = res_files
 
@@ -2472,14 +2568,12 @@ $$$ inpBase2 $$$
                     return '', '', '', []
 
                 # chatBot処理
-                res_text, res_path, res_files, res_name, res_api, self.history = \
+                res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
                     self.chatBot(   req_mode=req_mode, engine=after_engine,
                                     chat_class='auto', model_select='auto', session_id=self.self_port, 
                                     history=self.history, function_modules=function_modules,
                                     sysText=sysText, reqText=reqText, inpText=inpText,
                                     filePath=filePath, jsonSchema=result_schema, inpLang='ja', outLang='ja', )
-                if (res_path is None):
-                    res_path = ''
 
                 chat_text += inpBase1.rstrip() + '\n' + inpBase2.rstrip() + '\n\n'
                 chat_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"

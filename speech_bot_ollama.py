@@ -158,14 +158,13 @@ class _ollamaAPI:
 
         if (self.ollama_client is not None):
 
-            #ymd = datetime.date.today().strftime('%Y/%m/%d')
-            ymd = 'yyyy/mm/dd'
+            ymd = datetime.date.today().strftime('%Y/%m/%d')
 
             # モデル取得
             self.get_models()
             for model_name in self.ollama_models:
                 if (not model_name in self.models):
-                    self.models[model_name] = {"id": model_name, "token": "9999", "modality": "text?", "date": ymd, }
+                    self.models[model_name] = {"id": model_name, "token": "9999", "modality": "text?", "date": "local", }
 
             # ollama チャットボット
             if (ollama_a_nick_name != ''):
@@ -175,7 +174,7 @@ class _ollamaAPI:
                 self.ollama_a_token      = int(ollama_a_token)
                 self.ollama_a_use_tools  = ollama_a_use_tools
                 if (not ollama_a_model in self.models):
-                    self.models[ollama_a_model] = {"id": ollama_a_model, "token": str(ollama_a_token), "modality": "text?", "date": ymd, }
+                    self.models[ollama_a_model] = {"id": ollama_a_model, "token": str(ollama_a_token), "modality": "text?", "date": "local", }
 
                 if (self.ollama_a_model in self.ollama_models):
                     self.ollama_a_enable = True
@@ -195,7 +194,7 @@ class _ollamaAPI:
                 self.ollama_b_token      = int(ollama_b_token)
                 self.ollama_b_use_tools  = ollama_b_use_tools
                 if (not ollama_b_model in self.models):
-                    self.models[ollama_b_model] = {"id": ollama_b_model, "token": str(ollama_b_token), "modality": "text?", "date": ymd, }
+                    self.models[ollama_b_model] = {"id": ollama_b_model, "token": str(ollama_b_token), "modality": "text?", "date": "local", }
 
                 if (self.ollama_b_model in self.ollama_models):
                     self.ollama_b_enable = True
@@ -215,7 +214,7 @@ class _ollamaAPI:
                 self.ollama_v_token      = int(ollama_v_token)
                 self.ollama_v_use_tools  = ollama_v_use_tools
                 if (not ollama_v_model in self.models):
-                    self.models[ollama_v_model] = {"id": ollama_v_model, "token": str(ollama_v_token), "modality": "text+image?", "date": ymd, }
+                    self.models[ollama_v_model] = {"id": ollama_v_model, "token": str(ollama_v_token), "modality": "text+image?", "date": "local", }
 
                 if (self.ollama_v_model in self.ollama_models):
                     self.ollama_v_enable = True
@@ -235,7 +234,7 @@ class _ollamaAPI:
                 self.ollama_x_token      = int(ollama_x_token)
                 self.ollama_x_use_tools  = ollama_x_use_tools
                 if (not ollama_x_model in self.models):
-                    self.models[ollama_x_model] = {"id": ollama_x_model, "token": str(ollama_x_token), "modality": "text+image?", "date": ymd, }
+                    self.models[ollama_x_model] = {"id": ollama_x_model, "token": str(ollama_x_token), "modality": "text+image?", "date": "local", }
 
                 if (self.ollama_x_model in self.ollama_models):
                     self.ollama_x_enable = True
@@ -321,6 +320,8 @@ class _ollamaAPI:
                     time.sleep(2.00)
                     self.update_ollama_models()
                 if (down_name in self.ollama_models):
+                    if (not down_name in self.models):
+                        self.models[down_name] = {"id": down_name, "token": "9999", "modality": "text?", "date": "local", }
                     return True, down_name
             except:
                 pass
@@ -435,65 +436,6 @@ class _ollamaAPI:
             print(e)
             return False
         return True
-
-    def text_replace(self, text=''):
-        if "```" not in text:
-            return self.text_replace_sub(text)
-        else:
-            # ```が2か所以上含まれている場合の処理
-            first_triple_quote_index = text.find("```")
-            last_triple_quote_index = text.rfind("```")
-            if first_triple_quote_index == last_triple_quote_index:
-                return self.text_replace_sub(text)
-            # textの先頭から最初の```までをtext_replace_subで成形
-            text_before_first_triple_quote = text[:first_triple_quote_index]
-            formatted_before = self.text_replace_sub(text_before_first_triple_quote)
-            formatted_before = formatted_before.strip() + '\n'
-            # 最初の```から最後の```の直前までを文字列として抽出
-            code_block = text[first_triple_quote_index : last_triple_quote_index]
-            code_block = code_block.strip() + '\n'
-            # 最後の```以降の部分をtext_replace_subで成形
-            text_after_last_triple_quote = text[last_triple_quote_index:]
-            formatted_after = self.text_replace_sub(text_after_last_triple_quote)
-            formatted_after = formatted_after.strip() + '\n'
-            # 結果を結合して戻り値とする
-            return (formatted_before + code_block + formatted_after).strip()
-
-    def text_replace_sub(self, text='', ):
-        if (text.strip() == ''):
-            return ''
-
-        text = text.replace('\r', '')
-
-        text = text.replace('。', '。\n')
-        text = text.replace('?', '?\n')
-        text = text.replace('？', '?\n')
-        text = text.replace('!', '!\n')
-        text = text.replace('！', '!\n')
-        text = text.replace('。\n」','。」')
-        text = text.replace('。\n"' ,'。"')
-        text = text.replace("。\n'" ,"。'")
-        text = text.replace('?\n」','?」')
-        text = text.replace('?\n"' ,'?"')
-        text = text.replace("?\n'" ,"?'")
-        text = text.replace('!\n」','!」')
-        text = text.replace('!\n"' ,'!"')
-        text = text.replace("!\n'" ,"!'")
-        text = text.replace("!\n=" ,"!=")
-        text = text.replace("!\n--" ,"!--")
-
-        text = text.replace('\n \n ' ,'\n')
-        text = text.replace('\n \n' ,'\n')
-
-        hit = True
-        while (hit == True):
-            if (text.find('\n\n')>0):
-                hit = True
-                text = text.replace('\n\n', '\n')
-            else:
-                hit = False
-
-        return text.strip()
 
     def history_add(self, history=[], sysText=None, reqText=None, inpText='こんにちは', ):
         res_history = history
@@ -928,10 +870,7 @@ class _ollamaAPI:
                         temperature=temperature, max_step=max_step, jsonSchema=jsonSchema, )
 
         # 文書成形
-        text = self.text_replace(text=res_text, )
-        if (text.strip() != ''):
-            res_text = text
-        else:
+        if (res_text.strip() == ''):
             res_text = '!'
 
         return res_text, res_path, res_files, nick_name, model_name, res_history

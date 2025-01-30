@@ -592,8 +592,11 @@ $(document).ready(function() {
     $('#react-halloWorld').click(function() {
         post_set_react('react-sample-halloWorld.zip');
     });
-    $('#react-realtimeConsole').click(function() {
+    $('#react-realtimeConsole-openai').click(function() {
         post_set_react('openai-realtime-console-main.zip');
+    });
+    $('#react-realtimeConsole-google').click(function() {
+        post_set_react('multimodal-live-api-web-console-main.zip');
     });
 
     // タブ切り替え処理

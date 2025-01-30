@@ -703,19 +703,17 @@ class CoreAiClass:
                 function_modules = self.botFunc.function_modules
 
         # chatBot処理
-        res_text, res_path, res_files, res_name, res_api, self.history = \
+        res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
             self.chat_class.chatBot(    req_mode=req_mode, engine=req_engine,
                                         chat_class='auto', model_select='auto', session_id=self.self_port, 
                                         history=self.history, function_modules=function_modules,
                                         sysText=system_text, reqText=request_text, inpText=input_text,
                                         filePath=file_names, inpLang='ja', outLang='ja', )
-        if (res_path is None):
-            res_path = ''
 
         output_text = ''
         output_text += f"[ASSISTANT] ({ self.self_port }:{ res_api }) \n"
         output_text += res_text
-        output_data = output_text
+        output_data = res_data
         output_path = res_path
         output_files = res_files
 

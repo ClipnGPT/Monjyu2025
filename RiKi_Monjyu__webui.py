@@ -337,64 +337,74 @@ class WebUiClass:
 
     async def get_engine_models(self, engine: str) -> Dict[str, str]:
         # 設定情報を返す
-        if (self.data is not None) and (self.coreai is not None):
+        try:
+            if (self.data is not None) and (self.coreai is not None):
 
-            if (engine == 'openrt'):
-                if (len(self.data.engine_models['openrt']) != len(self.coreai.chat_class.openrtAPI.models)):
-                    self.data.engine_models['openrt'] = {}
-                    for key,value in self.coreai.chat_class.openrtAPI.models.items():
-                        self.data.engine_models['openrt'][key]  = self.coreai.chat_class.openrtAPI.models[key]["date"] + " : " \
-                                                                + self.coreai.chat_class.openrtAPI.models[key]["id"] + ", " \
-                                                                + self.coreai.chat_class.openrtAPI.models[key]["token"] + ", " \
-                                                                + self.coreai.chat_class.openrtAPI.models[key]["modality"] + ", "
+                if (engine == 'openrt'):
+                    if (len(self.data.engine_models['openrt']) != len(self.coreai.chat_class.openrtAPI.models)):
+                        self.data.engine_models['openrt'] = {}
+                        for key,value in self.coreai.chat_class.openrtAPI.models.items():
+                            self.data.engine_models['openrt'][key]  = self.coreai.chat_class.openrtAPI.models[key]["date"] + " : " \
+                                                                    + self.coreai.chat_class.openrtAPI.models[key]["id"] + ", " \
+                                                                    + self.coreai.chat_class.openrtAPI.models[key]["token"] + ", " \
+                                                                    + self.coreai.chat_class.openrtAPI.models[key]["modality"] + ", "
 
-            if (engine == 'ollama'):
-                if (len(self.data.engine_models['ollama']) != len(self.coreai.chat_class.ollamaAPI.models)):
-                    self.data.engine_models['ollama'] = {}
-                    for key,value in self.coreai.chat_class.ollamaAPI.models.items():
-                        self.data.engine_models['ollama'][key]  = self.coreai.chat_class.ollamaAPI.models[key]["date"] + " : " \
-                                                                + self.coreai.chat_class.ollamaAPI.models[key]["id"] + ", " \
-                                                                + self.coreai.chat_class.ollamaAPI.models[key]["token"] + ", " \
-                                                                + self.coreai.chat_class.ollamaAPI.models[key]["modality"] + ", "
+                if (engine == 'ollama'):
+                    if (len(self.data.engine_models['ollama']) != len(self.coreai.chat_class.ollamaAPI.models)):
+                        self.data.engine_models['ollama'] = {}
+                        for key,value in self.coreai.chat_class.ollamaAPI.models.items():
+                            self.data.engine_models['ollama'][key]  = self.coreai.chat_class.ollamaAPI.models[key]["date"] + " : " \
+                                                                    + self.coreai.chat_class.ollamaAPI.models[key]["id"] + ", " \
+                                                                    + self.coreai.chat_class.ollamaAPI.models[key]["token"] + ", " \
+                                                                    + self.coreai.chat_class.ollamaAPI.models[key]["modality"] + ", "
 
-            result = self.data.engine_models[engine]
-        else:
-            result = {}
+                result = self.data.engine_models[engine]
+            else:
+                result = {}
+
+        except Exception as e:
+            #print(e)
+            raise HTTPException(status_code=500, detail='post_engine_models error:' + e)
         return JSONResponse(content=result)
 
     async def get_engine_setting(self, engine: str):
         # 設定情報を返す
-        if (self.data is not None) and (self.coreai is not None):
+        try:
+            if (self.data is not None) and (self.coreai is not None):
 
-            if (engine == 'openrt'):
-                self.data.engine_setting['openrt'] = {
-                    "max_wait_sec": str(self.coreai.chat_class.openrtAPI.openrt_max_wait_sec),
-                    "a_model": self.coreai.chat_class.openrtAPI.openrt_a_model,
-                    "a_use_tools": self.coreai.chat_class.openrtAPI.openrt_a_use_tools,
-                    "b_model": self.coreai.chat_class.openrtAPI.openrt_b_model,
-                    "b_use_tools": self.coreai.chat_class.openrtAPI.openrt_b_use_tools,
-                    "v_model": self.coreai.chat_class.openrtAPI.openrt_v_model,
-                    "v_use_tools": self.coreai.chat_class.openrtAPI.openrt_v_use_tools,
-                    "x_model": self.coreai.chat_class.openrtAPI.openrt_x_model,
-                    "x_use_tools": self.coreai.chat_class.openrtAPI.openrt_x_use_tools,
-                }
+                if (engine == 'openrt'):
+                    self.data.engine_setting['openrt'] = {
+                        "max_wait_sec": str(self.coreai.chat_class.openrtAPI.openrt_max_wait_sec),
+                        "a_model": self.coreai.chat_class.openrtAPI.openrt_a_model,
+                        "a_use_tools": self.coreai.chat_class.openrtAPI.openrt_a_use_tools,
+                        "b_model": self.coreai.chat_class.openrtAPI.openrt_b_model,
+                        "b_use_tools": self.coreai.chat_class.openrtAPI.openrt_b_use_tools,
+                        "v_model": self.coreai.chat_class.openrtAPI.openrt_v_model,
+                        "v_use_tools": self.coreai.chat_class.openrtAPI.openrt_v_use_tools,
+                        "x_model": self.coreai.chat_class.openrtAPI.openrt_x_model,
+                        "x_use_tools": self.coreai.chat_class.openrtAPI.openrt_x_use_tools,
+                    }
 
-            if (engine == 'ollama'):
-                self.data.engine_setting['ollama'] = {
-                    "max_wait_sec": str(self.coreai.chat_class.ollamaAPI.ollama_max_wait_sec),
-                    "a_model": self.coreai.chat_class.ollamaAPI.ollama_a_model,
-                    "a_use_tools": self.coreai.chat_class.ollamaAPI.ollama_a_use_tools,
-                    "b_model": self.coreai.chat_class.ollamaAPI.ollama_b_model,
-                    "b_use_tools": self.coreai.chat_class.ollamaAPI.ollama_b_use_tools,
-                    "v_model": self.coreai.chat_class.ollamaAPI.ollama_v_model,
-                    "v_use_tools": self.coreai.chat_class.ollamaAPI.ollama_v_use_tools,
-                    "x_model": self.coreai.chat_class.ollamaAPI.ollama_x_model,
-                    "x_use_tools": self.coreai.chat_class.ollamaAPI.ollama_x_use_tools,
-                }
+                if (engine == 'ollama'):
+                    self.data.engine_setting['ollama'] = {
+                        "max_wait_sec": str(self.coreai.chat_class.ollamaAPI.ollama_max_wait_sec),
+                        "a_model": self.coreai.chat_class.ollamaAPI.ollama_a_model,
+                        "a_use_tools": self.coreai.chat_class.ollamaAPI.ollama_a_use_tools,
+                        "b_model": self.coreai.chat_class.ollamaAPI.ollama_b_model,
+                        "b_use_tools": self.coreai.chat_class.ollamaAPI.ollama_b_use_tools,
+                        "v_model": self.coreai.chat_class.ollamaAPI.ollama_v_model,
+                        "v_use_tools": self.coreai.chat_class.ollamaAPI.ollama_v_use_tools,
+                        "x_model": self.coreai.chat_class.ollamaAPI.ollama_x_model,
+                        "x_use_tools": self.coreai.chat_class.ollamaAPI.ollama_x_use_tools,
+                    }
 
-            result = self.data.engine_setting[engine]
-        else:
-            result = {}
+                result = self.data.engine_setting[engine]
+            else:
+                result = {}
+
+        except Exception as e:
+            #print(e)
+            raise HTTPException(status_code=500, detail='get_engine_setting error:' + e)
         return JSONResponse(content=result)
 
     async def post_engine_setting(self, data: postEngineSettingDataModel):
@@ -409,13 +419,13 @@ class WebUiClass:
         v_use_tools = str(data.v_use_tools) if data.v_use_tools else ""
         x_model = str(data.x_model) if data.x_model else ""
         x_use_tools = str(data.x_use_tools) if data.x_use_tools else ""
-        if (self.data is not None):
-            self.data.engine_setting[engine] = {"max_wait_sec": max_wait_sec,
-                                                "a_model": a_model, "a_use_tools": a_use_tools,
-                                                "b_model": b_model, "b_use_tools": b_use_tools,
-                                                "v_model": v_model, "v_use_tools": v_use_tools,
-                                                "x_model": x_model, "x_use_tools": x_use_tools, }
-            try:
+        try:
+            if (self.data is not None):
+                self.data.engine_setting[engine] = {"max_wait_sec": max_wait_sec,
+                                                    "a_model": a_model, "a_use_tools": a_use_tools,
+                                                    "b_model": b_model, "b_use_tools": b_use_tools,
+                                                    "v_model": v_model, "v_use_tools": v_use_tools,
+                                                    "x_model": x_model, "x_use_tools": x_use_tools, }
                 if (self.coreai is not None):
                     if (engine == 'openrt'):
                         #self.coreai.chat_class.openrtAPI.set_models(max_wait_sec=max_wait_sec,
@@ -443,10 +453,9 @@ class WebUiClass:
                             daemon=True, )
                         engine_set_thread.start()
 
-            except Exception as e:
-                print(e)
-                raise HTTPException(status_code=500, detail='post_engine_setting error:' + e)
-
+        except Exception as e:
+            #print(e)
+            raise HTTPException(status_code=500, detail='post_engine_setting error:' + e)
         return JSONResponse(content={'message': 'post_engine_setting successfully'})
 
     async def get_live_voices(self, engine: str) -> Dict[str, str]:
