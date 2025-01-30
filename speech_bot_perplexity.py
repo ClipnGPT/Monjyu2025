@@ -41,7 +41,6 @@ class _perplexityAPI:
         self.bot_auth                   = None
 
         self.temperature                = 0.8
-        self.timeOut                    = 60
 
         self.perplexity_api_type        = 'perplexity'
         self.perplexity_default_gpt     = 'auto'
@@ -49,6 +48,7 @@ class _perplexityAPI:
         self.perplexity_auto_continue   = 3
         self.perplexity_max_step        = 10
         self.perplexity_max_session     = 5
+        self.perplexity_max_wait_sec    = 120
        
         self.perplexity_key_id          = None
 
@@ -76,6 +76,7 @@ class _perplexityAPI:
         self.perplexity_x_token         = 0
         self.perplexity_x_use_tools     = 'no'
 
+        self.models                     = {}
         self.history                    = []
 
         self.seq                        = 0
@@ -110,6 +111,7 @@ class _perplexityAPI:
                      perplexity_default_gpt, perplexity_default_class,
                      perplexity_auto_continue,
                      perplexity_max_step, perplexity_max_session,
+                     perplexity_max_wait_sec,
 
                      perplexity_key_id,
 
@@ -123,51 +125,10 @@ class _perplexityAPI:
                      perplexity_x_use_tools,
                     ):
 
-        # 設定
-
         # 認証
         self.bot_auth                       = None
         self.perplexity_key_id              = perplexity_key_id
 
-        self.perplexity_default_gpt         = perplexity_default_gpt
-        self.perplexity_default_class       = perplexity_default_class
-        if (str(perplexity_auto_continue) != 'auto'):
-            self.perplexity_auto_continue   = int(perplexity_auto_continue)
-        if (str(perplexity_max_step)      != 'auto'):
-            self.perplexity_max_step        = int(perplexity_max_step)
-        if (str(perplexity_max_session) != 'auto'):
-            self.perplexity_max_session     = int(perplexity_max_session)
-
-        # perplexity チャットボット
-        if (perplexity_a_nick_name != ''):
-            self.perplexity_a_enable        = False
-            self.perplexity_a_nick_name     = perplexity_a_nick_name
-            self.perplexity_a_model         = perplexity_a_model
-            self.perplexity_a_token         = int(perplexity_a_token)
-            self.perplexity_a_use_tools     = perplexity_a_use_tools
-
-        if (perplexity_b_nick_name != ''):
-            self.perplexity_b_enable        = False
-            self.perplexity_b_nick_name     = perplexity_b_nick_name
-            self.perplexity_b_model         = perplexity_b_model
-            self.perplexity_b_token         = int(perplexity_b_token)
-            self.perplexity_b_use_tools     = perplexity_b_use_tools
-
-        if (perplexity_v_nick_name != ''):
-            self.perplexity_v_enable        = False
-            self.perplexity_v_nick_name     = perplexity_v_nick_name
-            self.perplexity_v_model         = perplexity_v_model
-            self.perplexity_v_token         = int(perplexity_v_token)
-            self.perplexity_v_use_tools     = perplexity_v_use_tools
-
-        if (perplexity_x_nick_name != ''):
-            self.perplexity_x_enable        = False
-            self.perplexity_x_nick_name     = perplexity_x_nick_name
-            self.perplexity_x_model         = perplexity_x_model
-            self.perplexity_x_token         = int(perplexity_x_token)
-            self.perplexity_x_use_tools     = perplexity_x_use_tools
-
-        # API-KEYの設定
         self.client = None
         if (perplexity_key_id[:1] == '<'):
             return False
@@ -179,6 +140,62 @@ class _perplexityAPI:
         except Exception as e:
             print(e)
             return False
+
+        # 設定
+        self.perplexity_default_gpt         = perplexity_default_gpt
+        self.perplexity_default_class       = perplexity_default_class
+        if (not str(perplexity_auto_continue) in ['', 'auto']):
+            self.perplexity_auto_continue   = int(perplexity_auto_continue)
+        if (not str(perplexity_max_step)      in ['', 'auto']):
+            self.perplexity_max_step        = int(perplexity_max_step)
+        if (not str(perplexity_max_session)   in ['', 'auto']):
+            self.perplexity_max_session     = int(perplexity_max_session)
+        if (not str(perplexity_max_wait_sec)  in ['', 'auto']):
+            self.perplexity_max_wait_sec    = int(perplexity_max_wait_sec)
+
+        # モデル取得
+        self.models                         = {}
+        self.get_models()
+
+        #ymd = datetime.date.today().strftime('%Y/%m/%d')
+        ymd = '????/??/??'
+
+        # perplexity チャットボット
+        if (perplexity_a_nick_name != ''):
+            self.perplexity_a_enable        = False
+            self.perplexity_a_nick_name     = perplexity_a_nick_name
+            self.perplexity_a_model         = perplexity_a_model
+            self.perplexity_a_token         = int(perplexity_a_token)
+            self.perplexity_a_use_tools     = perplexity_a_use_tools
+            if (not perplexity_a_model in self.models):
+                self.models[perplexity_a_model] = {"id": perplexity_a_model, "token": str(perplexity_a_token), "modality": "text?", "date": ymd, }
+
+        if (perplexity_b_nick_name != ''):
+            self.perplexity_b_enable        = False
+            self.perplexity_b_nick_name     = perplexity_b_nick_name
+            self.perplexity_b_model         = perplexity_b_model
+            self.perplexity_b_token         = int(perplexity_b_token)
+            self.perplexity_b_use_tools     = perplexity_b_use_tools
+            if (not perplexity_b_model in self.models):
+                self.models[perplexity_b_model] = {"id": perplexity_b_model, "token": str(perplexity_b_token), "modality": "text?", "date": ymd, }
+
+        if (perplexity_v_nick_name != ''):
+            self.perplexity_v_enable        = False
+            self.perplexity_v_nick_name     = perplexity_v_nick_name
+            self.perplexity_v_model         = perplexity_v_model
+            self.perplexity_v_token         = int(perplexity_v_token)
+            self.perplexity_v_use_tools     = perplexity_v_use_tools
+            if (not perplexity_v_model in self.models):
+                self.models[perplexity_v_model] = {"id": perplexity_v_model, "token": str(perplexity_v_token), "modality": "text?", "date": ymd, }
+
+        if (perplexity_x_nick_name != ''):
+            self.perplexity_x_enable        = False
+            self.perplexity_x_nick_name     = perplexity_x_nick_name
+            self.perplexity_x_model         = perplexity_x_model
+            self.perplexity_x_token         = int(perplexity_x_token)
+            self.perplexity_x_use_tools     = perplexity_x_use_tools
+            if (not perplexity_x_model in self.models):
+                self.models[perplexity_x_model] = {"id": perplexity_x_model, "token": str(perplexity_x_token), "modality": "text?", "date": ymd, }
 
         # モデル
         hit = False
@@ -200,6 +217,18 @@ class _perplexityAPI:
             return True
         else:
             return False
+
+    def get_models(self, ):
+        try:
+            models = self.client.models.list()
+            for model in models.data:
+                key = model.id
+                print(key, )
+                self.models[key] = {"id":key, "token":"9999", "modality":"text", "date": "???", }
+        except Exception as e:
+            #print(e)
+            return False
+        return True
 
     def history_add(self, history=[], sysText=None, reqText=None, inpText='こんにちは', ):
         res_history = history
@@ -490,13 +519,13 @@ class _perplexityAPI:
                             model           = res_api,
                             messages        = msg,
                             temperature     = float(temperature),
-                            timeout         = self.timeOut,
+                            timeout         = self.perplexity_max_wait_sec,
                             stream          = stream, 
                             )
 
                     chkTime     = time.time()
                     for chunk in response:
-                        if ((time.time() - chkTime) > self.timeOut):
+                        if ((time.time() - chkTime) > self.perplexity_max_wait_sec):
                             break
                         delta   = chunk.choices[0].delta
                         if (delta is not None):
@@ -518,7 +547,7 @@ class _perplexityAPI:
                             model           = res_api,
                             messages        = msg,
                             temperature     = float(temperature),
-                            timeout         = self.timeOut,
+                            timeout         = self.perplexity_max_wait_sec,
                             stream          = stream, 
                             )
 
@@ -619,6 +648,7 @@ if __name__ == '__main__':
                             perplexity_key.getkey('perplexity','perplexity_default_gpt'), perplexity_key.getkey('perplexity','perplexity_default_class'),
                             perplexity_key.getkey('perplexity','perplexity_auto_continue'),
                             perplexity_key.getkey('perplexity','perplexity_max_step'), perplexity_key.getkey('perplexity','perplexity_max_session'),
+                            perplexity_key.getkey('perplexity','perplexity_max_wait_sec'),
                             perplexity_key.getkey('perplexity','perplexity_key_id'),
                             perplexity_key.getkey('perplexity','perplexity_a_nick_name'), perplexity_key.getkey('perplexity','perplexity_a_model'), perplexity_key.getkey('perplexity','perplexity_a_token'),
                             perplexity_key.getkey('perplexity','perplexity_a_use_tools'),

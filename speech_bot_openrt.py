@@ -133,6 +133,19 @@ class _openrtAPI:
         self.bot_auth                   = None
         self.openrt_key_id              = openrt_key_id
 
+        self.client = None
+        if (openrt_key_id[:1] == '<'):
+            return False
+        try:
+            self.client = openai.OpenAI(
+                api_key=openrt_key_id,
+                base_url="https://openrouter.ai/api/v1",
+            )
+        except Exception as e:
+            print(e)
+            return False
+
+        # 設定
         self.openrt_default_gpt         = openrt_default_gpt
         self.openrt_default_class       = openrt_default_class
         if (not str(openrt_auto_continue) in ['', 'auto']):
@@ -144,12 +157,12 @@ class _openrtAPI:
         if (not str(openrt_max_wait_sec)  in ['', 'auto']):
             self.openrt_max_wait_sec    = int(openrt_max_wait_sec)
 
-        #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = 'yyyy/mm/dd'
-
         # モデル取得
         self.models                     = {}
         self.get_models()
+
+        #ymd = datetime.date.today().strftime('%Y/%m/%d')
+        ymd = '????/??/??'
 
         # openrt チャットボット
         if (openrt_a_nick_name != ''):
@@ -187,19 +200,6 @@ class _openrtAPI:
             self.openrt_x_use_tools     = openrt_x_use_tools
             if (not openrt_x_model in self.models):
                 self.models[openrt_x_model] = {"id": openrt_x_model, "token": str(openrt_x_token), "modality": "text+image?", "date": ymd, }
-
-        # API-KEYの設定
-        self.client = None
-        if (openrt_key_id[:1] == '<'):
-            return False
-        try:
-            self.client = openai.OpenAI(
-                api_key=openrt_key_id,
-                base_url="https://openrouter.ai/api/v1",
-            )
-        except Exception as e:
-            print(e)
-            return False
 
         # モデル
         hit = False
@@ -334,7 +334,7 @@ class _openrtAPI:
 
         return res_history
 
-    def history2msg_gpt(self, history=[], ):
+    def history2msg_openrt(self, history=[], ):
         res_msg = []
         for h in range(len(history)):
             role    = history[h]['role']
@@ -342,6 +342,9 @@ class _openrtAPI:
             name    = history[h]['name']
             if (role != 'function_call'):
             #if True:
+                # openrouter用の処置!
+                if (not role in ['system', 'user', 'assistant']):
+                    role = 'user'
                 if (name == ''):
                     dic = {'role': role, 'content': content }
                     res_msg.append(dic)
@@ -573,17 +576,22 @@ class _openrtAPI:
 
         # メッセージ作成
         if (model_select != 'v'):
-            msg = self.history2msg_gpt(history=res_history, )
+            msg = self.history2msg_openrt(history=res_history, )
         else:
             msg = self.history2msg_vision(history=res_history, image_urls=image_urls,)
 
+        #print()
+        #for m in msg:
+        #    print(m)
+        #print()
+
         # ストリーム実行?
-        #if (session_id == 'admin'):
-        #    stream = True
-        #else:
-        #    stream = False
-        #print(' stream = False, ')
-        stream = False
+        if (session_id == 'admin'):
+            #stream = True
+            print(' stream = False, ')
+            stream = False
+        else:
+            stream = False
 
         # ツール設定
         #print(' functions = [], ')
@@ -698,9 +706,9 @@ class _openrtAPI:
                                         tool_calls.append({"id": "", "type": "function", "function": { "name": "", "arguments": "" } })
                                     tc = tool_calls[tcchunk.index]
                                     if tcchunk.id:
-                                        tc["id"]              += tcchunk.id
+                                        tc["id"]                    += tcchunk.id
                                     if tcchunk.function.name:
-                                        tc["function"]["name"] += tcchunk.function.name
+                                        tc["function"]["name"]      += tcchunk.function.name
                                     if tcchunk.function.arguments:
                                         tc["function"]["arguments"] += tcchunk.function.arguments
 
@@ -739,6 +747,8 @@ class _openrtAPI:
 
                     self.print(session_id, )
                     for tc in tool_calls:
+                        print(tc)
+                        f_id     = tc['id']
                         f_name   = tc['function'].get('name')
                         f_kwargs = tc['function'].get('arguments')
 
@@ -771,7 +781,9 @@ class _openrtAPI:
                                 self.print(session_id, )
 
                                 # メッセージ追加格納
-                                dic = {'role': 'function', 'name': f_name, 'content': res_json }
+                                # dic = {'role': 'function', 'name': f_name, 'content': res_json }
+                                # openrouter用の処置!
+                                dic = {'role': 'user', 'name': f_name, 'content': res_json }
                                 msg.append(dic)
                                 self.seq += 1
                                 dic = {'seq': self.seq, 'time': time.time(), 'role': 'function', 'name': f_name, 'content': res_json }
@@ -895,6 +907,7 @@ if __name__ == '__main__':
                             openrt_key.getkey('openrt','openrt_max_wait_sec'),
                             openrt_key.getkey('openrt','openrt_key_id'),
                             openrt_key.getkey('openrt','openrt_a_nick_name'), openrt_key.getkey('openrt','openrt_a_model'), openrt_key.getkey('openrt','openrt_a_token'),
+                            #openrt_key.getkey('openrt','openrt_a_nick_name'), 'openai/gpt-4o-mini', openrt_key.getkey('openrt','openrt_a_token'),
                             openrt_key.getkey('openrt','openrt_a_use_tools'),
                             openrt_key.getkey('openrt','openrt_b_nick_name'), openrt_key.getkey('openrt','openrt_b_model'), openrt_key.getkey('openrt','openrt_b_token'),
                             openrt_key.getkey('openrt','openrt_b_use_tools'),
@@ -903,6 +916,7 @@ if __name__ == '__main__':
                             openrt_key.getkey('openrt','openrt_x_nick_name'), openrt_key.getkey('openrt','openrt_x_model'), openrt_key.getkey('openrt','openrt_x_token'),
                             openrt_key.getkey('openrt','openrt_x_use_tools'),
                             )
+        #print('gpt-4o-miniに強制テスト！', )
         print('authenticate:', res, )
         if (res == True):
             
@@ -959,7 +973,7 @@ if __name__ == '__main__':
                 print(str(res_text))
                 print()
 
-            if True:
+            if False:
                 sysText = None
                 reqText = ''
                 inpText = '添付画像を説明してください。'

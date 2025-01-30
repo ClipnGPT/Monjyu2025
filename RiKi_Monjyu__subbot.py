@@ -181,6 +181,7 @@ class ChatClass:
                             perplexity_key.getkey('perplexity','perplexity_default_gpt'), perplexity_key.getkey('perplexity','perplexity_default_class'),
                             perplexity_key.getkey('perplexity','perplexity_auto_continue'),
                             perplexity_key.getkey('perplexity','perplexity_max_step'), perplexity_key.getkey('perplexity','perplexity_max_session'),
+                            perplexity_key.getkey('perplexity','perplexity_max_wait_sec'),
                             key_id,
                             perplexity_key.getkey('perplexity','perplexity_a_nick_name'), perplexity_key.getkey('perplexity','perplexity_a_model'), perplexity_key.getkey('perplexity','perplexity_a_token'),
                             perplexity_key.getkey('perplexity','perplexity_a_use_tools'),
@@ -394,11 +395,16 @@ class ChatClass:
                             claude_key.getkey('claude','claude_default_gpt'), claude_key.getkey('claude','claude_default_class'),
                             claude_key.getkey('claude','claude_auto_continue'),
                             claude_key.getkey('claude','claude_max_step'), claude_key.getkey('claude','claude_max_session'),
+                            claude_key.getkey('claude','claude_max_wait_sec'),
                             key_id,
                             claude_key.getkey('claude','claude_a_nick_name'), claude_key.getkey('claude','claude_a_model'), claude_key.getkey('claude','claude_a_token'),
+                            claude_key.getkey('claude','claude_a_use_tools'),
                             claude_key.getkey('claude','claude_b_nick_name'), claude_key.getkey('claude','claude_b_model'), claude_key.getkey('claude','claude_b_token'),
+                            claude_key.getkey('claude','claude_b_use_tools'),
                             claude_key.getkey('claude','claude_v_nick_name'), claude_key.getkey('claude','claude_v_model'), claude_key.getkey('claude','claude_v_token'),
+                            claude_key.getkey('claude','claude_v_use_tools'),
                             claude_key.getkey('claude','claude_x_nick_name'), claude_key.getkey('claude','claude_x_model'), claude_key.getkey('claude','claude_x_token'),
+                            claude_key.getkey('claude','claude_x_use_tools'),
                             )
 
         if res == True:

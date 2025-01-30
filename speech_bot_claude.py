@@ -43,7 +43,6 @@ class _claudeAPI:
         self.bot_auth               = None
 
         self.temperature            = 0.8
-        self.timeOut                = 60
 
         self.claude_api_type        = 'claude'
         self.claude_default_gpt     = 'auto'
@@ -51,6 +50,7 @@ class _claudeAPI:
         self.claude_auto_continue   = 3
         self.claude_max_step        = 10
         self.claude_max_session     = 5
+        self.claude_max_wait_sec    = 120
        
         self.claude_key_id          = None
 
@@ -74,6 +74,7 @@ class _claudeAPI:
         self.claude_x_model         = None
         self.claude_x_token         = 0
 
+        self.models                 = {}
         self.history                = []
 
         self.seq                    = 0
@@ -108,56 +109,25 @@ class _claudeAPI:
                      claude_default_gpt, claude_default_class,
                      claude_auto_continue,
                      claude_max_step, claude_max_session,
+                     claude_max_wait_sec,
 
                      claude_key_id,
 
                      claude_a_nick_name, claude_a_model, claude_a_token, 
+                     claude_a_use_tools,
                      claude_b_nick_name, claude_b_model, claude_b_token, 
+                     claude_b_use_tools,
                      claude_v_nick_name, claude_v_model, claude_v_token, 
+                     claude_v_use_tools,
                      claude_x_nick_name, claude_x_model, claude_x_token, 
+                     claude_x_use_tools,
                     ):
 
-        # 設定
 
         # 認証
         self.bot_auth                 = None
         self.claude_key_id            = claude_key_id
 
-        self.claude_default_gpt       = claude_default_gpt
-        self.claude_default_class     = claude_default_class
-        if (str(claude_auto_continue) != 'auto'):
-            self.claude_auto_continue = int(claude_auto_continue)
-        if (str(claude_max_step)      != 'auto'):
-            self.claude_max_step      = int(claude_max_step)
-        if (str(claude_max_session) != 'auto'):
-            self.claude_max_session   = int(claude_max_session)
-
-        # claude チャットボット
-        if (claude_a_nick_name != ''):
-            self.claude_a_enable     = False
-            self.claude_a_nick_name  = claude_a_nick_name
-            self.claude_a_model      = claude_a_model
-            self.claude_a_token      = int(claude_a_token)
-
-        if (claude_b_nick_name != ''):
-            self.claude_b_enable     = False
-            self.claude_b_nick_name  = claude_b_nick_name
-            self.claude_b_model      = claude_b_model
-            self.claude_b_token      = int(claude_b_token)
-
-        if (claude_v_nick_name != ''):
-            self.claude_v_enable     = False
-            self.claude_v_nick_name  = claude_v_nick_name
-            self.claude_v_model      = claude_v_model
-            self.claude_v_token      = int(claude_v_token)
-
-        if (claude_x_nick_name != ''):
-            self.claude_x_enable     = False
-            self.claude_x_nick_name  = claude_x_nick_name
-            self.claude_x_model      = claude_x_model
-            self.claude_x_token      = int(claude_x_token)
-
-        # API-KEYの設定
         self.client = None
         if (claude_key_id[:1] == '<'):
             return False
@@ -169,6 +139,58 @@ class _claudeAPI:
         except Exception as e:
             print(e)
             return False
+
+        # 設定
+        self.claude_default_gpt         = claude_default_gpt
+        self.claude_default_class       = claude_default_class
+        if (not str(claude_auto_continue) in ['', 'auto']):
+            self.claude_auto_continue   = int(claude_auto_continue)
+        if (not str(claude_max_step)      in ['', 'auto']):
+            self.claude_max_step        = int(claude_max_step)
+        if (not str(claude_max_session)   in ['', 'auto']):
+            self.claude_max_session     = int(claude_max_session)
+        if (not str(claude_max_wait_sec)  in ['', 'auto']):
+            self.claude_max_wait_sec    = int(claude_max_wait_sec)
+
+        # モデル取得
+        self.models                         = {}
+        self.get_models()
+
+        #ymd = datetime.date.today().strftime('%Y/%m/%d')
+        ymd = '????/??/??'
+
+        # claude チャットボット
+        if (claude_a_nick_name != ''):
+            self.claude_a_enable     = False
+            self.claude_a_nick_name  = claude_a_nick_name
+            self.claude_a_model      = claude_a_model
+            self.claude_a_token      = int(claude_a_token)
+            if (not claude_a_model in self.models):
+                self.models[claude_a_model] = {"id": claude_a_model, "token": str(claude_a_token), "modality": "text?", "date": ymd, }
+
+        if (claude_b_nick_name != ''):
+            self.claude_b_enable     = False
+            self.claude_b_nick_name  = claude_b_nick_name
+            self.claude_b_model      = claude_b_model
+            self.claude_b_token      = int(claude_b_token)
+            if (not claude_b_model in self.models):
+                self.models[claude_b_model] = {"id": claude_b_model, "token": str(claude_b_token), "modality": "text?", "date": ymd, }
+
+        if (claude_v_nick_name != ''):
+            self.claude_v_enable     = False
+            self.claude_v_nick_name  = claude_v_nick_name
+            self.claude_v_model      = claude_v_model
+            self.claude_v_token      = int(claude_v_token)
+            if (not claude_v_model in self.models):
+                self.models[claude_v_model] = {"id": claude_v_model, "token": str(claude_v_token), "modality": "text?", "date": ymd, }
+
+        if (claude_x_nick_name != ''):
+            self.claude_x_enable     = False
+            self.claude_x_nick_name  = claude_x_nick_name
+            self.claude_x_model      = claude_x_model
+            self.claude_x_token      = int(claude_x_token)
+            if (not claude_x_model in self.models):
+                self.models[claude_x_model] = {"id": claude_x_model, "token": str(claude_x_token), "modality": "text?", "date": ymd, }
 
         # モデル
         hit = False
@@ -190,6 +212,20 @@ class _claudeAPI:
             return True
         else:
             return False
+
+    def get_models(self, ):
+        try:
+            models = self.client.models.list()
+            for model in models.data:
+                print(model)
+                key = model.id
+                create_ymd = model.created_at.strftime("%Y/%m/%d")
+                #print(key, create_ymd)
+                self.models[key] = {"id":key, "token":"9999", "modality":"text?", "date": create_ymd, }
+        except Exception as e:
+            #print(e)
+            return False
+        return True
 
     def history_add(self, history=[], sysText=None, reqText=None, inpText='こんにちは', ):
         res_history = history
@@ -360,11 +396,9 @@ class _claudeAPI:
                 #elif (self.claude_x_enable == True):
                 #        res_name = self.claude_x_nick_name
                 #        res_api  = self.claude_x_model
-                # 2024/08/04 特別補正 ちなみに 3.5はsonnet,opusしかない！ 
                 if   (self.claude_v_enable == True):
                     res_name = self.claude_v_nick_name
                     res_api  = self.claude_v_model
-                    print('Cloudeが選択されましたがAPI利用不可のためconfigでsonnet利用に変更中！')
 
         if (self.claude_x_nick_name != ''):
             if (inpText.strip()[:len(self.claude_x_nick_name)+1].lower() == (self.claude_x_nick_name.lower() + ',')):
@@ -519,7 +553,7 @@ class _claudeAPI:
                         # Stream 処理
                         hit_string = False
                         for chunk in streams:
-                            if ((time.time() - chkTime) > self.timeOut):
+                            if ((time.time() - chkTime) > self.claude_max_wait_sec):
                                 break
 
                             try:
@@ -560,7 +594,7 @@ class _claudeAPI:
                 # 通常実行
                 if (stream == False):
                     response = self.client.messages.create( model=res_api, 
-                                                            max_tokens=4096,
+                                                            #max_tokens=4096,
                                                             temperature=temperature,
                                                             system=sysText,
                                                             messages=messages,
@@ -750,11 +784,16 @@ if __name__ == '__main__':
                             claude_key.getkey('claude','claude_default_gpt'), claude_key.getkey('claude','claude_default_class'),
                             claude_key.getkey('claude','claude_auto_continue'),
                             claude_key.getkey('claude','claude_max_step'), claude_key.getkey('claude','claude_max_session'),
+                            claude_key.getkey('claude','claude_max_wait_sec'),
                             claude_key.getkey('claude','claude_key_id'),
                             claude_key.getkey('claude','claude_a_nick_name'), claude_key.getkey('claude','claude_a_model'), claude_key.getkey('claude','claude_a_token'),
+                            claude_key.getkey('claude','claude_a_use_tools'),
                             claude_key.getkey('claude','claude_b_nick_name'), claude_key.getkey('claude','claude_b_model'), claude_key.getkey('claude','claude_b_token'),
+                            claude_key.getkey('claude','claude_b_use_tools'),
                             claude_key.getkey('claude','claude_v_nick_name'), claude_key.getkey('claude','claude_v_model'), claude_key.getkey('claude','claude_v_token'),
+                            claude_key.getkey('claude','claude_v_use_tools'),
                             claude_key.getkey('claude','claude_x_nick_name'), claude_key.getkey('claude','claude_x_model'), claude_key.getkey('claude','claude_x_token'),
+                            claude_key.getkey('claude','claude_x_use_tools'),
                             )
         print('authenticate:', res, )
         if (res == True):
@@ -779,10 +818,7 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                #inpText = 'おはようございます。'
-                #inpText = '今日は、何月何日？'
-                #inpText = '日本の３大都市の天気？'
-                inpText = 'claude,おはようございます。'
+                inpText = 'おはようございます。'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
@@ -819,7 +855,7 @@ if __name__ == '__main__':
                 sysText = None
                 reqText = ''
                 inpText = 'この画像はなんだと思いますか？'
-                filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
+                filePath = ['_icons/dog.jpg']
                 print()
                 print('[Request]')
                 print(reqText, inpText )
