@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Setting</title>
+    <title>Setting (Other)</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
 
@@ -75,7 +75,7 @@
 
     <div class="setting-container">
 
-        <h2>【 Settings 2 (設定) 】</h2>
+        <h2>【 Setting (Other) 】</h2>
 
         <div class="frame-tab">
 
@@ -83,8 +83,6 @@
             <div class="tab-header">
                 <button data-target="reset">Reset</button>
                 <button data-target="addins">Addins</button>
-                <button data-target="ort">OpenRT</button>
-                <button data-target="olm">Ollama</button>
                 <button data-target="live">Live</button>
                 <button data-target="agent">Agent</button>
                 <button data-target="reacts">Reacts</button>
@@ -188,214 +186,6 @@
                                 <option value="">Auto (自動)</option>
                                 <option value="yes,">yes, (有効)</option>
                                 <option value="no,">no, (無効)</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- OpenRouterタブ -->
-            <div class="tab-content" id="ort" style="justify-content: center;">
-                <table>
-                    <tr><td align="right">　</td><td>　</td></tr>
-                    <tr>
-                        <td align="right">【OpenRouter】</td>
-                        <td>(setting)</td>
-                    </tr>
-                    <tr>
-                        <td align="right">Timeout :</td>
-                        <td>
-                            <select id="ort_max_wait_sec" name="ort_max_wait_sec">
-                                <option value="">Auto (自動)</option>
-                                <option value="30"> 30秒</option>
-                                <option value="60"> 60秒</option>
-                                <option value="120">120秒</option>
-                                <option value="180">180秒</option>
-                                <option value="300">300秒</option>
-                                <option value="600">600秒</option>
-                                <option value="999">999秒</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr><td align="right">　</td><td>　</td></tr>
-                    <tr>
-                        <td align="right">　</td>
-                        <td>(models)</td>
-                    </tr>
-                    <tr>
-                        <td align="right">(ort-)a, :</td>
-                        <td>
-                            <select id="ort_a_model" name="ort_a_model">
-                                <option value="">Auto (自動)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">use_tools:</td>
-                        <td>
-                            <select id="ort_a_use_tools" name="ort_a_use_tools">
-                                <option value="">Auto (自動)</option>
-                                <option value="yes">Yes (有効)</option>
-                                <option value="no">No (無効)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr><td align="right">　</td><td align="center"><button type="button" id="ort-a2bvx-button">↓ (a to b,v,x,)</button></td></tr>
-                    <tr>
-                        <td align="right">(ort-)b, :</td>
-                        <td>
-                            <select id="ort_b_model" name="ort_b_model">
-                                <option value="">Auto (自動)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">use_tools:</td>
-                        <td>
-                            <select id="ort_b_use_tools" name="ort_b_use_tools">
-                                <option value="">Auto (自動)</option>
-                                <option value="yes">Yes (有効)</option>
-                                <option value="no">No (無効)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">(ort-)v, :</td>
-                        <td>
-                            <select id="ort_v_model" name="ort_v_model">
-                                <option value="">Auto (自動)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">use_tools:</td>
-                        <td>
-                            <select id="ort_v_use_tools" name="ort_v_use_tools">
-                                <option value="">Auto (自動)</option>
-                                <option value="yes">Yes (有効)</option>
-                                <option value="no">No (無効)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">(ort-)x, :</td>
-                        <td>
-                            <select id="ort_x_model" name="ort_x_model">
-                                <option value="">Auto (自動)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">use_tools:</td>
-                        <td>
-                            <select id="ort_x_use_tools" name="ort_x_use_tools">
-                                <option value="">Auto (自動)</option>
-                                <option value="yes">Yes (有効)</option>
-                                <option value="no">No (無効)</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- Ollamaタブ -->
-            <div class="tab-content" id="olm" style="justify-content: center;">
-                <table>
-                    <tr><td align="right">　</td><td>　</td></tr>
-                    <tr>
-                        <td align="right">【Ollama】</td>
-                        <td>(setting)</td>
-                    </tr>
-                    <tr>
-                        <td align="right">Timeout :</td>
-                        <td>
-                            <select id="olm_max_wait_sec" name="olm_max_wait_sec">
-                                <option value="">Auto (自動)</option>
-                                <option value="30"> 30秒</option>
-                                <option value="60"> 60秒</option>
-                                <option value="120">120秒</option>
-                                <option value="180">180秒</option>
-                                <option value="300">300秒</option>
-                                <option value="600">600秒</option>
-                                <option value="999">999秒</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr><td align="right">　</td><td>　</td></tr>
-                    <tr>
-                        <td align="right">　</td>
-                        <td>(models)</td>
-                    </tr>
-                    <tr>
-                        <td align="right">(olm-)a, :</td>
-                        <td>
-                            <select id="olm_a_model" name="olm_a_model">
-                                <option value="">Auto (自動)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">use_tools:</td>
-                        <td>
-                            <select id="olm_a_use_tools" name="olm_a_use_tools">
-                                <option value="">Auto (自動)</option>
-                                <option value="yes">Yes (有効)</option>
-                                <option value="no">No (無効)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr><td align="right">　</td><td align="center"><button type="button" id="olm-a2bvx-button">↓ (a to b,v,x,)</button></td></tr>
-                    <tr>
-                        <td align="right">(olm-)b, :</td>
-                        <td>
-                            <select id="olm_b_model" name="olm_b_model">
-                                <option value="">Auto (自動)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">use_tools:</td>
-                        <td>
-                            <select id="olm_b_use_tools" name="olm_b_use_tools">
-                                <option value="">Auto (自動)</option>
-                                <option value="yes">Yes (有効)</option>
-                                <option value="no">No (無効)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">(olm-)v, :</td>
-                        <td>
-                            <select id="olm_v_model" name="olm_v_model">
-                                <option value="">Auto (自動)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">use_tools:</td>
-                        <td>
-                            <select id="olm_v_use_tools" name="olm_v_use_tools">
-                                <option value="">Auto (自動)</option>
-                                <option value="yes">Yes (有効)</option>
-                                <option value="no">No (無効)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">(olm-)x, :</td>
-                        <td>
-                            <select id="olm_x_model" name="olm_x_model">
-                                <option value="">Auto (自動)</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="right">use_tools:</td>
-                        <td>
-                            <select id="olm_x_use_tools" name="olm_x_use_tools">
-                                <option value="">Auto (自動)</option>
-                                <option value="yes">Yes (有効)</option>
-                                <option value="no">No (無効)</option>
                             </select>
                         </td>
                     </tr>
@@ -567,7 +357,7 @@
     </div>
 
     <script>
-        var js = 'setting2.js';
+        var js = 'setting_other.js';
         var script = document.createElement('script');
         script.src = js + '?v=' + Math.random();
         document.head.appendChild(script);

@@ -41,7 +41,6 @@ class _groqAPI:
         self.bot_auth               = None
 
         self.temperature            = 0.8
-        self.timeOut                = 180
 
         self.groq_api_type          = 'groq'
         self.groq_default_gpt       = 'auto'
@@ -49,6 +48,7 @@ class _groqAPI:
         self.groq_auto_continue     = 3
         self.groq_max_step          = 10
         self.groq_max_session       = 5
+        self.groq_max_wait_sec      = 120
        
         self.groq_key_id            = None
 
@@ -56,22 +56,27 @@ class _groqAPI:
         self.groq_a_nick_name       = ''
         self.groq_a_model           = None
         self.groq_a_token           = 0
+        self.groq_a_use_tools       = 'no'
 
         self.groq_b_enable          = False
         self.groq_b_nick_name       = ''
         self.groq_b_model           = None
         self.groq_b_token           = 0
+        self.groq_a_use_tools       = 'no'
 
         self.groq_v_enable          = False
         self.groq_v_nick_name       = ''
         self.groq_v_model           = None
         self.groq_v_token           = 0
+        self.groq_v_use_tools       = 'no'
 
         self.groq_x_enable          = False
         self.groq_x_nick_name       = ''
         self.groq_x_model           = None
         self.groq_x_token           = 0
+        self.groq_x_use_tools       = 'no'
 
+        self.models                 = {}
         self.history                = []
 
         self.seq                    = 0
@@ -106,29 +111,53 @@ class _groqAPI:
                      groq_default_gpt, groq_default_class,
                      groq_auto_continue,
                      groq_max_step, groq_max_session,
+                     groq_max_wait_sec,
 
                      groq_key_id,
 
                      groq_a_nick_name, groq_a_model, groq_a_token, 
+                     groq_a_use_tools,
                      groq_b_nick_name, groq_b_model, groq_b_token, 
+                     groq_b_use_tools,
                      groq_v_nick_name, groq_v_model, groq_v_token, 
+                     groq_v_use_tools,
                      groq_x_nick_name, groq_x_model, groq_x_token, 
+                     groq_x_use_tools,
                     ):
-
-        # 設定
 
         # 認証
         self.bot_auth                   = None
         self.groq_key_id                = groq_key_id
 
+        self.client = None
+        if (groq_key_id[:1] == '<'):
+            return False
+        try:
+            self.client  = groq.Groq(
+                api_key=groq_key_id,
+            )
+        except Exception as e:
+            print(e)
+            return False
+
+        # 設定
         self.groq_default_gpt           = groq_default_gpt
         self.groq_default_class         = groq_default_class
-        if (str(groq_auto_continue) != 'auto'):
+        if (not str(groq_auto_continue)   in ['', 'auto']):
             self.groq_auto_continue     = int(groq_auto_continue)
-        if (str(groq_max_step)      != 'auto'):
+        if (not str(groq_max_step)        in ['', 'auto']):
             self.groq_max_step          = int(groq_max_step)
-        if (str(groq_max_session) != 'auto'):
+        if (not str(groq_max_session)     in ['', 'auto']):
             self.groq_max_session       = int(groq_max_session)
+        if (not str(groq_max_wait_sec)    in ['', 'auto']):
+            self.groq_max_wait_sec      = int(groq_max_wait_sec)
+
+        # モデル取得
+        self.models                     = {}
+        self.get_models()
+
+        #ymd = datetime.date.today().strftime('%Y/%m/%d')
+        ymd = '????/??/??'
 
         # groq チャットボット
         if (groq_a_nick_name != ''):
@@ -136,42 +165,36 @@ class _groqAPI:
             self.groq_a_nick_name       = groq_a_nick_name
             self.groq_a_model           = groq_a_model
             self.groq_a_token           = int(groq_a_token)
+            self.groq_a_use_tools       = groq_a_use_tools
+            if (not groq_a_model in self.models):
+                self.models[groq_a_model] = {"id": groq_a_model, "token": str(groq_a_token), "modality": "text?", "date": ymd, }
 
         if (groq_b_nick_name != ''):
             self.groq_b_enable          = False
             self.groq_b_nick_name       = groq_b_nick_name
             self.groq_b_model           = groq_b_model
             self.groq_b_token           = int(groq_b_token)
+            self.groq_b_use_tools       = groq_b_use_tools
+            if (not groq_b_model in self.models):
+                self.models[groq_b_model] = {"id": groq_b_model, "token": str(groq_b_token), "modality": "text?", "date": ymd, }
 
         if (groq_v_nick_name != ''):
             self.groq_v_enable          = False
             self.groq_v_nick_name       = groq_v_nick_name
             self.groq_v_model           = groq_v_model
             self.groq_v_token           = int(groq_v_token)
+            self.groq_v_use_tools       = groq_v_use_tools
+            if (not groq_v_model in self.models):
+                self.models[groq_v_model] = {"id": groq_v_model, "token": str(groq_v_token), "modality": "text+image?", "date": ymd, }
 
         if (groq_x_nick_name != ''):
             self.groq_x_enable          = False
             self.groq_x_nick_name       = groq_x_nick_name
             self.groq_x_model           = groq_x_model
             self.groq_x_token           = int(groq_x_token)
-
-        # API-KEYの設定
-        self.client = None
-        if (groq_key_id[:1] == '<'):
-            return False
-        try:
-            self.client_ab = groq.Groq(
-                api_key=groq_key_id,
-            )
-            self.client_v  = groq.Groq(
-                api_key=groq_key_id,
-            )
-            self.client_x  = groq.Groq(
-                api_key=groq_key_id,
-            )
-        except Exception as e:
-            print(e)
-            return False
+            self.groq_x_use_tools       = groq_x_use_tools
+            if (not groq_x_model in self.models):
+                self.models[groq_x_model] = {"id": groq_x_model, "token": str(groq_x_token), "modality": "text?", "date": ymd, }
 
         # モデル
         hit = False
@@ -193,6 +216,64 @@ class _groqAPI:
             return True
         else:
             return False
+
+    def get_models(self, ):
+        try:
+            models = self.client.models.list()
+            for model in models.data:
+                #print(model, )
+                key = model.id
+                token = model.context_window
+                unix_timestamp = model.created
+                ymd = datetime.datetime.fromtimestamp(unix_timestamp).strftime("%Y/%m/%d")
+                #print(key, )
+                self.models[key] = {"id":key, "token": str(token), "modality":"text", "date": ymd, }
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def set_models(self, max_wait_sec='',
+                         a_model='', a_use_tools='',
+                         b_model='', b_use_tools='',
+                         v_model='', v_use_tools='',
+                         x_model='', x_use_tools='', ):
+        try:
+            if (not max_wait_sec in ['', 'auto']):
+                if (str(max_wait_sec) != str(self.groq_max_wait_sec)):
+                    self.groq_max_wait_sec = int(max_wait_sec)
+            if (a_model != ''):
+                if (a_model != self.groq_a_model) and (a_model in self.models):
+                    self.groq_a_enable = True
+                    self.groq_a_model = a_model
+                    self.groq_a_token = int(self.models[a_model]['token'])
+            if (a_use_tools != ''):
+                self.groq_a_use_tools = a_use_tools
+            if (b_model != ''):
+                if (b_model != self.groq_b_model) and (b_model in self.models):
+                    self.groq_b_enable = True
+                    self.groq_b_model = b_model
+                    self.groq_b_token = int(self.models[b_model]['token'])
+            if (b_use_tools != ''):
+                self.groq_b_use_tools = b_use_tools
+            if (v_model != ''):
+                if (v_model != self.groq_v_model) and (v_model in self.models):
+                    self.groq_v_enable = True
+                    self.groq_v_model = v_model
+                    self.groq_v_token = int(self.models[v_model]['token'])
+            if (v_use_tools != ''):
+                self.groq_v_use_tools = v_use_tools
+            if (x_model != ''):
+                if (x_model != self.groq_x_model) and (x_model in self.models):
+                    self.groq_x_enable = True
+                    self.groq_x_model = x_model
+                    self.groq_x_token = int(self.models[x_model]['token'])
+            if (x_use_tools != ''):
+                self.groq_x_use_tools = x_use_tools
+        except Exception as e:
+            print(e)
+            return False
+        return True
 
     def history_add(self, history=[], sysText=None, reqText=None, inpText='こんにちは', ):
         res_history = history
@@ -340,12 +421,14 @@ class _groqAPI:
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
-        res_name = self.groq_a_nick_name
-        res_api  = self.groq_a_model
+        res_name  = self.groq_a_nick_name
+        res_api   = self.groq_a_model
+        use_tools = self.groq_a_use_tools
         if  (chat_class == 'groq'):
             if (self.groq_b_enable == True):
-                res_name = self.groq_b_nick_name
-                res_api  = self.groq_b_model
+                res_name  = self.groq_b_nick_name
+                res_api   = self.groq_b_model
+                use_tools = self.groq_b_use_tools
 
         # モデル 補正 (assistant)
         if ((chat_class == 'assistant') \
@@ -356,8 +439,9 @@ class _groqAPI:
         or  (chat_class == 'アシスタント') \
         or  (model_select == 'x')):
             if (self.groq_x_enable == True):
-                res_name = self.groq_x_nick_name
-                res_api  = self.groq_x_model
+                res_name  = self.groq_x_nick_name
+                res_api   = self.groq_x_model
+                use_tools = self.groq_x_use_tools
 
         # model 指定
         if (self.groq_a_nick_name != ''):
@@ -367,51 +451,65 @@ class _groqAPI:
             if (inpText.strip()[:len(self.groq_b_nick_name)+1].lower() == (self.groq_b_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.groq_b_nick_name)+1:]
                 if   (self.groq_b_enable == True):
-                        res_name = self.groq_b_nick_name
-                        res_api  = self.groq_b_model
+                        res_name  = self.groq_b_nick_name
+                        res_api   = self.groq_b_model
+                        use_tools = self.groq_b_use_tools
         if (self.groq_v_nick_name != ''):
             if (inpText.strip()[:len(self.groq_v_nick_name)+1].lower() == (self.groq_v_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.groq_v_nick_name)+1:]
                 if   (self.groq_v_enable == True):
                     if  (len(image_urls) > 0) \
                     and (len(image_urls) == len(upload_files)):
-                        res_name = self.groq_v_nick_name
-                        res_api  = self.groq_v_model
+                        res_name  = self.groq_v_nick_name
+                        res_api   = self.groq_v_model
+                        use_tools = self.groq_v_use_tools
                 elif (self.groq_x_enable == True):
-                        res_name = self.groq_x_nick_name
-                        res_api  = self.groq_x_model
+                        res_name  = self.groq_x_nick_name
+                        res_api   = self.groq_x_model
+                        use_tools = self.groq_x_use_tools
         if (self.groq_x_nick_name != ''):
             if (inpText.strip()[:len(self.groq_x_nick_name)+1].lower() == (self.groq_x_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.groq_x_nick_name)+1:]
                 if   (self.groq_x_enable == True):
-                        res_name = self.groq_x_nick_name
-                        res_api  = self.groq_x_model
+                        res_name  = self.groq_x_nick_name
+                        res_api   = self.groq_x_model
+                        use_tools = self.groq_x_use_tools
                 elif (self.groq_b_enable == True):
-                        res_name = self.groq_b_nick_name
-                        res_api  = self.groq_b_model
+                        res_name  = self.groq_b_nick_name
+                        res_api   = self.groq_b_model
+                        use_tools = self.groq_b_use_tools
         if   (inpText.strip()[:5].lower() == ('riki,')):
             inpText = inpText.strip()[5:]
             if   (self.groq_x_enable == True):
-                        res_name = self.groq_x_nick_name
-                        res_api  = self.groq_x_model
+                        res_name  = self.groq_x_nick_name
+                        res_api   = self.groq_x_model
+                        use_tools = self.groq_x_use_tools
             elif (self.groq_b_enable == True):
-                        res_name = self.groq_b_nick_name
-                        res_api  = self.groq_b_model
+                        res_name  = self.groq_b_nick_name
+                        res_api   = self.groq_b_model
+                        use_tools = self.groq_b_use_tools
         elif (inpText.strip()[:7].lower() == ('vision,')):
             inpText = inpText.strip()[7:]
             if   (self.groq_v_enable == True):
                 if  (len(image_urls) > 0) \
                 and (len(image_urls) == len(upload_files)):
-                        res_name = self.groq_v_nick_name
-                        res_api  = self.groq_v_model
+                        res_name  = self.groq_v_nick_name
+                        res_api   = self.groq_v_model
+                        use_tools = self.groq_v_use_tools
             elif (self.groq_x_enable == True):
-                        res_name = self.groq_x_nick_name
-                        res_api  = self.groq_x_model
+                        res_name  = self.groq_x_nick_name
+                        res_api   = self.groq_x_model
+                        use_tools = self.groq_x_use_tools
         elif (inpText.strip()[:10].lower() == ('assistant,')):
             inpText = inpText.strip()[10:]
-            if (self.groq_b_enable == True):
-                        res_name = self.groq_b_nick_name
-                        res_api  = self.groq_b_model
+            if   (self.groq_x_enable == True):
+                        res_name  = self.groq_x_nick_name
+                        res_api   = self.groq_x_model
+                        use_tools = self.groq_x_use_tools
+            elif (self.groq_b_enable == True):
+                        res_name  = self.groq_b_nick_name
+                        res_api   = self.groq_b_model
+                        use_tools = self.groq_b_use_tools
         elif (inpText.strip()[:7].lower() == ('openai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
@@ -439,23 +537,27 @@ class _groqAPI:
 
         # モデル 未設定時
         if (res_api is None):
-            res_name = self.groq_a_nick_name
-            res_api  = self.groq_a_model
+            res_name  = self.groq_a_nick_name
+            res_api   = self.groq_a_model
+            use_tools = self.groq_a_use_tools
             if (self.groq_b_enable == True):
                 if (len(upload_files) > 0) \
                 or (len(inpText) > 1000):
-                    res_name = self.groq_b_nick_name
-                    res_api  = self.groq_b_model
+                    res_name  = self.groq_b_nick_name
+                    res_api   = self.groq_b_model
+                    use_tools = self.groq_b_use_tools
 
         # モデル 補正 (vision)
         if  (len(image_urls) > 0) \
         and (len(image_urls) == len(upload_files)):
             if   (self.groq_v_enable == True):
-                res_name = self.groq_v_nick_name
-                res_api  = self.groq_v_model
+                res_name  = self.groq_v_nick_name
+                res_api   = self.groq_v_model
+                use_tools = self.groq_v_use_tools
             elif (self.groq_x_enable == True):
-                res_name = self.groq_x_nick_name
-                res_api  = self.groq_x_model
+                res_name  = self.groq_x_nick_name
+                res_api   = self.groq_x_model
+                use_tools = self.groq_x_use_tools
 
         # history 追加・圧縮 (古いメッセージ)
         res_history = self.history_add(history=res_history, sysText=sysText, reqText=reqText, inpText=inpText, )
@@ -468,13 +570,15 @@ class _groqAPI:
             msg = self.history2msg_vision(history=res_history, image_urls=image_urls,)
 
         # ストリーム実行?
-        #if (session_id == 'admin'):
-        #    stream = True
-        #else:
-        #    stream = False
-        print(' stream = False, ')
-        stream = False
-        print(' functions = [], ')
+        if (session_id == 'admin'):
+            #stream = True
+            print(' groq  : stream = False, ')
+            stream = False
+        else:
+            stream = False
+
+        # ツール設定
+        print(' groq  : functions = [], ')
         functions = []
 
         # 実行ループ
@@ -486,7 +590,7 @@ class _groqAPI:
             while (function_name != 'exit') and (n < int(max_step)):
 
                 # 結果
-                res_role      = None
+                res_role      = ''
                 res_content   = ''
 
                 # GPT
@@ -495,17 +599,17 @@ class _groqAPI:
 
                 # Stream 表示
                 if (stream == True):
-                    response = self.client_x.chat.completions.create(
+                    response = self.client.chat.completions.create(
                             model           = res_api,
                             messages        = msg,
                             temperature     = float(temperature),
-                            timeout         = self.timeOut,
+                            timeout         = self.groq_max_wait_sec,
                             stream          = stream, 
                             )
 
                     chkTime     = time.time()
                     for chunk in response:
-                        if ((time.time() - chkTime) > self.timeOut):
+                        if ((time.time() - chkTime) > self.groq_max_wait_sec):
                             break
                         delta   = chunk.choices[0].delta
                         if (delta is not None):
@@ -526,11 +630,11 @@ class _groqAPI:
                     if   (model_select == 'v') and (len(image_urls) > 0):
                         null_history = self.history_add(history=[], sysText=sysText, reqText=reqText, inpText=inpText, )
                         msg = self.history2msg_vision(history=null_history, image_urls=image_urls,)
-                        response = self.client_v.chat.completions.create(
+                        response = self.client.chat.completions.create(
                                 model           = res_api,
                                 messages        = msg,
-                                # max_tokens      = 4000,
-                                timeout         = self.timeOut, 
+                                temperature     = float(temperature),
+                                timeout         = self.groq_max_wait_sec, 
                                 stream          = stream, 
                                 )
 
@@ -539,23 +643,24 @@ class _groqAPI:
                         tools = []
                         for f in range(len(functions)):
                             tools.append({"type": "function", "function": functions[f]})
-                            response = self.client_ab.chat.completions.create(
+                            response = self.client.chat.completions.create(
                                 model           = res_api,
                                 messages        = msg,
                                 temperature     = float(temperature),
                                 tools           = tools,
                                 tool_choice     = 'auto',
-                                timeout         = self.timeOut,
+                                timeout         = self.groq_max_wait_sec,
                                 stream          = stream, 
                                 )
 
                     else:
-                        if (jsonSchema is None) or (jsonSchema == ''):
-                            response = self.client_ab.chat.completions.create(
+                        # ノーマル
+                        if (jsonSchema is None) or (jsonSchema == ''):                        
+                            response = self.client.chat.completions.create(
                                 model           = res_api,
                                 messages        = msg,
                                 temperature     = float(temperature),
-                                timeout         = self.timeOut,
+                                timeout         = self.groq_max_wait_sec,
                                 stream          = stream, 
                                 )
                         else:
@@ -566,21 +671,21 @@ class _groqAPI:
                                 pass
                             # スキーマ指定無し
                             if (schema is None):
-                                response = self.client_ab.chat.completions.create(
+                                response = self.client.chat.completions.create(
                                     model           = res_api,
                                     messages        = msg,
                                     temperature     = float(temperature),
-                                    timeout         = self.timeOut, 
+                                    timeout         = self.groq_max_wait_sec, 
                                     response_format = { "type": "json_object" },
                                     stream          = stream, 
                                     )
                             # スキーマ指定有り
                             else:
-                                response = self.client_ab.chat.completions.create(
+                                response = self.client.chat.completions.create(
                                     model           = res_api,
                                     messages        = msg,
                                     temperature     = float(temperature),
-                                    timeout         = self.timeOut, 
+                                    timeout         = self.groq_max_wait_sec, 
                                     response_format = { "type": "json_schema", "json_schema": schema },
                                     stream          = stream, 
                                     )
@@ -682,11 +787,16 @@ if __name__ == '__main__':
                             groq_key.getkey('groq','groq_default_gpt'), groq_key.getkey('groq','groq_default_class'),
                             groq_key.getkey('groq','groq_auto_continue'),
                             groq_key.getkey('groq','groq_max_step'), groq_key.getkey('groq','groq_max_session'),
+                            groq_key.getkey('groq','groq_max_wait_sec'),
                             groq_key.getkey('groq','groq_key_id'),
                             groq_key.getkey('groq','groq_a_nick_name'), groq_key.getkey('groq','groq_a_model'), groq_key.getkey('groq','groq_a_token'),
+                            groq_key.getkey('groq','groq_a_use_tools'),
                             groq_key.getkey('groq','groq_b_nick_name'), groq_key.getkey('groq','groq_b_model'), groq_key.getkey('groq','groq_b_token'),
+                            groq_key.getkey('groq','groq_b_use_tools'),
                             groq_key.getkey('groq','groq_v_nick_name'), groq_key.getkey('groq','groq_v_model'), groq_key.getkey('groq','groq_v_token'),
+                            groq_key.getkey('groq','groq_v_use_tools'),
                             groq_key.getkey('groq','groq_x_nick_name'), groq_key.getkey('groq','groq_x_model'), groq_key.getkey('groq','groq_x_token'),
+                            groq_key.getkey('groq','groq_x_use_tools'),
                             )
         print('authenticate:', res, )
         if (res == True):

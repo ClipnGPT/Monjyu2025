@@ -337,22 +337,20 @@ class _ollamaAPI:
 
             if (hit == False):
                 hit, model = download(self=self, down_name=model_name+':1b', )
-
             if (hit == False):
                 hit, model = download(self=self, down_name=model_name+':1.5b', )
-
+            if (hit == False):
+                hit, model = download(self=self, down_name=model_name+':1.8b', )
             if (hit == False):
                 hit, model = download(self=self, down_name=model_name+':2b', )
-
             if (hit == False):
                 hit, model = download(self=self, down_name=model_name+':3b', )
-
+            if (hit == False):
+                hit, model = download(self=self, down_name=model_name+':3.8b', )
             if (hit == False):
                 hit, model = download(self=self, down_name=model_name+':7b', )
-
             if (hit == False):
                 hit, model = download(self=self, down_name=model_name+':8b', )
-
             if (hit == False):
                 hit, model = download(self=self, down_name=model_name+':11b', )
 
@@ -709,7 +707,7 @@ class _ollamaAPI:
         # メッセージ作成
         #msg_text = self.history2msg_text(history=res_history, )
 
-        print(' history = "", ')
+        print(' ollama  : history = "", ')
         msg_text = ''
         if (sysText is not None) and (sysText != ''):
             msg_text += sysText + '\n'
@@ -734,15 +732,16 @@ class _ollamaAPI:
                         if (file_ext in ('jpg', 'jpeg', 'png')):
                             images.append(file_name)
             msg = {"role": "user", "content": msg_text, "images":images }
+            print(images)
             messages.append(msg)
 
         # ストリーム実行?
-        #if (session_id == 'admin'):
-        #    stream = True
-        #else:
-        #    stream = False
-        #print(' stream = False, ')
-        stream = False
+        if (session_id == 'admin'):
+            #stream = True
+            print(' ollama  : stream = False, ')
+            stream = False
+        else:
+            stream = False
 
         # 実行ループ
         #try:
@@ -762,10 +761,11 @@ class _ollamaAPI:
 
                 # 結果
                 content_text = None
-                response = self.ollama_client.chat(model=res_api, 
-                                            messages=messages, 
-                                            options={"temperature": 0 },
-                                            stream=stream, )
+                response = self.ollama_client.chat( model=res_api, 
+                                                    messages=messages, 
+                                                    options={"temperature": float(temperature) },
+                                                    stream=stream, 
+                                                    )
 
                 # Stream 表示
                 if (stream == True):
@@ -945,7 +945,8 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = '画像検索に利用できるように、この画像の内容を箇条書きで教えてください。'
+                inpText = '添付画像を説明してください。'
+                #inpText = '画像検索に利用できるように、この画像の内容を箇条書きで教えてください。'
                 filePath = ['_icons/dog.jpg']
                 #filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
                 print()

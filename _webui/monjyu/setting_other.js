@@ -1,15 +1,7 @@
-// setting2.js
+// setting_other.js
 
 // 最後の設定値を保持するオブジェクト
 let last_addins_setting = null;
-let last_engine_models = {
-    openrt: null,
-    ollama: null,
-};
-let last_engine_setting = {
-    openrt: null,
-    ollama: null,
-};
 let last_live_setting = {
     freeai: null,
     openai: null,
@@ -72,174 +64,6 @@ function post_addins_setting() {
         },
         error: function(xhr, status, error) {
             console.error('post_addins_setting error:', error);
-        }
-    });
-}
-
-// エンジンのmodels情報を取得してコンボボックスを設定する関数
-function get_engine_models(engine) {
-    $.ajax({
-        url: '/get_engine_models',
-        method: 'GET',
-        data: { engine: engine },
-        dataType: 'json',
-        async: false, // 同期処理
-        success: function(data) {
-
-            // openrt
-            if (engine === 'openrt') {
-                if (JSON.stringify(data) !== last_engine_models.openrt) {
-                    // 既存の選択肢を削除
-                    $('#ort_a_model').empty();
-                    $('#ort_b_model').empty();
-                    $('#ort_v_model').empty();
-                    $('#ort_x_model').empty();
-                    // 取得した選択肢を設定
-                    $('#ort_a_model').append(`<option value="">Auto (自動)</option>`);
-                    $('#ort_b_model').append(`<option value="">Auto (自動)</option>`);
-                    $('#ort_v_model').append(`<option value="">Auto (自動)</option>`);
-                    $('#ort_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
-                        $('#ort_a_model').append(`<option value="${key}">${value}</option>`);
-                        $('#ort_b_model').append(`<option value="${key}">${value}</option>`);
-                        $('#ort_v_model').append(`<option value="${key}">${value}</option>`);
-                        $('#ort_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
-                    last_engine_models.openrt = JSON.stringify(data);
-                }
-            }
-
-            // ollama
-            if (engine === 'ollama') {
-                if (JSON.stringify(data) !== last_engine_models.ollama) {
-                    // 既存の選択肢を削除
-                    $('#olm_a_model').empty();
-                    $('#olm_b_model').empty();
-                    $('#olm_v_model').empty();
-                    $('#olm_x_model').empty();
-                    // 取得した選択肢を設定
-                    $('#olm_a_model').append(`<option value="">Auto (自動)</option>`);
-                    $('#olm_b_model').append(`<option value="">Auto (自動)</option>`);
-                    $('#olm_v_model').append(`<option value="">Auto (自動)</option>`);
-                    $('#olm_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
-                        $('#olm_a_model').append(`<option value="${key}">${value}</option>`);
-                        $('#olm_b_model').append(`<option value="${key}">${value}</option>`);
-                        $('#olm_v_model').append(`<option value="${key}">${value}</option>`);
-                        $('#olm_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
-                    last_engine_models.ollama = JSON.stringify(data);
-                }
-            }
-
-        },
-        error: function(xhr, status, error) {
-            console.error('get_engine_models error:', error);
-        }
-    });
-}
-
-// サーバーからエンジンの設定値を取得する関数
-function get_engine_setting_all(engine) {
-    get_engine_setting('openrt');
-    get_engine_models('ollama');
-    get_engine_setting('ollama');
-}
-function get_engine_setting(engine) {
-    // 設定値をサーバーから受信
-    $.ajax({
-        url: '/get_engine_setting',
-        method: 'GET',
-        data: { engine: engine },
-        dataType: 'json',
-        success: function(data) {
-
-            // openrt
-            if (engine === 'openrt') {
-                if (JSON.stringify(data) !== last_engine_setting.openrt) {
-                    $('#ort_max_wait_sec').val(data.max_wait_sec || '');
-                    $('#ort_a_model').val(data.a_model || '');
-                    $('#ort_a_use_tools').val(data.a_use_tools || '');
-                    $('#ort_b_model').val(data.b_model || '');
-                    $('#ort_b_use_tools').val(data.b_use_tools || '');
-                    $('#ort_v_model').val(data.v_model || '');
-                    $('#ort_v_use_tools').val(data.v_use_tools || '');
-                    $('#ort_x_model').val(data.x_model || '');
-                    $('#ort_x_use_tools').val(data.x_use_tools || '');
-                    last_engine_setting.openrt = JSON.stringify(data);
-                }    
-            }    
-
-            // ollama
-            if (engine === 'ollama') {
-                if (JSON.stringify(data) !== last_engine_setting.ollama) {
-                    $('#olm_max_wait_sec').val(data.max_wait_sec || '');
-                    $('#olm_a_model').val(data.a_model || '');
-                    $('#olm_a_use_tools').val(data.a_use_tools || '');
-                    $('#olm_b_model').val(data.b_model || '');
-                    $('#olm_b_use_tools').val(data.b_use_tools || '');
-                    $('#olm_v_model').val(data.v_model || '');
-                    $('#olm_v_use_tools').val(data.v_use_tools || '');
-                    $('#olm_x_model').val(data.x_model || '');
-                    $('#olm_x_use_tools').val(data.x_use_tools || '');
-                    last_engine_setting.openrt = JSON.stringify(data);
-                }    
-            }    
-
-        },
-        error: function(xhr, status, error) {
-            console.error('get_engine_setting error:', error);
-        }
-    });
-}
-
-// サーバーへ設定値を保存する関数
-function post_engine_setting(engine) {
-    var formData = {};
-
-    // openrt
-    if (engine === 'openrt') {
-        formData = {
-            engine: 'openrt',
-            max_wait_sec: $('#ort_max_wait_sec').val(),
-            a_model: $('#ort_a_model').val(),
-            a_use_tools: $('#ort_a_use_tools').val(),
-            b_model: $('#ort_b_model').val(),
-            b_use_tools: $('#ort_b_use_tools').val(),
-            v_model: $('#ort_v_model').val(),
-            v_use_tools: $('#ort_v_use_tools').val(),
-            x_model: $('#ort_x_model').val(),
-            x_use_tools: $('#ort_x_use_tools').val(),
-        }
-    }
-
-    // ollama
-    if (engine === 'ollama') {
-        formData = {
-            engine: 'ollama',
-            max_wait_sec: $('#olm_max_wait_sec').val(),
-            a_model: $('#olm_a_model').val(),
-            a_use_tools: $('#olm_a_use_tools').val(),
-            b_model: $('#olm_b_model').val(),
-            b_use_tools: $('#olm_b_use_tools').val(),
-            v_model: $('#olm_v_model').val(),
-            v_use_tools: $('#olm_v_use_tools').val(),
-            x_model: $('#olm_x_model').val(),
-            x_use_tools: $('#olm_x_use_tools').val(),
-        }
-    }
-
-    // 設定値をサーバーに送信
-    $.ajax({
-        url: '/post_engine_setting',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
-        success: function(response) {
-            console.log('post_engine_setting:', response);
-        },
-        error: function(xhr, status, error) {
-            console.error('post_engine_setting error:', error);
         }
     });
 }
@@ -496,7 +320,7 @@ function post_set_react(filename) {
 $(document).ready(function() {
 
     // ページ遷移時にlocalStorageから復元
-    const storedData = JSON.parse(localStorage.getItem('setting2_formData'));
+    const storedData = JSON.parse(localStorage.getItem('setting_other_formData'));
     if (storedData) {
         // ページ開始時に保存されたタブを復元
         var activeTab = storedData.activeTab || 'reset';
@@ -512,12 +336,8 @@ $(document).ready(function() {
             // ページ遷移時にlocalStorageに保存
             activeTab: $('.tab-header button.active').data('target')
         };
-        localStorage.setItem('setting2_formData', JSON.stringify(formData)); // localStorageに保存
+        localStorage.setItem('setting_other_formData', JSON.stringify(formData)); // localStorageに保存
     };
-
-    // エンジンのmodels設定を取得
-    get_engine_models('openrt');
-    get_engine_models('ollama');
 
     // Liveのvoices設定を取得
     get_live_voices('freeai');
@@ -525,36 +345,11 @@ $(document).ready(function() {
 
     // 定期的に設定値を取得する処理
     setInterval(get_addins_setting, 3000);
-    setInterval(get_engine_setting_all, 3100);
-    setInterval(get_live_setting_all, 3200);
-    setInterval(get_agent_setting_all, 3300);
+    setInterval(get_live_setting_all, 3100);
+    setInterval(get_agent_setting_all, 3200);
 
     $('#result_text_save, #speech_stt_engine, #speech_tts_engine, #text_clip_input, #text_url_execute, #text_pdf_execute, #image_ocr_execute, #image_yolo_execute').change(function() {
         post_addins_setting();
-    });
-    $('#ort_max_wait_sec, #ort_a_model, #ort_a_use_tools, #ort_b_model, #ort_b_use_tools, #ort_v_model, #ort_v_use_tools, #ort_x_model, #ort_x_use_tools').change(function() {
-        post_engine_setting('openrt');
-    });
-    $('#ort-a2bvx-button').click(function() {
-        $('#ort_b_model').val( $('#ort_a_model').val() );
-        $('#ort_b_use_tools').val( $('#ort_a_use_tools').val() );
-        $('#ort_v_model').val( $('#ort_a_model').val() );
-        $('#ort_v_use_tools').val( $('#ort_a_use_tools').val() );
-        $('#ort_x_model').val( $('#ort_a_model').val() );
-        $('#ort_x_use_tools').val( $('#ort_a_use_tools').val() );
-        post_engine_setting('openrt');
-    });
-    $('#olm_max_wait_sec, #olm_a_model, #olm_a_use_tools, #olm_b_model, #olm_b_use_tools, #olm_v_model, #olm_v_use_tools, #olm_x_model, #olm_x_use_tools').change(function() {
-        post_engine_setting('ollama');
-    });
-    $('#olm-a2bvx-button').click(function() {
-        $('#olm_b_model').val( $('#olm_a_model').val() );
-        $('#olm_b_use_tools').val( $('#olm_a_use_tools').val() );
-        $('#olm_v_model').val( $('#olm_a_model').val() );
-        $('#olm_v_use_tools').val( $('#olm_a_use_tools').val() );
-        $('#olm_x_model').val( $('#olm_a_model').val() );
-        $('#olm_x_use_tools').val( $('#olm_a_use_tools').val() );
-        post_engine_setting('ollama');
     });
     $('#freeai_voice, #freeai_shot_interval_sec, #freeai_clip_interval_sec').change(function() {
         post_live_setting('freeai');

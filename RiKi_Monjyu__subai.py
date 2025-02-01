@@ -80,6 +80,7 @@ class RequestDataModel(BaseModel):
 class SubAiProcess:
     def __init__(self, runMode: str = 'debug', qLog_fn: str = '', 
                  main=None, conf=None, data=None, addin=None, botFunc=None,
+                 coreai=None,
                  core_port: str = '8000', sub_base: str = '8100', num_subais: str = '48'):
 
         # ログ設定
@@ -99,6 +100,7 @@ class SubAiProcess:
         self.data      = data
         self.addin     = addin
         self.botFunc   = botFunc
+        self.coreai    = coreai
 
         """ サブAIプロセスの初期化 """
         self.num_subais = int(num_subais)
@@ -110,6 +112,7 @@ class SubAiProcess:
             self_port = str(int(sub_base) + n + 1)
             subai_class[n] = SubAiClass(runMode=runMode, qLog_fn=qLog_fn, 
                                         main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
+                                        coreai=coreai,
                                         core_port=core_port, sub_base=sub_base, num_subais=str(num_subais),
                                         self_port=self_port, profile_number=random_profile[n])
             subai_thread[n] = threading.Thread(target=subai_class[n].run)
@@ -123,6 +126,7 @@ class SubAiClass:
     """ サブAIクラス """
     def __init__(self, runMode: str = 'debug', qLog_fn: str = '', 
                  main=None, conf=None, data=None, addin=None, botFunc=None,
+                 coreai=None,
                  core_port: str = '8000', sub_base: str = '8100', num_subais: str = '48',
                  self_port: str = '8011', profile_number: Optional[int] = None):
         self.runMode = runMode
@@ -139,20 +143,22 @@ class SubAiClass:
         qLog.log('info', self.proc_id, 'init')
 
         # 設定
-        self.main = main
-        self.conf = conf
-        self.data = data
-        self.addin = addin
-        self.botFunc = botFunc
-        self.core_port = core_port
-        self.sub_base  = sub_base
-        self.self_port = self_port
+        self.main       = main
+        self.conf       = conf
+        self.data       = data
+        self.addin      = addin
+        self.botFunc    = botFunc
+        self.coreai     = coreai
+        self.core_port  = core_port
+        self.sub_base   = sub_base
+        self.self_port  = self_port
         self.local_endpoint = f'http://localhost:{self.core_port}'
         self.core_endpoint = self.local_endpoint.replace('localhost', qHOSTNAME)
         self.webui_endpoint = self.core_endpoint.replace(f':{self.core_port}', f':{int(self.core_port) + 8}')
         self.profile_number = profile_number
         self.chat_class = RiKi_Monjyu__subbot.ChatClass(runMode=runMode, qLog_fn=qLog_fn, 
                                                         main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
+                                                        coreai=coreai,
                                                         core_port=core_port, self_port=self_port)
         # スレッドロック
         self.thread_lock = threading.Lock()

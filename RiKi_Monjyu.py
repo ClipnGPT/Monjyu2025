@@ -286,6 +286,15 @@ if __name__ == '__main__':
                     print(e)
                 break
 
+    # コアAI起動
+    if True:
+        coreai = RiKi_Monjyu__coreai.CoreAiClass(   runMode=runMode, qLog_fn=qLog_fn,
+                                                    main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
+                                                    core_port=core_port, sub_base=sub_base, num_subais=numSubAIs)
+        coreai_thread = threading.Thread(target=coreai.run)
+        coreai_thread.daemon = True
+        coreai_thread.start()
+
     # サブAI起動
     if True:
         # サブプロフィール設定(ランダム)
@@ -297,20 +306,12 @@ if __name__ == '__main__':
             self_port = str(SUB_BASE + n + 1)
             subai_class[n] = RiKi_Monjyu__subai.SubAiClass( runMode=runMode, qLog_fn=qLog_fn,
                                                             main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
+                                                            coreai=coreai, 
                                                             core_port=core_port, sub_base=sub_base, num_subais=numSubAIs,
                                                             self_port=self_port, profile_number=subai_profiles[n])
             subai_thread[n] = threading.Thread(target=subai_class[n].run)
             subai_thread[n].daemon = True
             subai_thread[n].start()
-
-    # コアAI起動
-    if True:
-        coreai = RiKi_Monjyu__coreai.CoreAiClass(   runMode=runMode, qLog_fn=qLog_fn,
-                                                    main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
-                                                    core_port=core_port, sub_base=sub_base, num_subais=numSubAIs)
-        coreai_thread = threading.Thread(target=coreai.run)
-        coreai_thread.daemon = True
-        coreai_thread.start()
 
     # ウェブUI起動
     if True:

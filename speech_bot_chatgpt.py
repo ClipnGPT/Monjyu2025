@@ -24,10 +24,10 @@ import requests
 
 
 
-# openrt チャットボット
+# chatgpt チャットボット
 import openai
 
-import speech_bot_openrt_key  as openrt_key
+import speech_bot_chatgpt_key  as chatgpt_key
 
 
 
@@ -38,52 +38,56 @@ def base64_encode(file_path):
 
 
 
-class _openrtAPI:
+class _chatgptAPI:
 
     def __init__(self, ):
-        self.log_queue              = None
-        self.bot_auth               = None
+        self.log_queue                  = None
+        self.bot_auth                   = None
 
-        self.temperature            = 0.8
+        self.temperature                = 0.8
 
-        self.openrt_api_type        = 'openrt'
-        self.openrt_default_gpt     = 'auto'
-        self.openrt_default_class   = 'auto'
-        self.openrt_auto_continue   = 3
-        self.openrt_max_step        = 10
-        self.openrt_max_session     = 5
-        self.openrt_max_wait_sec    = 120
+        self.chatgpt_api_type           = 'openai'
+        self.chatgpt_default_gpt        = 'auto'
+        self.chatgpt_default_class      = 'auto'
+        self.chatgpt_auto_continue      = 3
+        self.chatgpt_max_step           = 10
+        self.chatgpt_max_session        = 5
+        self.chatgpt_max_wait_sec       = 120
        
-        self.openrt_key_id          = None
+        self.openai_organization        = None
+        self.openai_key_id              = None
+        self.azure_endpoint             = None
+        self.azure_version              = None
+        self.azure_key_id               = None
 
-        self.openrt_a_enable        = False
-        self.openrt_a_nick_name     = ''
-        self.openrt_a_model         = None
-        self.openrt_a_token         = 0
-        self.openrt_a_use_tools     = 'no'
+        self.chatgpt_a_enable           = False
+        self.chatgpt_a_nick_name        = ''
+        self.chatgpt_a_model            = None
+        self.chatgpt_a_token            = 0
+        self.chatgpt_a_use_tools        = 'no'
 
-        self.openrt_b_enable        = False
-        self.openrt_b_nick_name     = ''
-        self.openrt_b_model         = None
-        self.openrt_b_token         = 0
-        self.openrt_b_use_tools     = 'no'
+        self.chatgpt_b_enable           = False
+        self.chatgpt_b_nick_name        = ''
+        self.chatgpt_b_model            = None
+        self.chatgpt_b_token            = 0
+        self.chatgpt_b_use_tools        = 'no'
 
-        self.openrt_v_enable        = False
-        self.openrt_v_nick_name     = ''
-        self.openrt_v_model         = None
-        self.openrt_v_token         = 0
-        self.openrt_v_use_tools     = 'no'
+        self.chatgpt_v_enable           = False
+        self.chatgpt_v_nick_name        = ''
+        self.chatgpt_v_model            = None
+        self.chatgpt_v_token            = 0
+        self.chatgpt_v_use_tools        = 'no'
 
-        self.openrt_x_enable        = False
-        self.openrt_x_nick_name     = ''
-        self.openrt_x_model         = None
-        self.openrt_x_token         = 0
-        self.openrt_x_use_tools     = 'no'
+        self.chatgpt_x_enable           = False
+        self.chatgpt_x_nick_name        = ''
+        self.chatgpt_x_model            = None
+        self.chatgpt_x_token            = 0
+        self.chatgpt_x_use_tools        = 'no'
 
-        self.models                 = {}
-        self.history                = []
+        self.models                     = {}
+        self.history                    = []
 
-        self.seq                    = 0
+        self.seq                        = 0
         self.reset()
 
     def init(self, log_queue=None, ):
@@ -91,7 +95,7 @@ class _openrtAPI:
         return True
 
     def reset(self, ):
-        self.history                = []
+        self.history                    = []
         return True
 
     def print(self, session_id='admin', text='', ):
@@ -111,109 +115,124 @@ class _openrtAPI:
                 pass
 
     def authenticate(self, api,
-                     openrt_api_type,
-                     openrt_default_gpt, openrt_default_class,
-                     openrt_auto_continue,
-                     openrt_max_step, openrt_max_session,
-                     openrt_max_wait_sec,
+                     chatgpt_api_type,
+                     chatgpt_default_gpt, chatgpt_default_class,
+                     chatgpt_auto_continue,
+                     chatgpt_max_step, chatgpt_max_session,
+                     chatgpt_max_wait_sec,
 
-                     openrt_key_id,
+                     openai_organization, openai_key_id,
+                     azure_endpoint, azure_version, azure_key_id,
 
-                     openrt_a_nick_name, openrt_a_model, openrt_a_token, 
-                     openrt_a_use_tools, 
-                     openrt_b_nick_name, openrt_b_model, openrt_b_token, 
-                     openrt_b_use_tools, 
-                     openrt_v_nick_name, openrt_v_model, openrt_v_token, 
-                     openrt_v_use_tools, 
-                     openrt_x_nick_name, openrt_x_model, openrt_x_token, 
-                     openrt_x_use_tools, 
+                     chatgpt_a_nick_name, chatgpt_a_model, chatgpt_a_token, 
+                     chatgpt_a_use_tools, 
+                     chatgpt_b_nick_name, chatgpt_b_model, chatgpt_b_token, 
+                     chatgpt_b_use_tools, 
+                     chatgpt_v_nick_name, chatgpt_v_model, chatgpt_v_token, 
+                     chatgpt_v_use_tools, 
+                     chatgpt_x_nick_name, chatgpt_x_model, chatgpt_x_token, 
+                     chatgpt_x_use_tools, 
                     ):
 
         # 認証
         self.bot_auth                   = None
-        self.openrt_key_id              = openrt_key_id
+        self.chatgpt_api_type           = chatgpt_api_type
+        self.openai_organization        = openai_organization
+        self.openai_key_id              = openai_key_id
+        self.azure_endpoint             = azure_endpoint
+        self.azure_version              = azure_version
+        self.azure_key_id               = azure_key_id
 
         self.client = None
-        if (openrt_key_id[:1] == '<'):
-            return False
         try:
-            self.client = openai.OpenAI(
-                api_key=openrt_key_id,
-                base_url="https://openrouter.ai/api/v1",
-            )
+            # openai
+            if (chatgpt_api_type != 'azure'):
+                if (openai_key_id[:1] == '<'):
+                    return False
+                else:
+                    self.client = openai.OpenAI(organization=openai_organization,
+                                                api_key=openai_key_id, )
+            # azure
+            else:
+                if (azure_key_id[:1] == '<'):
+                    return False
+                else:
+                    self.client = openai.AzureOpenAI(azure_endpoint=azure_endpoint,
+                                                     api_version=azure_version,
+                                                     api_key=azure_key_id, )
         except Exception as e:
             print(e)
             return False
 
         # 設定
-        self.openrt_default_gpt         = openrt_default_gpt
-        self.openrt_default_class       = openrt_default_class
-        if (not str(openrt_auto_continue) in ['', 'auto']):
-            self.openrt_auto_continue   = int(openrt_auto_continue)
-        if (not str(openrt_max_step)      in ['', 'auto']):
-            self.openrt_max_step        = int(openrt_max_step)
-        if (not str(openrt_max_session)   in ['', 'auto']):
-            self.openrt_max_session     = int(openrt_max_session)
-        if (not str(openrt_max_wait_sec)  in ['', 'auto']):
-            self.openrt_max_wait_sec    = int(openrt_max_wait_sec)
+        self.chatgpt_default_gpt            = chatgpt_default_gpt
+        self.chatgpt_default_class          = chatgpt_default_class
+        if (not str(chatgpt_auto_continue)    in ['', 'auto']):
+            self.chatgpt_auto_continue      = int(chatgpt_auto_continue)
+        if (not str(chatgpt_max_step)         in ['', 'auto']):
+            self.chatgpt_max_step           = int(chatgpt_max_step)
+        if (not str(chatgpt_max_session)      in ['', 'auto']):
+            self.chatgpt_max_session        = int(chatgpt_max_session)
+        if (not str(chatgpt_max_wait_sec)     in ['', 'auto']):
+            self.chatgpt_max_wait_sec       = int(chatgpt_max_wait_sec)
 
         # モデル取得
-        self.models                     = {}
+        self.models                         = {}
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
         ymd = '????/??/??'
 
-        # openrt チャットボット
-        if (openrt_a_nick_name != ''):
-            self.openrt_a_enable        = False
-            self.openrt_a_nick_name     = openrt_a_nick_name
-            self.openrt_a_model         = openrt_a_model
-            self.openrt_a_token         = int(openrt_a_token)
-            self.openrt_a_use_tools     = openrt_a_use_tools
-            if (not openrt_a_model in self.models):
-                self.models[openrt_a_model] = {"id": openrt_a_model, "token": str(openrt_a_token), "modality": "text?", "date": ymd, }
+        # chatgpt チャットボット
+        if (chatgpt_a_nick_name != ''):
+            self.chatgpt_a_enable           = False
+            self.chatgpt_a_nick_name        = chatgpt_a_nick_name
+            self.chatgpt_a_model            = chatgpt_a_model
+            self.chatgpt_a_token            = int(chatgpt_a_token)
+            self.chatgpt_a_use_tools        = chatgpt_a_use_tools
+            if (not chatgpt_a_model in self.models):
+                self.models[chatgpt_a_model] = {"id": chatgpt_a_model, "token": str(chatgpt_a_token), "modality": "text?", "date": ymd, }
 
-        if (openrt_b_nick_name != ''):
-            self.openrt_b_enable        = False
-            self.openrt_b_nick_name     = openrt_b_nick_name
-            self.openrt_b_model         = openrt_b_model
-            self.openrt_b_token         = int(openrt_b_token)
-            self.openrt_b_use_tools     = openrt_b_use_tools
-            if (not openrt_b_model in self.models):
-                self.models[openrt_b_model] = {"id": openrt_b_model, "token": str(openrt_b_token), "modality": "text?", "date": ymd, }
+        if (chatgpt_b_nick_name != ''):
+            self.chatgpt_b_enable           = False
+            self.chatgpt_b_nick_name        = chatgpt_b_nick_name
+            self.chatgpt_b_model            = chatgpt_b_model
+            self.chatgpt_b_token            = int(chatgpt_b_token)
+            self.chatgpt_b_use_tools        = chatgpt_b_use_tools
+            if (not chatgpt_b_model in self.models):
+                self.models[chatgpt_b_model] = {"id": chatgpt_b_model, "token": str(chatgpt_b_token), "modality": "text?", "date": ymd, }
 
-        if (openrt_v_nick_name != ''):
-            self.openrt_v_enable        = False
-            self.openrt_v_nick_name     = openrt_v_nick_name
-            self.openrt_v_model         = openrt_v_model
-            self.openrt_v_token         = int(openrt_v_token)
-            self.openrt_v_use_tools     = openrt_v_use_tools
-            if (not openrt_v_model in self.models):
-                self.models[openrt_v_model] = {"id": openrt_v_model, "token": str(openrt_v_token), "modality": "text+image?", "date": ymd, }
+        if (chatgpt_v_nick_name != ''):
+            self.chatgpt_v_enable           = False
+            self.chatgpt_v_nick_name        = chatgpt_v_nick_name
+            self.chatgpt_v_model            = chatgpt_v_model
+            self.chatgpt_v_token            = int(chatgpt_v_token)
+            self.chatgpt_v_use_tools        = chatgpt_v_use_tools
+            if (not chatgpt_v_model in self.models):
+                self.models[chatgpt_v_model] = {"id": chatgpt_v_model, "token": str(chatgpt_v_token), "modality": "text+image?", "date": ymd, }
 
-        if (openrt_x_nick_name != ''):
-            self.openrt_x_enable        = False
-            self.openrt_x_nick_name     = openrt_x_nick_name
-            self.openrt_x_model         = openrt_x_model
-            self.openrt_x_token         = int(openrt_x_token)
-            self.openrt_x_use_tools     = openrt_x_use_tools
-            if (not openrt_x_model in self.models):
-                self.models[openrt_x_model] = {"id": openrt_x_model, "token": str(openrt_x_token), "modality": "text+image?", "date": ymd, }
+        if (chatgpt_x_nick_name != ''):
+            self.chatgpt_x_enable           = False
+            self.chatgpt_x_nick_name        = chatgpt_x_nick_name
+            self.chatgpt_x_model            = chatgpt_x_model
+            self.chatgpt_x_token            = int(chatgpt_x_token)
+            self.chatgpt_x_use_tools        = chatgpt_x_use_tools
+            if (not chatgpt_x_model in self.models):
+                self.models[chatgpt_x_model] = {"id": chatgpt_x_model, "token": str(chatgpt_x_token), "modality": "text+image?", "date": ymd, }
 
         # モデル
         hit = False
-        if (self.openrt_a_model != ''):
-            self.openrt_a_enable = True
+        if (self.chatgpt_a_model != ''):
+            self.chatgpt_a_enable = True
             hit = True
-        if (self.openrt_b_model != ''):
-            self.openrt_b_enable = True
+        if (self.chatgpt_b_model != ''):
+            self.chatgpt_b_enable = True
             hit = True
-        if (self.openrt_v_model != ''):
-            self.openrt_v_enable = True
+        if (self.chatgpt_v_model != ''):
+            self.chatgpt_v_enable = True
             hit = True
-        if (self.openrt_x_model != ''):
-            self.openrt_x_enable = True
+        if (self.chatgpt_x_model != ''):
+            self.chatgpt_x_enable = True
             hit = True
 
         if (hit == True):
@@ -224,22 +243,17 @@ class _openrtAPI:
 
     def get_models(self, ):
         try:
-            headers = {
-                "Authorization": f"Bearer {self.openrt_key_id}"
-            }
-            response = requests.get("https://openrouter.ai/api/v1/models", headers=headers)
-
-            if response.status_code == 200:
-                self.models = {}
-                models = response.json()
-                for model in models['data']:
-                    key = model["id"]
-                    token = str(model["context_length"])
-                    modality = model["architecture"]["modality"]
-                    unix_timestamp = model["created"]
-                    ymd = datetime.datetime.fromtimestamp(unix_timestamp).strftime("%Y/%m/%d")
-                    #print(key, token, modality, )
-                    self.models[key] = {"id":key, "token":token, "modality":modality, "date": ymd, }
+            models = self.client.models.list()
+            self.models = {}
+            for model in models:
+                #print(model)
+                key = model.id
+                if (key.find('gpt-3') < 0) and (key.find('audio') < 0) and (key.find('realtime') < 0) \
+                and (key.find('dall-e') < 0) and (key.find('whisper') < 0) and (key.find('davinci') < 0) and (key.find('tts') < 0) \
+                and (key.find('embedding') < 0) and (key.find('babbage') < 0) and (key.find('omni-moderation') < 0):
+                    ymd = datetime.datetime.fromtimestamp(model.created).strftime("%Y/%m/%d")
+                    #print(key, ymd, )
+                    self.models[key] = {"id":key, "token":"9999", "modality":"text?", "date": ymd, }
         except Exception as e:
             print(e)
             return False
@@ -252,36 +266,36 @@ class _openrtAPI:
                          x_model='', x_use_tools='', ):
         try:
             if (not max_wait_sec in ['', 'auto']):
-                if (str(max_wait_sec) != str(self.openrt_max_wait_sec)):
-                    self.openrt_max_wait_sec = int(max_wait_sec)
+                if (str(max_wait_sec) != str(self.chatgpt_max_wait_sec)):
+                    self.chatgpt_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
-                if (a_model != self.openrt_a_model) and (a_model in self.models):
-                    self.openrt_a_enable = True
-                    self.openrt_a_model = a_model
-                    self.openrt_a_token = int(self.models[a_model]['token'])
+                if (a_model != self.chatgpt_a_model) and (a_model in self.models):
+                    self.chatgpt_a_enable = True
+                    self.chatgpt_a_model = a_model
+                    self.chatgpt_a_token = int(self.models[a_model]['token'])
             if (a_use_tools != ''):
-                self.openrt_a_use_tools = a_use_tools
+                self.chatgpt_a_use_tools = a_use_tools
             if (b_model != ''):
-                if (b_model != self.openrt_b_model) and (b_model in self.models):
-                    self.openrt_b_enable = True
-                    self.openrt_b_model = b_model
-                    self.openrt_b_token = int(self.models[b_model]['token'])
+                if (b_model != self.chatgpt_b_model) and (b_model in self.models):
+                    self.chatgpt_b_enable = True
+                    self.chatgpt_b_model = b_model
+                    self.chatgpt_b_token = int(self.models[b_model]['token'])
             if (b_use_tools != ''):
-                self.openrt_b_use_tools = b_use_tools
+                self.chatgpt_b_use_tools = b_use_tools
             if (v_model != ''):
-                if (v_model != self.openrt_v_model) and (v_model in self.models):
-                    self.openrt_v_enable = True
-                    self.openrt_v_model = v_model
-                    self.openrt_v_token = int(self.models[v_model]['token'])
+                if (v_model != self.chatgpt_v_model) and (v_model in self.models):
+                    self.chatgpt_v_enable = True
+                    self.chatgpt_v_model = v_model
+                    self.chatgpt_v_token = int(self.models[v_model]['token'])
             if (v_use_tools != ''):
-                self.openrt_v_use_tools = v_use_tools
+                self.chatgpt_v_use_tools = v_use_tools
             if (x_model != ''):
-                if (x_model != self.openrt_x_model) and (x_model in self.models):
-                    self.openrt_x_enable = True
-                    self.openrt_x_model = x_model
-                    self.openrt_x_token = int(self.models[x_model]['token'])
+                if (x_model != self.chatgpt_x_model) and (x_model in self.models):
+                    self.chatgpt_x_enable = True
+                    self.chatgpt_x_model = x_model
+                    self.chatgpt_x_token = int(self.models[x_model]['token'])
             if (x_use_tools != ''):
-                self.openrt_x_use_tools = x_use_tools
+                self.chatgpt_x_use_tools = x_use_tools
         except Exception as e:
             print(e)
             return False
@@ -334,7 +348,7 @@ class _openrtAPI:
 
         return res_history
 
-    def history2msg_openrt(self, history=[], ):
+    def history2msg_chatgpt(self, history=[], ):
         res_msg = []
         for h in range(len(history)):
             role    = history[h]['role']
@@ -342,9 +356,6 @@ class _openrtAPI:
             name    = history[h]['name']
             if (role != 'function_call'):
             #if True:
-                # openrouter用の処置!
-                if (not role in ['system', 'user', 'assistant']):
-                    role = 'user'
                 if (name == ''):
                     dic = {'role': role, 'content': content }
                     res_msg.append(dic)
@@ -432,18 +443,18 @@ class _openrtAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' openrt  : Not Authenticate Error !')
+            self.print(session_id, ' chatgpt  : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
-        res_name  = self.openrt_a_nick_name
-        res_api   = self.openrt_a_model
-        use_tools = self.openrt_a_use_tools
-        if  (chat_class == 'openrt'):
-            if (self.openrt_b_enable == True):
-                res_name  = self.openrt_b_nick_name
-                res_api   = self.openrt_b_model
-                use_tools = self.openrt_b_use_tools
+        res_name  = self.chatgpt_a_nick_name
+        res_api   = self.chatgpt_a_model
+        use_tools = self.chatgpt_a_use_tools
+        if  (chat_class == 'chatgpt'):
+            if (self.chatgpt_b_enable == True):
+                res_name  = self.chatgpt_b_nick_name
+                res_api   = self.chatgpt_b_model
+                use_tools = self.chatgpt_b_use_tools
 
         # モデル 補正 (assistant)
         if ((chat_class == 'assistant') \
@@ -453,126 +464,128 @@ class _openrtAPI:
         or  (chat_class == '複雑な会話') \
         or  (chat_class == 'アシスタント') \
         or  (model_select == 'x')):
-            if (self.openrt_x_enable == True):
-                res_name  = self.openrt_x_nick_name
-                res_api   = self.openrt_x_model
-                use_tools = self.openrt_x_use_tools
+            if (self.chatgpt_x_enable == True):
+                res_name  = self.chatgpt_x_nick_name
+                res_api   = self.chatgpt_x_model
+                use_tools = self.chatgpt_x_use_tools
 
         # model 指定
-        if (self.openrt_a_nick_name != ''):
-            if (inpText.strip()[:len(self.openrt_a_nick_name)+1].lower() == (self.openrt_a_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.openrt_a_nick_name)+1:]
-        if (self.openrt_b_nick_name != ''):
-            if (inpText.strip()[:len(self.openrt_b_nick_name)+1].lower() == (self.openrt_b_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.openrt_b_nick_name)+1:]
-                if   (self.openrt_b_enable == True):
-                        res_name  = self.openrt_b_nick_name
-                        res_api   = self.openrt_b_model
-                        use_tools = self.openrt_b_use_tools
-        if (self.openrt_v_nick_name != ''):
-            if (inpText.strip()[:len(self.openrt_v_nick_name)+1].lower() == (self.openrt_v_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.openrt_v_nick_name)+1:]
-                if   (self.openrt_v_enable == True):
+        if (self.chatgpt_a_nick_name != ''):
+            if (inpText.strip()[:len(self.chatgpt_a_nick_name)+1].lower() == (self.chatgpt_a_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.chatgpt_a_nick_name)+1:]
+        if (self.chatgpt_b_nick_name != ''):
+            if (inpText.strip()[:len(self.chatgpt_b_nick_name)+1].lower() == (self.chatgpt_b_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.chatgpt_b_nick_name)+1:]
+                if   (self.chatgpt_b_enable == True):
+                        res_name  = self.chatgpt_b_nick_name
+                        res_api   = self.chatgpt_b_model
+                        use_tools = self.chatgpt_b_use_tools
+        if (self.chatgpt_v_nick_name != ''):
+            if (inpText.strip()[:len(self.chatgpt_v_nick_name)+1].lower() == (self.chatgpt_v_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.chatgpt_v_nick_name)+1:]
+                if   (self.chatgpt_v_enable == True):
                     if  (len(image_urls) > 0) \
                     and (len(image_urls) == len(upload_files)):
-                        res_name  = self.openrt_v_nick_name
-                        res_api   = self.openrt_v_model
-                        use_tools = self.openrt_v_use_tools
-                elif (self.openrt_x_enable == True):
-                        res_name  = self.openrt_x_nick_name
-                        res_api   = self.openrt_x_model
-                        use_tools = self.openrt_x_use_tools
-        if (self.openrt_x_nick_name != ''):
-            if (inpText.strip()[:len(self.openrt_x_nick_name)+1].lower() == (self.openrt_x_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.openrt_x_nick_name)+1:]
-                if   (self.openrt_x_enable == True):
-                        res_name  = self.openrt_x_nick_name
-                        res_api   = self.openrt_x_model
-                        use_tools = self.openrt_x_use_tools
-                elif (self.openrt_b_enable == True):
-                        res_name  = self.openrt_b_nick_name
-                        res_api   = self.openrt_b_model
-                        use_tools = self.openrt_b_use_tools
+                        res_name  = self.chatgpt_v_nick_name
+                        res_api   = self.chatgpt_v_model
+                        use_tools = self.chatgpt_v_use_tools
+                elif (self.chatgpt_x_enable == True):
+                        res_name  = self.chatgpt_x_nick_name
+                        res_api   = self.chatgpt_x_model
+                        use_tools = self.chatgpt_x_use_tools
+        if (self.chatgpt_x_nick_name != ''):
+            if (inpText.strip()[:len(self.chatgpt_x_nick_name)+1].lower() == (self.chatgpt_x_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.chatgpt_x_nick_name)+1:]
+                if   (self.chatgpt_x_enable == True):
+                        res_name  = self.chatgpt_x_nick_name
+                        res_api   = self.chatgpt_x_model
+                        use_tools = self.chatgpt_x_use_tools
+                elif (self.chatgpt_b_enable == True):
+                        res_name  = self.chatgpt_b_nick_name
+                        res_api   = self.chatgpt_b_model
+                        use_tools = self.chatgpt_b_use_tools
         if   (inpText.strip()[:5].lower() == ('riki,')):
             inpText = inpText.strip()[5:]
-            if   (self.openrt_x_enable == True):
-                        res_name  = self.openrt_x_nick_name
-                        res_api   = self.openrt_x_model
-                        use_tools = self.openrt_x_use_tools
-            elif (self.openrt_b_enable == True):
-                        res_name  = self.openrt_b_nick_name
-                        res_api   = self.openrt_b_model
-                        use_tools = self.openrt_b_use_tools
+            if   (self.chatgpt_x_enable == True):
+                        res_name  = self.chatgpt_x_nick_name
+                        res_api   = self.chatgpt_x_model
+                        use_tools = self.chatgpt_x_use_tools
+            elif (self.chatgpt_b_enable == True):
+                        res_name  = self.chatgpt_b_nick_name
+                        res_api   = self.chatgpt_b_model
+                        use_tools = self.chatgpt_b_use_tools
         elif (inpText.strip()[:7].lower() == ('vision,')):
             inpText = inpText.strip()[7:]
-            if   (self.openrt_v_enable == True):
+            if   (self.chatgpt_v_enable == True):
                 if  (len(image_urls) > 0) \
                 and (len(image_urls) == len(upload_files)):
-                        res_name  = self.openrt_v_nick_name
-                        res_api   = self.openrt_v_model
-                        use_tools = self.openrt_v_use_tools
-            elif (self.openrt_x_enable == True):
-                        res_name  = self.openrt_x_nick_name
-                        res_api   = self.openrt_x_model
-                        use_tools = self.openrt_x_use_tools
+                        res_name  = self.chatgpt_v_nick_name
+                        res_api   = self.chatgpt_v_model
+                        use_tools = self.chatgpt_v_use_tools
+            elif (self.chatgpt_x_enable == True):
+                        res_name  = self.chatgpt_x_nick_name
+                        res_api   = self.chatgpt_x_model
+                        use_tools = self.chatgpt_x_use_tools
         elif (inpText.strip()[:10].lower() == ('assistant,')):
             inpText = inpText.strip()[10:]
-            if   (self.openrt_x_enable == True):
-                        res_name  = self.openrt_x_nick_name
-                        res_api   = self.openrt_x_model
-                        use_tools = self.openrt_x_use_tools
-            elif (self.openrt_b_enable == True):
-                        res_name  = self.openrt_b_nick_name
-                        res_api   = self.openrt_b_model
-                        use_tools = self.openrt_b_use_tools
+            if   (self.chatgpt_x_enable == True):
+                        res_name  = self.chatgpt_x_nick_name
+                        res_api   = self.chatgpt_x_model
+                        use_tools = self.chatgpt_x_use_tools
+            elif (self.chatgpt_b_enable == True):
+                        res_name  = self.chatgpt_b_nick_name
+                        res_api   = self.chatgpt_b_model
+                        use_tools = self.chatgpt_b_use_tools
         elif (inpText.strip()[:7].lower() == ('openai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
+        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('freeai,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('free,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('openrt,')):
-            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('freeai,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:5].lower() == ('free,')):
-            inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:5].lower() == ('groq,')):
-            inpText = inpText.strip()[5:]
 
         # モデル 未設定時
         if (res_api is None):
-            res_name  = self.openrt_a_nick_name
-            res_api   = self.openrt_a_model
-            use_tools = self.openrt_a_use_tools
-            if (self.openrt_b_enable == True):
+            res_name  = self.chatgpt_a_nick_name
+            res_api   = self.chatgpt_a_model
+            use_tools = self.chatgpt_a_use_tools
+            if (self.chatgpt_b_enable == True):
                 if (len(upload_files) > 0) \
                 or (len(inpText) > 1000):
-                    res_name  = self.openrt_b_nick_name
-                    res_api   = self.openrt_b_model
-                    use_tools = self.openrt_b_use_tools
+                    res_name  = self.chatgpt_b_nick_name
+                    res_api   = self.chatgpt_b_model
+                    use_tools = self.chatgpt_b_use_tools
 
         # モデル 補正 (vision)
         if  (len(image_urls) > 0) \
         and (len(image_urls) == len(upload_files)):
-            if   (self.openrt_v_enable == True):
-                res_name  = self.openrt_v_nick_name
-                res_api   = self.openrt_v_model
-                use_tools = self.openrt_v_use_tools
-            elif (self.openrt_x_enable == True):
-                res_name  = self.openrt_x_nick_name
-                res_api   = self.openrt_x_model
-                use_tools = self.openrt_x_use_tools
+            if   (self.chatgpt_v_enable == True):
+                res_name  = self.chatgpt_v_nick_name
+                res_api   = self.chatgpt_v_model
+                use_tools = self.chatgpt_v_use_tools
+            elif (self.chatgpt_x_enable == True):
+                res_name  = self.chatgpt_x_nick_name
+                res_api   = self.chatgpt_x_model
+                use_tools = self.chatgpt_x_use_tools
 
         # history 追加・圧縮 (古いメッセージ)
         res_history = self.history_add(history=res_history, sysText=sysText, reqText=reqText, inpText=inpText, )
@@ -580,21 +593,22 @@ class _openrtAPI:
 
         # メッセージ作成
         if (model_select != 'v'):
-            msg = self.history2msg_openrt(history=res_history, )
+            msg = self.history2msg_chatgpt(history=res_history, )
         else:
             msg = self.history2msg_vision(history=res_history, image_urls=image_urls,)
 
         # ストリーム実行?
         if (session_id == 'admin'):
-            #stream = True
-            print(' openrt  : stream = False, ')
-            stream = False
+            stream = True
+            if (res_api.find('o1') >= 0) or (res_api.find('o3') >= 0):
+                print(' chatgpt  : stream = False, ')
+                stream = False
         else:
             stream = False
 
         # ツール設定
         tools = []
-        #print(' openrt  : tools = [], ')
+        #print(' chatgpt  : tools = [], ')
         if True:
             if (use_tools.lower().find('yes') >= 0):
                 functions = []
@@ -618,17 +632,17 @@ class _openrtAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" openrt  : { res_name.lower() }, { res_api }, pass={ n }, ")
+                self.print(session_id, f" chatgpt  : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # 画像指定
-                if   (res_name == self.openrt_v_nick_name) and (len(image_urls) > 0):
+                if   (res_name == self.chatgpt_v_nick_name) and (len(image_urls) > 0):
                     null_history = self.history_add(history=[], sysText=sysText, reqText=reqText, inpText=inpText, )
                     msg = self.history2msg_vision(history=null_history, image_urls=image_urls,)
                     response = self.client.chat.completions.create(
                             model           = res_api,
                             messages        = msg,
-                            temperature     = float(temperature),
-                            timeout         = self.openrt_max_wait_sec, 
+                            #temperature     = float(temperature),
+                            timeout         = self.chatgpt_max_wait_sec, 
                             stream          = stream, 
                             )
 
@@ -637,9 +651,9 @@ class _openrtAPI:
                     response = self.client.chat.completions.create(
                             model           = res_api,
                             messages        = msg,
-                            temperature     = float(temperature),
+                            #temperature     = float(temperature),
                             tools           = tools, tool_choice = 'auto',
-                            timeout         = self.openrt_max_wait_sec,
+                            timeout         = self.chatgpt_max_wait_sec,
                             stream          = stream, 
                             )
 
@@ -649,8 +663,8 @@ class _openrtAPI:
                         response = self.client.chat.completions.create(
                             model           = res_api,
                             messages        = msg,
-                            temperature     = float(temperature),
-                            timeout         = self.openrt_max_wait_sec,
+                            #temperature     = float(temperature),
+                            timeout         = self.chatgpt_max_wait_sec,
                             stream          = stream, 
                             )
                     else:
@@ -664,8 +678,8 @@ class _openrtAPI:
                             response = self.client.chat.completions.create(
                                 model           = res_api,
                                 messages        = msg,
-                                temperature     = float(temperature),
-                                timeout         = self.openrt_max_wait_sec, 
+                                #temperature     = float(temperature),
+                                timeout         = self.chatgpt_max_wait_sec, 
                                 response_format = { "type": "json_object" },
                                 stream          = stream, 
                                 )
@@ -674,8 +688,8 @@ class _openrtAPI:
                             response = self.client.chat.completions.create(
                                 model           = res_api,
                                 messages        = msg,
-                                temperature     = float(temperature),
-                                timeout         = self.openrt_max_wait_sec, 
+                                #temperature     = float(temperature),
+                                timeout         = self.chatgpt_max_wait_sec, 
                                 response_format = { "type": "json_schema", "json_schema": schema },
                                 stream          = stream, 
                                 )
@@ -685,7 +699,7 @@ class _openrtAPI:
 
                     chkTime     = time.time()
                     for chunk in response:
-                        if ((time.time() - chkTime) > self.openrt_max_wait_sec):
+                        if ((time.time() - chkTime) > self.chatgpt_max_wait_sec):
                             break
                         delta   = chunk.choices[0].delta
                         if (delta is not None):
@@ -756,8 +770,8 @@ class _openrtAPI:
                         for module_dic in function_modules:
                             if (f_name == module_dic['func_name']):
                                 hit = True
-                                self.print(session_id, f" openrt  :   function_call '{ module_dic['script'] }' ({ f_name })")
-                                self.print(session_id, f" openrt  :   → { f_kwargs }")
+                                self.print(session_id, f" chatgpt  :   function_call '{ module_dic['script'] }' ({ f_name })")
+                                self.print(session_id, f" chatgpt  :   → { f_kwargs }")
 
                                 # メッセージ追加格納
                                 self.seq += 1
@@ -776,7 +790,7 @@ class _openrtAPI:
                                     res_json = json.dumps(dic, ensure_ascii=False, )
 
                                 # tool_result
-                                self.print(session_id, f" openrt  :   → { res_json }")
+                                self.print(session_id, f" chatgpt  :   → { res_json }")
                                 self.print(session_id, )
 
                                 # メッセージ追加格納
@@ -804,7 +818,7 @@ class _openrtAPI:
                                 break
 
                         if (hit == False):
-                            self.print(session_id, f" openrt  :   function_call Error ! ({ f_name })")
+                            self.print(session_id, f" chatgpt  :   function_call Error ! ({ f_name })")
                             print(res_role, res_content, f_name, f_kwargs, )
                             break
 
@@ -824,9 +838,9 @@ class _openrtAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" openrt  : { res_name.lower() }, complete.")
+                self.print(session_id, f" chatgpt  : { res_name.lower() }, complete.")
             else:
-                self.print(session_id,  ' openrt  : Error !')
+                self.print(session_id,  ' chatgpt  : Error !')
 
         #except Exception as e:
         #    print(e)
@@ -855,7 +869,7 @@ class _openrtAPI:
             sysText = 'あなたは教師のように話す賢いアシスタントです。'
 
         if (self.bot_auth is None):
-            self.print(session_id, ' openrt : Not Authenticate Error !')
+            self.print(session_id, ' chatgpt : Not Authenticate Error !')
             return res_text, res_path, nick_name, model_name, res_history
 
         # ファイル分離
@@ -870,7 +884,7 @@ class _openrtAPI:
         #nick_name  = 'auto'
         #model_name = 'auto'
 
-        # openrt
+        # chatgpt
         res_text, res_path, res_files, nick_name, model_name, res_history = \
         self.run_gpt(   chat_class=chat_class, model_select=model_select,
                         nick_name=nick_name, model_name=model_name,
@@ -889,30 +903,36 @@ class _openrtAPI:
 
 if __name__ == '__main__':
 
-        #openrtAPI = speech_bot_openrt._openrtAPI()
-        openrtAPI = _openrtAPI()
+        #chatgptAPI = speech_bot_chatgpt._chatgptAPI()
+        chatgptAPI = _chatgptAPI()
 
-        api_type = openrt_key.getkey('openrt','openrt_api_type')
+        api_type = chatgpt_key.getkey('chatgpt','chatgpt_api_type')
         print(api_type)
 
         log_queue = queue.Queue()
-        res = openrtAPI.init(log_queue=log_queue, )
+        res = chatgptAPI.init(log_queue=log_queue, )
 
-        res = openrtAPI.authenticate('openrt',
+        res = chatgptAPI.authenticate('chatgpt',
                             api_type,
-                            openrt_key.getkey('openrt','openrt_default_gpt'), openrt_key.getkey('openrt','openrt_default_class'),
-                            openrt_key.getkey('openrt','openrt_auto_continue'),
-                            openrt_key.getkey('openrt','openrt_max_step'), openrt_key.getkey('openrt','openrt_max_session'),
-                            openrt_key.getkey('openrt','openrt_max_wait_sec'),
-                            openrt_key.getkey('openrt','openrt_key_id'),
-                            openrt_key.getkey('openrt','openrt_a_nick_name'), openrt_key.getkey('openrt','openrt_a_model'), openrt_key.getkey('openrt','openrt_a_token'),
-                            openrt_key.getkey('openrt','openrt_a_use_tools'),
-                            openrt_key.getkey('openrt','openrt_b_nick_name'), openrt_key.getkey('openrt','openrt_b_model'), openrt_key.getkey('openrt','openrt_b_token'),
-                            openrt_key.getkey('openrt','openrt_b_use_tools'),
-                            openrt_key.getkey('openrt','openrt_v_nick_name'), openrt_key.getkey('openrt','openrt_v_model'), openrt_key.getkey('openrt','openrt_v_token'),
-                            openrt_key.getkey('openrt','openrt_v_use_tools'),
-                            openrt_key.getkey('openrt','openrt_x_nick_name'), openrt_key.getkey('openrt','openrt_x_model'), openrt_key.getkey('openrt','openrt_x_token'),
-                            openrt_key.getkey('openrt','openrt_x_use_tools'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_default_gpt'), chatgpt_key.getkey('chatgpt','chatgpt_default_class'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_auto_continue'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_max_step'), chatgpt_key.getkey('chatgpt','chatgpt_max_session'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_max_wait_sec'),
+
+                            chatgpt_key.getkey('chatgpt','openai_organization'), 
+                            chatgpt_key.getkey('chatgpt','openai_key_id'),
+                            chatgpt_key.getkey('chatgpt','azure_endpoint'), 
+                            chatgpt_key.getkey('chatgpt','azure_version'), 
+                            chatgpt_key.getkey('chatgpt','azure_key_id'),
+
+                            chatgpt_key.getkey('chatgpt','chatgpt_a_nick_name'), chatgpt_key.getkey('chatgpt','chatgpt_a_model'), chatgpt_key.getkey('chatgpt','chatgpt_a_token'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_a_use_tools'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_b_nick_name'), chatgpt_key.getkey('chatgpt','chatgpt_b_model'), chatgpt_key.getkey('chatgpt','chatgpt_b_token'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_b_use_tools'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_v_nick_name'), chatgpt_key.getkey('chatgpt','chatgpt_v_model'), chatgpt_key.getkey('chatgpt','chatgpt_v_token'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_v_use_tools'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_x_nick_name'), chatgpt_key.getkey('chatgpt','chatgpt_x_model'), chatgpt_key.getkey('chatgpt','chatgpt_x_token'),
+                            chatgpt_key.getkey('chatgpt','chatgpt_x_use_tools'),
                             )
         print('authenticate:', res, )
         if (res == True):
@@ -942,9 +962,9 @@ if __name__ == '__main__':
                 print('[Request]')
                 print(reqText, inpText )
                 print()
-                res_text, res_path, res_files, res_name, res_api, openrtAPI.history = \
-                    openrtAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                        session_id='admin', history=openrtAPI.history, function_modules=function_modules,
+                res_text, res_path, res_files, res_name, res_api, chatgptAPI.history = \
+                    chatgptAPI.chatBot(  chat_class='auto', model_select='auto', 
+                                        session_id='admin', history=chatgptAPI.history, function_modules=function_modules,
                                         sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
                                         inpLang='ja', outLang='ja', )
                 print()
@@ -955,14 +975,14 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'ort-b,toolsで兵庫県三木市の天気を調べて'
+                inpText = 'gpt,toolsで兵庫県三木市の天気を調べて'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
                 print()
-                res_text, res_path, res_files, res_name, res_api, openrtAPI.history = \
-                    openrtAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                        session_id='admin', history=openrtAPI.history, function_modules=function_modules,
+                res_text, res_path, res_files, res_name, res_api, chatgptAPI.history = \
+                    chatgptAPI.chatBot(  chat_class='auto', model_select='auto', 
+                                        session_id='admin', history=chatgptAPI.history, function_modules=function_modules,
                                         sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
                                         inpLang='ja', outLang='ja', )
                 print()
@@ -980,9 +1000,9 @@ if __name__ == '__main__':
                 print('[Request]')
                 print(reqText, inpText )
                 print()
-                res_text, res_path, res_files, res_name, res_api, openrtAPI.history = \
-                    openrtAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                        session_id='admin', history=openrtAPI.history, function_modules=function_modules,
+                res_text, res_path, res_files, res_name, res_api, chatgptAPI.history = \
+                    chatgptAPI.chatBot(  chat_class='auto', model_select='auto', 
+                                        session_id='admin', history=chatgptAPI.history, function_modules=function_modules,
                                         sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
                                         inpLang='ja', outLang='ja', )
                 print()
@@ -992,9 +1012,9 @@ if __name__ == '__main__':
 
             if False:
                 print('[History]')
-                for h in range(len(openrtAPI.history)):
-                    print(openrtAPI.history[h])
-                openrtAPI.history = []
+                for h in range(len(chatgptAPI.history)):
+                    print(chatgptAPI.history[h])
+                chatgptAPI.history = []
 
 
 

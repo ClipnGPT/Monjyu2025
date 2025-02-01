@@ -60,14 +60,14 @@ class _conf_class:
         self.azure_endpoint = '< your azure endpoint base >'
         self.azure_version = 'yyyy-mm-dd'
         self.azure_key_id = '< your azure key >'
-        self.claude_key_id = '< your claude key >'
-        self.perplexity_key_id = '< your perplexity key >'
         self.gemini_key_id = '< your gemini key >'
+        self.freeai_key_id = '< your freeai key >'
+        self.claude_key_id = '< your claude key >'
         self.openrt_key_id = '< your openrt key >'
+        self.perplexity_key_id = '< your perplexity key >'
+        self.groq_key_id = '< your groq key >'
         self.ollama_server = 'auto'
         self.ollama_port = 'auto'
-        self.freeai_key_id = '< your freeai key >'
-        self.groq_key_id = '< your groq key >'
 
     def init(self, runMode='debug', qLog_fn=''):
 
@@ -111,14 +111,14 @@ class _conf_class:
             dic['azure_endpoint'] = self.azure_endpoint
             dic['azure_version'] = self.azure_version
             dic['azure_key_id'] = self.azure_key_id
-            dic['claude_key_id'] = self.claude_key_id
-            dic['perplexity_key_id'] = self.perplexity_key_id
             dic['gemini_key_id'] = self.gemini_key_id
+            dic['freeai_key_id'] = self.freeai_key_id
+            dic['claude_key_id'] = self.claude_key_id
             dic['openrt_key_id'] = self.openrt_key_id
+            dic['perplexity_key_id'] = self.perplexity_key_id
+            dic['groq_key_id'] = self.groq_key_id
             dic['ollama_server'] = self.ollama_server
             dic['ollama_port'] = self.ollama_port
-            dic['freeai_key_id'] = self.freeai_key_id
-            dic['groq_key_id'] = self.groq_key_id
             res = qRiKi_key.putCryptJson(config_file=config_file, put_dic=dic)
 
         # 設定が読み込まれた場合の処理
@@ -140,14 +140,14 @@ class _conf_class:
             self.azure_endpoint = dic['azure_endpoint']
             self.azure_version = dic['azure_version']
             self.azure_key_id = dic['azure_key_id']
-            self.claude_key_id = dic['claude_key_id']
-            self.perplexity_key_id = dic['perplexity_key_id']
             self.gemini_key_id = dic['gemini_key_id']
+            self.freeai_key_id = dic['freeai_key_id']
+            self.claude_key_id = dic['claude_key_id']
             self.openrt_key_id = dic['openrt_key_id']
+            self.perplexity_key_id = dic['perplexity_key_id']
+            self.groq_key_id = dic['groq_key_id']
             self.ollama_server = dic['ollama_server']
             self.ollama_port = dic['ollama_port']
-            self.freeai_key_id = dic['freeai_key_id']
-            self.groq_key_id = dic['groq_key_id']
         self.runMode = runMode
 
         return True

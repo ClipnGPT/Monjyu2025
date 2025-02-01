@@ -88,15 +88,19 @@ class _data_class:
         self.subai_histories_all  = {}
 
         # 設定の保存
-        self.perplexity_enable = True
-        self.claude_enable = True
-        self.openai_enable = True
         self.mode_setting = {}
-        self.addins_setting = {}
         self.engine_models = {}
+        self.engine_models['chatgpt'] = {}
+        self.engine_models['assistant'] = {}
+        self.engine_models['gemini'] = {}
+        self.engine_models['freeai'] = {}
+        self.engine_models['claude'] = {}
         self.engine_models['openrt'] = {}
+        self.engine_models['perplexity'] = {}
+        self.engine_models['groq'] = {}
         self.engine_models['ollama'] = {}
         self.engine_setting = {}
+        self.addins_setting = {}
         self.live_voices = {}
         self.live_setting = {}
         self.webAgent_useBrowser = ""
@@ -131,18 +135,6 @@ class _data_class:
             "after_proc": "none,", "after_engine": "",
             "check_proc": "none,", "check_engine": ""
         }
-
-        #if (self.perplexity_enable != True):
-        #    self.mode_setting['chat']['before_engine'] = ''
-        #    self.mode_setting['websearch']['before_engine'] = ''
-
-        #if (self.claude_enable != True):
-        #    self.mode_setting['chat']['after_engine'] = ''
-        #    self.mode_setting['websearch']['after_engine'] = ''
-
-        #if (self.openai_enable != True):
-        #    self.mode_setting['chat']['check_engine'] = ''
-        #    self.mode_setting['websearch']['check_engine'] = ''
 
         self.mode_setting['serial'] = {
             "req_engine": "", 
@@ -189,6 +181,27 @@ class _data_class:
             "check_proc": "none,", "check_engine": ""
         }
 
+        # engineの設定
+        self.engine_setting['chatgpt'] = {
+            "max_wait_sec": "", 
+            "a_model": "", 
+            "a_use_tools": "", 
+            "b_model": "", 
+            "b_use_tools": "", 
+            "v_model": "",
+            "v_use_tools": "", 
+            "x_model": "",
+            "x_use_tools": "" 
+        }
+        self.engine_models['assistant'] = self.engine_setting['chatgpt']
+        self.engine_models['gemini'] = self.engine_setting['chatgpt']
+        self.engine_models['freeai'] = self.engine_setting['chatgpt']
+        self.engine_models['claude'] = self.engine_setting['chatgpt']
+        self.engine_models['openrt'] = self.engine_setting['chatgpt']
+        self.engine_models['perplexity'] = self.engine_setting['chatgpt']
+        self.engine_models['groq'] = self.engine_setting['chatgpt']
+        self.engine_models['ollama'] = self.engine_setting['chatgpt']
+
         # addinsの設定
         self.addins_setting = {
             "result_text_save": "", 
@@ -200,20 +213,6 @@ class _data_class:
             "image_ocr_execute": "",
             "image_yolo_execute": ""
         }
-
-        # engineの設定
-        self.engine_setting['openrt'] = {
-            "max_wait_sec": "", 
-            "a_model": "", 
-            "a_use_tools": "", 
-            "b_model": "", 
-            "b_use_tools": "", 
-            "v_model": "",
-            "v_use_tools": "", 
-            "x_model": "",
-            "x_use_tools": "" 
-        }
-        self.engine_setting['ollama'] = self.engine_setting['openrt']
 
         # liveの設定
         self.live_voices[ 'freeai'] = { "Puck": "Puck", 

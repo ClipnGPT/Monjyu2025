@@ -230,6 +230,48 @@ class _perplexityAPI:
             return False
         return True
 
+    def set_models(self, max_wait_sec='',
+                         a_model='', a_use_tools='',
+                         b_model='', b_use_tools='',
+                         v_model='', v_use_tools='',
+                         x_model='', x_use_tools='', ):
+        try:
+            if (not max_wait_sec in ['', 'auto']):
+                if (str(max_wait_sec) != str(self.perplexity_max_wait_sec)):
+                    self.perplexity_max_wait_sec = int(max_wait_sec)
+            if (a_model != ''):
+                if (a_model != self.perplexity_a_model) and (a_model in self.models):
+                    self.perplexity_a_enable = True
+                    self.perplexity_a_model = a_model
+                    self.perplexity_a_token = int(self.models[a_model]['token'])
+            if (a_use_tools != ''):
+                self.perplexity_a_use_tools = a_use_tools
+            if (b_model != ''):
+                if (b_model != self.perplexity_b_model) and (b_model in self.models):
+                    self.perplexity_b_enable = True
+                    self.perplexity_b_model = b_model
+                    self.perplexity_b_token = int(self.models[b_model]['token'])
+            if (b_use_tools != ''):
+                self.perplexity_b_use_tools = b_use_tools
+            if (v_model != ''):
+                if (v_model != self.perplexity_v_model) and (v_model in self.models):
+                    self.perplexity_v_enable = True
+                    self.perplexity_v_model = v_model
+                    self.perplexity_v_token = int(self.models[v_model]['token'])
+            if (v_use_tools != ''):
+                self.perplexity_v_use_tools = v_use_tools
+            if (x_model != ''):
+                if (x_model != self.perplexity_x_model) and (x_model in self.models):
+                    self.perplexity_x_enable = True
+                    self.perplexity_x_model = x_model
+                    self.perplexity_x_token = int(self.models[x_model]['token'])
+            if (x_use_tools != ''):
+                self.perplexity_x_use_tools = x_use_tools
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
     def history_add(self, history=[], sysText=None, reqText=None, inpText='こんにちは', ):
         res_history = history
 
@@ -361,16 +403,19 @@ class _perplexityAPI:
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
-        res_name = self.perplexity_a_nick_name
-        res_api  = self.perplexity_a_model
+        res_name  = self.perplexity_a_nick_name
+        res_api   = self.perplexity_a_model
+        use_tools = self.perplexity_a_use_tools
         if  (chat_class == 'perplexity'):
             if (self.perplexity_b_enable == True):
-                res_name = self.perplexity_b_nick_name
-                res_api  = self.perplexity_b_model
+                res_name  = self.perplexity_b_nick_name
+                res_api   = self.perplexity_b_model
+                use_tools = self.perplexity_b_use_tools
         if  (chat_class == 'pplx'):
             if (self.perplexity_x_enable == True):
-                res_name = self.perplexity_x_nick_name
-                res_api  = self.perplexity_x_model
+                res_name  = self.perplexity_x_nick_name
+                res_api   = self.perplexity_x_model
+                use_tools = self.perplexity_x_use_tools
 
         # モデル 補正 (assistant)
         if ((chat_class == 'assistant') \
@@ -381,8 +426,9 @@ class _perplexityAPI:
         or  (chat_class == 'アシスタント') \
         or  (model_select == 'x')):
             if (self.perplexity_x_enable == True):
-                res_name = self.perplexity_x_nick_name
-                res_api  = self.perplexity_x_model
+                res_name  = self.perplexity_x_nick_name
+                res_api   = self.perplexity_x_model
+                use_tools = self.perplexity_x_use_tools
 
         # model 指定
         if (self.perplexity_a_nick_name != ''):
@@ -392,51 +438,65 @@ class _perplexityAPI:
             if (inpText.strip()[:len(self.perplexity_b_nick_name)+1].lower() == (self.perplexity_b_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.perplexity_b_nick_name)+1:]
                 if   (self.perplexity_b_enable == True):
-                        res_name = self.perplexity_b_nick_name
-                        res_api  = self.perplexity_b_model
+                        res_name  = self.perplexity_b_nick_name
+                        res_api   = self.perplexity_b_model
+                        use_tools = self.perplexity_b_use_tools
         if (self.perplexity_v_nick_name != ''):
             if (inpText.strip()[:len(self.perplexity_v_nick_name)+1].lower() == (self.perplexity_v_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.perplexity_v_nick_name)+1:]
                 if   (self.perplexity_v_enable == True):
                     if  (len(image_urls) > 0) \
                     and (len(image_urls) == len(upload_files)):
-                        res_name = self.perplexity_v_nick_name
-                        res_api  = self.perplexity_v_model
+                        res_name  = self.perplexity_v_nick_name
+                        res_api   = self.perplexity_v_model
+                        use_tools = self.perplexity_v_use_tools
                 elif (self.perplexity_x_enable == True):
-                        res_name = self.perplexity_x_nick_name
-                        res_api  = self.perplexity_x_model
+                        res_name  = self.perplexity_x_nick_name
+                        res_api   = self.perplexity_x_model
+                        use_tools = self.perplexity_x_use_tools
         if (self.perplexity_x_nick_name != ''):
             if (inpText.strip()[:len(self.perplexity_x_nick_name)+1].lower() == (self.perplexity_x_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.perplexity_x_nick_name)+1:]
                 if   (self.perplexity_x_enable == True):
-                        res_name = self.perplexity_x_nick_name
-                        res_api  = self.perplexity_x_model
+                        res_name  = self.perplexity_x_nick_name
+                        res_api   = self.perplexity_x_model
+                        use_tools = self.perplexity_x_use_tools
                 elif (self.perplexity_b_enable == True):
-                        res_name = self.perplexity_b_nick_name
-                        res_api  = self.perplexity_b_model
+                        res_name  = self.perplexity_b_nick_name
+                        res_api   = self.perplexity_b_model
+                        use_tools = self.perplexity_b_use_tools
         if   (inpText.strip()[:5].lower() == ('riki,')):
             inpText = inpText.strip()[5:]
             if   (self.perplexity_x_enable == True):
-                        res_name = self.perplexity_x_nick_name
-                        res_api  = self.perplexity_x_model
+                        res_name  = self.perplexity_x_nick_name
+                        res_api   = self.perplexity_x_model
+                        use_tools = self.perplexity_x_use_tools
             elif (self.perplexity_b_enable == True):
-                        res_name = self.perplexity_b_nick_name
-                        res_api  = self.perplexity_b_model
+                        res_name  = self.perplexity_b_nick_name
+                        res_api   = self.perplexity_b_model
+                        use_tools = self.perplexity_b_use_tools
         elif (inpText.strip()[:7].lower() == ('vision,')):
             inpText = inpText.strip()[7:]
             if   (self.perplexity_v_enable == True):
                 if  (len(image_urls) > 0) \
                 and (len(image_urls) == len(upload_files)):
-                        res_name = self.perplexity_v_nick_name
-                        res_api  = self.perplexity_v_model
+                        res_name  = self.perplexity_v_nick_name
+                        res_api   = self.perplexity_v_model
+                        use_tools = self.perplexity_v_use_tools
             elif (self.perplexity_x_enable == True):
-                        res_name = self.perplexity_x_nick_name
-                        res_api  = self.perplexity_x_model
+                        res_name  = self.perplexity_x_nick_name
+                        res_api   = self.perplexity_x_model
+                        use_tools = self.perplexity_x_use_tools
         elif (inpText.strip()[:10].lower() == ('assistant,')):
             inpText = inpText.strip()[10:]
-            if (self.perplexity_b_enable == True):
-                        res_name = self.perplexity_b_nick_name
-                        res_api  = self.perplexity_b_model
+            if   (self.perplexity_x_enable == True):
+                        res_name  = self.perplexity_x_nick_name
+                        res_api   = self.perplexity_x_model
+                        use_tools = self.perplexity_x_use_tools
+            elif (self.perplexity_b_enable == True):
+                        res_name  = self.perplexity_b_nick_name
+                        res_api   = self.perplexity_b_model
+                        use_tools = self.perplexity_b_use_tools
         elif (inpText.strip()[:7].lower() == ('openai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
@@ -464,23 +524,27 @@ class _perplexityAPI:
 
         # モデル 未設定時
         if (res_api is None):
-            res_name = self.perplexity_a_nick_name
-            res_api  = self.perplexity_a_model
+            res_name  = self.perplexity_a_nick_name
+            res_api   = self.perplexity_a_model
+            use_tools = self.perplexity_a_use_tools
             if (self.perplexity_b_enable == True):
                 if (len(upload_files) > 0) \
                 or (len(inpText) > 1000):
-                    res_name = self.perplexity_b_nick_name
-                    res_api  = self.perplexity_b_model
+                    res_name  = self.perplexity_b_nick_name
+                    res_api   = self.perplexity_b_model
+                    use_tools = self.perplexity_b_use_tools
 
         # モデル 補正 (vision)
         if  (len(image_urls) > 0) \
         and (len(image_urls) == len(upload_files)):
             if   (self.perplexity_v_enable == True):
-                res_name = self.perplexity_v_nick_name
-                res_api  = self.perplexity_v_model
+                res_name  = self.perplexity_v_nick_name
+                res_api   = self.perplexity_v_model
+                use_tools = self.perplexity_v_use_tools
             elif (self.perplexity_x_enable == True):
-                res_name = self.perplexity_x_nick_name
-                res_api  = self.perplexity_x_model
+                res_name  = self.perplexity_x_nick_name
+                res_api   = self.perplexity_x_model
+                use_tools = self.perplexity_x_use_tools
 
         # history 追加・圧縮 (古いメッセージ)
         res_history = self.history_add(history=res_history, sysText=sysText, reqText=reqText, inpText=inpText, )
@@ -492,10 +556,13 @@ class _perplexityAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             stream = True
+            #print(' stream = False, ')
+            #stream = False
         else:
             stream = False
-        #print(' stream = False, ')
-        #stream = False
+
+        # ツール設定
+        print(' perplexity  : functions = [], ')
 
         # 実行ループ
         #try:
@@ -506,7 +573,7 @@ class _perplexityAPI:
             while (function_name != 'exit') and (n < int(max_step)):
 
                 # 結果
-                res_role      = None
+                res_role      = ''
                 res_content   = ''
 
                 # GPT
@@ -539,7 +606,6 @@ class _perplexityAPI:
                     # 改行
                     if (res_content != ''):
                         self.print(session_id, )
-
 
                 # 通常実行
                 if (stream == False):

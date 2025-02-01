@@ -1,4 +1,4 @@
-// setting1.js
+// setting_engine.js
 
 // サブAI設定のコンボボックスを取得する関数
 function get_subai_info_all() {
@@ -476,7 +476,7 @@ function parallel_set_engine(engine) {
 $(document).ready(function() {
 
     // ページ遷移時にlocalStorageから復元
-    const storedData = JSON.parse(localStorage.getItem('setting1_formData'));
+    const storedData = JSON.parse(localStorage.getItem('setting_engine_formData'));
     if (storedData) {
         // ページ開始時に保存されたタブを復元
         var activeTab = storedData.activeTab || 'reset';
@@ -492,7 +492,7 @@ $(document).ready(function() {
             // ページ遷移時にlocalStorageに保存
             activeTab: $('.tab-header button.active').data('target')
         };
-        localStorage.setItem('setting1_formData', JSON.stringify(formData)); // localStorageに保存
+        localStorage.setItem('setting_engine_formData', JSON.stringify(formData)); // localStorageに保存
     };
 
     // サブAI設定を取得

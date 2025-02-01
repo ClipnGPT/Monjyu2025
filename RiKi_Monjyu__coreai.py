@@ -196,6 +196,7 @@ class CoreAiClass:
         self.thread_lock = threading.Lock()
 
         # 最終回答の保存
+        self.last_models_list = None
         self.last_input_log_user = None
         self.last_output_log_user = None
         self.last_debug_log_user = None
@@ -254,91 +255,46 @@ class CoreAiClass:
 
     async def get_models(self, req_mode: str) -> Dict[str, str]:
         """ 有効AI名取得(応答) """
+        if (self.last_models_list is not None):
+            return self.last_models_list
+
         models = {}
 
-        if True:
-            if self.chat_class.freeai_enable is None:
-                self.chat_class.freeai_auth()
-            if self.chat_class.freeai_enable:
-                models['[freeai]'] = '[FreeAI]'
-                if self.chat_class.freeaiAPI.freeai_a_enable and self.chat_class.freeaiAPI.freeai_a_nick_name:
-                    models[self.chat_class.freeaiAPI.freeai_a_nick_name.lower()] = ' ' + self.chat_class.freeaiAPI.freeai_a_nick_name
-                if self.chat_class.freeaiAPI.freeai_b_enable and self.chat_class.freeaiAPI.freeai_b_nick_name:
-                    models[self.chat_class.freeaiAPI.freeai_b_nick_name.lower()] = ' ' + self.chat_class.freeaiAPI.freeai_b_nick_name
-                if self.chat_class.freeaiAPI.freeai_v_enable and self.chat_class.freeaiAPI.freeai_v_nick_name:
-                    models[self.chat_class.freeaiAPI.freeai_v_nick_name.lower()] = ' ' + self.chat_class.freeaiAPI.freeai_v_nick_name
-                if self.chat_class.freeaiAPI.freeai_x_enable and self.chat_class.freeaiAPI.freeai_x_nick_name:
-                    models[self.chat_class.freeaiAPI.freeai_x_nick_name.lower()] = ' ' + self.chat_class.freeaiAPI.freeai_x_nick_name
+        # ChatGPT
+        if self.chat_class.chatgpt_enable is None:
+            self.chat_class.chatgpt_auth()
+        if self.chat_class.chatgpt_enable:
+            if (req_mode == 'chat'):
+                models['[chatgpt]'] = '[ChatGPT]'
+                if self.chat_class.chatgptAPI.chatgpt_a_nick_name:
+                    models[self.chat_class.chatgptAPI.chatgpt_a_nick_name.lower()] = ' ' + self.chat_class.chatgptAPI.chatgpt_a_nick_name
+                if self.chat_class.chatgptAPI.chatgpt_b_nick_name:
+                    models[self.chat_class.chatgptAPI.chatgpt_b_nick_name.lower()] = ' ' + self.chat_class.chatgptAPI.chatgpt_b_nick_name
+                if self.chat_class.chatgptAPI.chatgpt_v_nick_name:
+                    models[self.chat_class.chatgptAPI.chatgpt_v_nick_name.lower()] = ' ' + self.chat_class.chatgptAPI.chatgpt_v_nick_name
+                if self.chat_class.chatgptAPI.chatgpt_x_nick_name:
+                    models[self.chat_class.chatgptAPI.chatgpt_x_nick_name.lower()] = ' ' + self.chat_class.chatgptAPI.chatgpt_x_nick_name
 
-        if (req_mode == 'chat'):
-            if self.chat_class.perplexity_enable is None:
-                self.chat_class.perplexity_auth()
-                if not self.chat_class.perplexity_enable:
-                    self.data.perplexity_enable = self.chat_class.perplexity_enable
-                    self.data._reset()
-            if self.chat_class.perplexity_enable:
-                models['[perplexity]'] = '[Perplexity]'
-                if self.chat_class.perplexityAPI.perplexity_a_enable and self.chat_class.perplexityAPI.perplexity_a_nick_name:
-                    models[self.chat_class.perplexityAPI.perplexity_a_nick_name.lower()] = ' ' + self.chat_class.perplexityAPI.perplexity_a_nick_name
-                if self.chat_class.perplexityAPI.perplexity_b_enable and self.chat_class.perplexityAPI.perplexity_b_nick_name:
-                    models[self.chat_class.perplexityAPI.perplexity_b_nick_name.lower()] = ' ' + self.chat_class.perplexityAPI.perplexity_b_nick_name
-                if self.chat_class.perplexityAPI.perplexity_v_enable and self.chat_class.perplexityAPI.perplexity_v_nick_name:
-                    models[self.chat_class.perplexityAPI.perplexity_v_nick_name.lower()] = ' ' + self.chat_class.perplexityAPI.perplexity_v_nick_name
-                if self.chat_class.perplexityAPI.perplexity_x_enable and self.chat_class.perplexityAPI.perplexity_x_nick_name:
-                    models[self.chat_class.perplexityAPI.perplexity_x_nick_name.lower()] = ' ' + self.chat_class.perplexityAPI.perplexity_x_nick_name
+        # Assistant
+        if self.chat_class.assistant_enable is None:
+            self.chat_class.assistant_auth()
+        if self.chat_class.assistant_enable:
+            if (req_mode == 'chat'):
+                models['[assistant]'] = '[Assistant]'
+                if self.chat_class.assistantAPI.assistant_a_nick_name:
+                    models[self.chat_class.assistantAPI.assistant_a_nick_name.lower()] = ' ' + self.chat_class.assistantAPI.assistant_a_nick_name
+                if self.chat_class.assistantAPI.assistant_b_nick_name:
+                    models[self.chat_class.assistantAPI.assistant_b_nick_name.lower()] = ' ' + self.chat_class.assistantAPI.assistant_b_nick_name
+                if self.chat_class.assistantAPI.assistant_v_nick_name:
+                    models[self.chat_class.assistantAPI.assistant_v_nick_name.lower()] = ' ' + self.chat_class.assistantAPI.assistant_v_nick_name
+                if self.chat_class.assistantAPI.assistant_x_nick_name:
+                    models[self.chat_class.assistantAPI.assistant_x_nick_name.lower()] = ' ' + self.chat_class.assistantAPI.assistant_x_nick_name
 
-        if (req_mode == 'chat'):
-            if self.chat_class.openai_enable is None:
-                self.chat_class.openai_auth()
-                if not self.chat_class.openai_enable:
-                    self.data.openai_enable = self.chat_class.openai_enable
-                    self.data._reset()
-            if self.chat_class.openai_enable:
-                models['[openai]'] = '[OpenAI]'
-                if self.chat_class.openaiAPI.gpt_a_nick_name:
-                    models[self.chat_class.openaiAPI.gpt_a_nick_name.lower()] = ' ' + self.chat_class.openaiAPI.gpt_a_nick_name
-                if self.chat_class.openaiAPI.gpt_b_nick_name:
-                    models[self.chat_class.openaiAPI.gpt_b_nick_name.lower()] = ' ' + self.chat_class.openaiAPI.gpt_b_nick_name
-                if self.chat_class.openaiAPI.gpt_v_nick_name:
-                    models[self.chat_class.openaiAPI.gpt_v_nick_name.lower()] = ' ' + self.chat_class.openaiAPI.gpt_v_nick_name
-                if self.chat_class.openaiAPI.gpt_x_nick_name:
-                    models[self.chat_class.openaiAPI.gpt_x_nick_name.lower()] = ' ' + self.chat_class.openaiAPI.gpt_x_nick_name
-
-        if (req_mode == 'chat'):
-            if self.chat_class.azureoai_enable is None:
-                self.chat_class.azureoai_auth()
-            if self.chat_class.azureoai_enable:
-                models['[azure]'] = '[Azure]'
-                if self.chat_class.azureAPI.gpt_a_nick_name:
-                    models[self.chat_class.azureAPI.gpt_a_nick_name.lower()] = ' ' + self.chat_class.azureAPI.gpt_a_nick_name
-                if self.chat_class.azureAPI.gpt_b_nick_name:
-                    models[self.chat_class.azureAPI.gpt_b_nick_name.lower()] = ' ' + self.chat_class.azureAPI.gpt_b_nick_name
-                if self.chat_class.azureAPI.gpt_v_nick_name:
-                    models[self.chat_class.azureAPI.gpt_v_nick_name.lower()] = ' ' + self.chat_class.azureAPI.gpt_v_nick_name
-                if self.chat_class.azureAPI.gpt_x_nick_name:
-                    models[self.chat_class.azureAPI.gpt_x_nick_name.lower()] = ' ' + self.chat_class.azureAPI.gpt_x_nick_name
-
-        if (req_mode == 'chat'):
-            if self.chat_class.claude_enable is None:
-                self.chat_class.claude_auth()
-                if not self.chat_class.claude_enable:
-                    self.data.claude_enable = self.chat_class.claude_enable
-                    self.data._reset()
-            if self.chat_class.claude_enable:
-                models['[claude]'] = '[Claude]'
-                if self.chat_class.claudeAPI.claude_a_enable and self.chat_class.claudeAPI.claude_a_nick_name:
-                    models[self.chat_class.claudeAPI.claude_a_nick_name.lower()] = ' ' + self.chat_class.claudeAPI.claude_a_nick_name
-                if self.chat_class.claudeAPI.claude_b_enable and self.chat_class.claudeAPI.claude_b_nick_name:
-                    models[self.chat_class.claudeAPI.claude_b_nick_name.lower()] = ' ' + self.chat_class.claudeAPI.claude_b_nick_name
-                if self.chat_class.claudeAPI.claude_v_enable and self.chat_class.claudeAPI.claude_v_nick_name:
-                    models[self.chat_class.claudeAPI.claude_v_nick_name.lower()] = ' ' + self.chat_class.claudeAPI.claude_v_nick_name
-                if self.chat_class.claudeAPI.claude_x_enable and self.chat_class.claudeAPI.claude_x_nick_name:
-                    models[self.chat_class.claudeAPI.claude_x_nick_name.lower()] = ' ' + self.chat_class.claudeAPI.claude_x_nick_name
-
-        if (req_mode == 'chat'):
-            if self.chat_class.gemini_enable is None:
-                self.chat_class.gemini_auth()
-            if self.chat_class.gemini_enable:
+        # Gemini
+        if self.chat_class.gemini_enable is None:
+            self.chat_class.gemini_auth()
+        if self.chat_class.gemini_enable:
+            if (req_mode == 'chat'):
                 models['[gemini]'] = '[Gemini]'
                 if self.chat_class.geminiAPI.gemini_a_enable and self.chat_class.geminiAPI.gemini_a_nick_name:
                     models[self.chat_class.geminiAPI.gemini_a_nick_name.lower()] = ' ' + self.chat_class.geminiAPI.gemini_a_nick_name
@@ -349,10 +305,41 @@ class CoreAiClass:
                 if self.chat_class.geminiAPI.gemini_x_enable and self.chat_class.geminiAPI.gemini_x_nick_name:
                     models[self.chat_class.geminiAPI.gemini_x_nick_name.lower()] = ' ' + self.chat_class.geminiAPI.gemini_x_nick_name
 
-        if True:
-            if self.chat_class.openrt_enable is None:
-                self.chat_class.openrt_auth()
-            if self.chat_class.openrt_enable:
+        # FreeAI
+        if self.chat_class.freeai_enable is None:
+            self.chat_class.freeai_auth()
+        if self.chat_class.freeai_enable:
+            if True:
+                models['[freeai]'] = '[FreeAI]'
+                if self.chat_class.freeaiAPI.freeai_a_enable and self.chat_class.freeaiAPI.freeai_a_nick_name:
+                    models[self.chat_class.freeaiAPI.freeai_a_nick_name.lower()] = ' ' + self.chat_class.freeaiAPI.freeai_a_nick_name
+                if self.chat_class.freeaiAPI.freeai_b_enable and self.chat_class.freeaiAPI.freeai_b_nick_name:
+                    models[self.chat_class.freeaiAPI.freeai_b_nick_name.lower()] = ' ' + self.chat_class.freeaiAPI.freeai_b_nick_name
+                if self.chat_class.freeaiAPI.freeai_v_enable and self.chat_class.freeaiAPI.freeai_v_nick_name:
+                    models[self.chat_class.freeaiAPI.freeai_v_nick_name.lower()] = ' ' + self.chat_class.freeaiAPI.freeai_v_nick_name
+                if self.chat_class.freeaiAPI.freeai_x_enable and self.chat_class.freeaiAPI.freeai_x_nick_name:
+                    models[self.chat_class.freeaiAPI.freeai_x_nick_name.lower()] = ' ' + self.chat_class.freeaiAPI.freeai_x_nick_name
+
+        # Claude
+        if self.chat_class.claude_enable is None:
+            self.chat_class.claude_auth()
+        if self.chat_class.claude_enable:
+            if (req_mode == 'chat'):
+                models['[claude]'] = '[Claude]'
+                if self.chat_class.claudeAPI.claude_a_enable and self.chat_class.claudeAPI.claude_a_nick_name:
+                    models[self.chat_class.claudeAPI.claude_a_nick_name.lower()] = ' ' + self.chat_class.claudeAPI.claude_a_nick_name
+                if self.chat_class.claudeAPI.claude_b_enable and self.chat_class.claudeAPI.claude_b_nick_name:
+                    models[self.chat_class.claudeAPI.claude_b_nick_name.lower()] = ' ' + self.chat_class.claudeAPI.claude_b_nick_name
+                if self.chat_class.claudeAPI.claude_v_enable and self.chat_class.claudeAPI.claude_v_nick_name:
+                    models[self.chat_class.claudeAPI.claude_v_nick_name.lower()] = ' ' + self.chat_class.claudeAPI.claude_v_nick_name
+                if self.chat_class.claudeAPI.claude_x_enable and self.chat_class.claudeAPI.claude_x_nick_name:
+                    models[self.chat_class.claudeAPI.claude_x_nick_name.lower()] = ' ' + self.chat_class.claudeAPI.claude_x_nick_name
+
+        # OpenRouter
+        if self.chat_class.openrt_enable is None:
+            self.chat_class.openrt_auth()
+        if self.chat_class.openrt_enable:
+            if True:
                 models['[openrt]'] = '[OpenRouter]'
                 if self.chat_class.openrtAPI.openrt_a_enable and self.chat_class.openrtAPI.openrt_a_nick_name:
                     models[self.chat_class.openrtAPI.openrt_a_nick_name.lower()] = ' ' + self.chat_class.openrtAPI.openrt_a_nick_name
@@ -363,24 +350,26 @@ class CoreAiClass:
                 if self.chat_class.openrtAPI.openrt_x_enable and self.chat_class.openrtAPI.openrt_x_nick_name:
                     models[self.chat_class.openrtAPI.openrt_x_nick_name.lower()] = ' ' + self.chat_class.openrtAPI.openrt_x_nick_name
 
-        if True:
-            if self.chat_class.ollama_enable is None:
-                self.chat_class.ollama_auth()
-            if self.chat_class.ollama_enable:
-                models['[ollama]'] = '[Ollama]'
-                if self.chat_class.ollamaAPI.ollama_a_enable and self.chat_class.ollamaAPI.ollama_a_nick_name:
-                    models[self.chat_class.ollamaAPI.ollama_a_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_a_nick_name
-                if self.chat_class.ollamaAPI.ollama_b_enable and self.chat_class.ollamaAPI.ollama_b_nick_name:
-                    models[self.chat_class.ollamaAPI.ollama_b_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_b_nick_name
-                if self.chat_class.ollamaAPI.ollama_v_enable and self.chat_class.ollamaAPI.ollama_v_nick_name:
-                    models[self.chat_class.ollamaAPI.ollama_v_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_v_nick_name
-                if self.chat_class.ollamaAPI.ollama_x_enable and self.chat_class.ollamaAPI.ollama_x_nick_name:
-                    models[self.chat_class.ollamaAPI.ollama_x_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_x_nick_name
+        # Perplexity
+        if self.chat_class.perplexity_enable is None:
+            self.chat_class.perplexity_auth()
+        if self.chat_class.perplexity_enable:
+            if (req_mode == 'chat'):
+                models['[perplexity]'] = '[Perplexity]'
+                if self.chat_class.perplexityAPI.perplexity_a_enable and self.chat_class.perplexityAPI.perplexity_a_nick_name:
+                    models[self.chat_class.perplexityAPI.perplexity_a_nick_name.lower()] = ' ' + self.chat_class.perplexityAPI.perplexity_a_nick_name
+                if self.chat_class.perplexityAPI.perplexity_b_enable and self.chat_class.perplexityAPI.perplexity_b_nick_name:
+                    models[self.chat_class.perplexityAPI.perplexity_b_nick_name.lower()] = ' ' + self.chat_class.perplexityAPI.perplexity_b_nick_name
+                if self.chat_class.perplexityAPI.perplexity_v_enable and self.chat_class.perplexityAPI.perplexity_v_nick_name:
+                    models[self.chat_class.perplexityAPI.perplexity_v_nick_name.lower()] = ' ' + self.chat_class.perplexityAPI.perplexity_v_nick_name
+                if self.chat_class.perplexityAPI.perplexity_x_enable and self.chat_class.perplexityAPI.perplexity_x_nick_name:
+                    models[self.chat_class.perplexityAPI.perplexity_x_nick_name.lower()] = ' ' + self.chat_class.perplexityAPI.perplexity_x_nick_name
 
-        if (req_mode == 'chat'):
-            if self.chat_class.groq_enable is None:
-                self.chat_class.groq_auth()
-            if self.chat_class.groq_enable:
+        # Groq
+        if self.chat_class.groq_enable is None:
+            self.chat_class.groq_auth()
+        if self.chat_class.groq_enable:
+            if (req_mode == 'chat'):
                 models['[groq]'] = '[Groq]'
                 if self.chat_class.groqAPI.groq_a_enable and self.chat_class.groqAPI.groq_a_nick_name:
                     models[self.chat_class.groqAPI.groq_a_nick_name.lower()] = ' ' + self.chat_class.groqAPI.groq_a_nick_name
@@ -391,7 +380,23 @@ class CoreAiClass:
                 if self.chat_class.groqAPI.groq_x_enable and self.chat_class.groqAPI.groq_x_nick_name:
                     models[self.chat_class.groqAPI.groq_x_nick_name.lower()] = ' ' + self.chat_class.groqAPI.groq_x_nick_name
 
-        return models
+        # Ollama
+        if self.chat_class.ollama_enable is None:
+            self.chat_class.ollama_auth()
+        if self.chat_class.ollama_enable:
+            if True:
+                models['[ollama]'] = '[Ollama]'
+                if self.chat_class.ollamaAPI.ollama_a_enable and self.chat_class.ollamaAPI.ollama_a_nick_name:
+                    models[self.chat_class.ollamaAPI.ollama_a_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_a_nick_name
+                if self.chat_class.ollamaAPI.ollama_b_enable and self.chat_class.ollamaAPI.ollama_b_nick_name:
+                    models[self.chat_class.ollamaAPI.ollama_b_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_b_nick_name
+                if self.chat_class.ollamaAPI.ollama_v_enable and self.chat_class.ollamaAPI.ollama_v_nick_name:
+                    models[self.chat_class.ollamaAPI.ollama_v_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_v_nick_name
+                if self.chat_class.ollamaAPI.ollama_x_enable and self.chat_class.ollamaAPI.ollama_x_nick_name:
+                    models[self.chat_class.ollamaAPI.ollama_x_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_x_nick_name
+
+        self.last_models_list = models
+        return self.last_models_list
 
     async def get_subai_info_all(self):
         """

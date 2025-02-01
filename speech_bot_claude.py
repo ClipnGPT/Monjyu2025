@@ -58,21 +58,25 @@ class _claudeAPI:
         self.claude_a_nick_name     = ''
         self.claude_a_model         = None
         self.claude_a_token         = 0
+        self.claude_a_use_tools     = 'no'
 
         self.claude_b_enable        = False
         self.claude_b_nick_name     = ''
         self.claude_b_model         = None
         self.claude_b_token         = 0
+        self.claude_b_use_tools     = 'no'
 
         self.claude_v_enable        = False
         self.claude_v_nick_name     = ''
         self.claude_v_model         = None
         self.claude_v_token         = 0
+        self.claude_v_use_tools     = 'no'
 
         self.claude_x_enable        = False
         self.claude_x_nick_name     = ''
         self.claude_x_model         = None
         self.claude_x_token         = 0
+        self.claude_x_use_tools     = 'no'
 
         self.models                 = {}
         self.history                = []
@@ -153,7 +157,7 @@ class _claudeAPI:
             self.claude_max_wait_sec    = int(claude_max_wait_sec)
 
         # モデル取得
-        self.models                         = {}
+        self.models                     = {}
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
@@ -161,34 +165,38 @@ class _claudeAPI:
 
         # claude チャットボット
         if (claude_a_nick_name != ''):
-            self.claude_a_enable     = False
-            self.claude_a_nick_name  = claude_a_nick_name
-            self.claude_a_model      = claude_a_model
-            self.claude_a_token      = int(claude_a_token)
+            self.claude_a_enable        = False
+            self.claude_a_nick_name     = claude_a_nick_name
+            self.claude_a_model         = claude_a_model
+            self.claude_a_token         = int(claude_a_token)
+            self.claude_a_use_tools     = claude_a_use_tools
             if (not claude_a_model in self.models):
                 self.models[claude_a_model] = {"id": claude_a_model, "token": str(claude_a_token), "modality": "text?", "date": ymd, }
 
         if (claude_b_nick_name != ''):
-            self.claude_b_enable     = False
-            self.claude_b_nick_name  = claude_b_nick_name
-            self.claude_b_model      = claude_b_model
-            self.claude_b_token      = int(claude_b_token)
+            self.claude_b_enable        = False
+            self.claude_b_nick_name     = claude_b_nick_name
+            self.claude_b_model         = claude_b_model
+            self.claude_b_token         = int(claude_b_token)
+            self.claude_b_use_tools     = claude_b_use_tools
             if (not claude_b_model in self.models):
                 self.models[claude_b_model] = {"id": claude_b_model, "token": str(claude_b_token), "modality": "text?", "date": ymd, }
 
         if (claude_v_nick_name != ''):
-            self.claude_v_enable     = False
-            self.claude_v_nick_name  = claude_v_nick_name
-            self.claude_v_model      = claude_v_model
-            self.claude_v_token      = int(claude_v_token)
+            self.claude_v_enable        = False
+            self.claude_v_nick_name     = claude_v_nick_name
+            self.claude_v_model         = claude_v_model
+            self.claude_v_token         = int(claude_v_token)
+            self.claude_v_use_tools     = claude_v_use_tools
             if (not claude_v_model in self.models):
                 self.models[claude_v_model] = {"id": claude_v_model, "token": str(claude_v_token), "modality": "text?", "date": ymd, }
 
         if (claude_x_nick_name != ''):
-            self.claude_x_enable     = False
-            self.claude_x_nick_name  = claude_x_nick_name
-            self.claude_x_model      = claude_x_model
-            self.claude_x_token      = int(claude_x_token)
+            self.claude_x_enable        = False
+            self.claude_x_nick_name     = claude_x_nick_name
+            self.claude_x_model         = claude_x_model
+            self.claude_x_token         = int(claude_x_token)
+            self.claude_x_use_tools     = claude_x_use_tools
             if (not claude_x_model in self.models):
                 self.models[claude_x_model] = {"id": claude_x_model, "token": str(claude_x_token), "modality": "text?", "date": ymd, }
 
@@ -218,11 +226,53 @@ class _claudeAPI:
             models = self.client.models.list()
             for model in models.data:
                 key = model.id
-                create_ymd = model.created_at.strftime("%Y/%m/%d")
+                ymd = model.created_at.strftime("%Y/%m/%d")
                 #print(key, create_ymd)
-                self.models[key] = {"id":key, "token":"9999", "modality":"text?", "date": create_ymd, }
+                self.models[key] = {"id":key, "token":"9999", "modality":"text?", "date": ymd, }
         except Exception as e:
             #print(e)
+            return False
+        return True
+
+    def set_models(self, max_wait_sec='',
+                         a_model='', a_use_tools='',
+                         b_model='', b_use_tools='',
+                         v_model='', v_use_tools='',
+                         x_model='', x_use_tools='', ):
+        try:
+            if (not max_wait_sec in ['', 'auto']):
+                if (str(max_wait_sec) != str(self.claude_max_wait_sec)):
+                    self.claude_max_wait_sec = int(max_wait_sec)
+            if (a_model != ''):
+                if (a_model != self.claude_a_model) and (a_model in self.models):
+                    self.claude_a_enable = True
+                    self.claude_a_model = a_model
+                    self.claude_a_token = int(self.models[a_model]['token'])
+            if (a_use_tools != ''):
+                self.claude_a_use_tools = a_use_tools
+            if (b_model != ''):
+                if (b_model != self.claude_b_model) and (b_model in self.models):
+                    self.claude_b_enable = True
+                    self.claude_b_model = b_model
+                    self.claude_b_token = int(self.models[b_model]['token'])
+            if (b_use_tools != ''):
+                self.claude_b_use_tools = b_use_tools
+            if (v_model != ''):
+                if (v_model != self.claude_v_model) and (v_model in self.models):
+                    self.claude_v_enable = True
+                    self.claude_v_model = v_model
+                    self.claude_v_token = int(self.models[v_model]['token'])
+            if (v_use_tools != ''):
+                self.claude_v_use_tools = v_use_tools
+            if (x_model != ''):
+                if (x_model != self.claude_x_model) and (x_model in self.models):
+                    self.claude_x_enable = True
+                    self.claude_x_model = x_model
+                    self.claude_x_token = int(self.models[x_model]['token'])
+            if (x_use_tools != ''):
+                self.claude_x_use_tools = x_use_tools
+        except Exception as e:
+            print(e)
             return False
         return True
 
@@ -354,12 +404,14 @@ class _claudeAPI:
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
-        res_name = self.claude_a_nick_name
-        res_api  = self.claude_a_model
+        res_name  = self.claude_a_nick_name
+        res_api   = self.claude_a_model
+        use_tools = self.claude_a_use_tools
         if  (chat_class == 'claude'):
             if (self.claude_b_enable == True):
-                res_name = self.claude_b_nick_name
-                res_api  = self.claude_b_model
+                res_name  = self.claude_b_nick_name
+                res_api   = self.claude_b_model
+                use_tools = self.claude_b_use_tools
 
         # モデル 補正 (assistant)
         if ((chat_class == 'assistant') \
@@ -370,8 +422,9 @@ class _claudeAPI:
         or  (chat_class == 'アシスタント') \
         or  (model_select == 'x')):
             if (self.claude_x_enable == True):
-                res_name = self.claude_x_nick_name
-                res_api  = self.claude_x_model
+                res_name  = self.claude_x_nick_name
+                res_api   = self.claude_x_model
+                use_tools = self.claude_x_use_tools
 
         # model 指定
         if (self.claude_a_nick_name != ''):
@@ -381,56 +434,67 @@ class _claudeAPI:
             if (inpText.strip()[:len(self.claude_b_nick_name)+1].lower() == (self.claude_b_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.claude_b_nick_name)+1:]
                 if   (self.claude_b_enable == True):
-                        res_name = self.claude_b_nick_name
-                        res_api  = self.claude_b_model
+                        res_name  = self.claude_b_nick_name
+                        res_api   = self.claude_b_model
+                        use_tools = self.claude_b_use_tools
 
         if (self.claude_v_nick_name != ''):
             if (inpText.strip()[:len(self.claude_v_nick_name)+1].lower() == (self.claude_v_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.claude_v_nick_name)+1:]
-                #if   (self.claude_v_enable == True):
-                #    if  (len(image_urls) > 0) \
-                #    and (len(image_urls) == len(upload_files)):
-                #        res_name = self.claude_v_nick_name
-                #        res_api  = self.claude_v_model
-                #elif (self.claude_x_enable == True):
-                #        res_name = self.claude_x_nick_name
-                #        res_api  = self.claude_x_model
                 if   (self.claude_v_enable == True):
-                    res_name = self.claude_v_nick_name
-                    res_api  = self.claude_v_model
+                    if  (len(image_urls) > 0) \
+                    and (len(image_urls) == len(upload_files)):
+                        res_name  = self.claude_v_nick_name
+                        res_api   = self.claude_v_model
+                        use_tools = self.claude_v_use_tools
+                elif (self.claude_x_enable == True):
+                        res_name  = self.claude_x_nick_name
+                        res_api   = self.claude_x_model
+                        use_tools = self.claude_x_use_tools
 
         if (self.claude_x_nick_name != ''):
             if (inpText.strip()[:len(self.claude_x_nick_name)+1].lower() == (self.claude_x_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.claude_x_nick_name)+1:]
                 if   (self.claude_x_enable == True):
-                        res_name = self.claude_x_nick_name
-                        res_api  = self.claude_x_model
+                        res_name  = self.claude_x_nick_name
+                        res_api   = self.claude_x_model
+                        use_tools = self.claude_x_use_tools
                 elif (self.claude_b_enable == True):
-                        res_name = self.claude_b_nick_name
-                        res_api  = self.claude_b_model
+                        res_name  = self.claude_b_nick_name
+                        res_api   = self.claude_b_model
+                        use_tools = self.claude_b_use_tools
         if   (inpText.strip()[:5].lower() == ('riki,')):
             inpText = inpText.strip()[5:]
             if   (self.claude_x_enable == True):
-                        res_name = self.claude_x_nick_name
-                        res_api  = self.claude_x_model
+                        res_name  = self.claude_x_nick_name
+                        res_api   = self.claude_x_model
+                        use_tools = self.claude_x_use_tools
             elif (self.claude_b_enable == True):
-                        res_name = self.claude_b_nick_name
-                        res_api  = self.claude_b_model
+                        res_name  = self.claude_b_nick_name
+                        res_api   = self.claude_b_model
+                        use_tools = self.claude_b_use_tools
         elif (inpText.strip()[:7].lower() == ('vision,')):
             inpText = inpText.strip()[7:]
             if   (self.claude_v_enable == True):
                 if  (len(image_urls) > 0) \
                 and (len(image_urls) == len(upload_files)):
-                        res_name = self.claude_v_nick_name
-                        res_api  = self.claude_v_model
+                        res_name  = self.claude_v_nick_name
+                        res_api   = self.claude_v_model
+                        use_tools = self.claude_v_use_tools
             elif (self.claude_x_enable == True):
-                        res_name = self.claude_x_nick_name
-                        res_api  = self.claude_x_model
+                        res_name  = self.claude_x_nick_name
+                        res_api   = self.claude_x_model
+                        use_tools = self.claude_x_use_tools
         elif (inpText.strip()[:10].lower() == ('assistant,')):
             inpText = inpText.strip()[10:]
-            if (self.claude_x_enable == True):
-                        res_name = self.claude_x_nick_name
-                        res_api  = self.claude_x_model
+            if   (self.claude_x_enable == True):
+                        res_name  = self.claude_x_nick_name
+                        res_api   = self.claude_x_model
+                        use_tools = self.claude_x_use_tools
+            elif (self.claude_b_enable == True):
+                        res_name  = self.claude_b_nick_name
+                        res_api   = self.claude_b_model
+                        use_tools = self.claude_b_use_tools
         elif (inpText.strip()[:7].lower() == ('openai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
@@ -458,23 +522,27 @@ class _claudeAPI:
 
         # モデル 未設定時
         if (res_api is None):
-            res_name = self.claude_a_nick_name
-            res_api  = self.claude_a_model
+            res_name  = self.claude_a_nick_name
+            res_api   = self.claude_a_model
+            use_tools = self.claude_a_use_tools
             if (self.claude_b_enable == True):
                 if (len(upload_files) > 0) \
                 or (len(inpText) > 1000):
-                    res_name = self.claude_b_nick_name
-                    res_api  = self.claude_b_model
+                    res_name  = self.claude_b_nick_name
+                    res_api   = self.claude_b_model
+                    use_tools = self.claude_b_use_tools
 
         # モデル 補正 (vision)
         if  (len(image_urls) > 0) \
         and (len(image_urls) == len(upload_files)):
             if   (self.claude_v_enable == True):
-                res_name = self.claude_v_nick_name
-                res_api  = self.claude_v_model
+                res_name  = self.claude_v_nick_name
+                res_api   = self.claude_v_model
+                use_tools = self.claude_v_use_tools
             elif (self.claude_x_enable == True):
-                res_name = self.claude_x_nick_name
-                res_api  = self.claude_x_model
+                res_name  = self.claude_x_nick_name
+                res_api   = self.claude_x_model
+                use_tools = self.claude_x_use_tools
 
         # history 追加・圧縮 (古いメッセージ)
         res_history = self.history_add(history=res_history, sysText=sysText, reqText=reqText, inpText=inpText, )
@@ -482,15 +550,6 @@ class _claudeAPI:
 
         # メッセージ作成
         msg_text = self.history2msg_text(history=res_history, )
-
-        # tools
-        tools = []
-        for module_dic in function_modules:
-            func_dic = module_dic['function']
-            func_str = json.dumps(func_dic, ensure_ascii=False, )
-            func_str = func_str.replace('"parameters"', '"input_schema"')
-            func     = json.loads(func_str)
-            tools.append(func)
 
         # 送信データ 画像無し
         messages = []
@@ -517,10 +576,22 @@ class _claudeAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             stream = True
+            #print(' claude  : stream = False, ')
+            #stream = False
         else:
             stream = False
-        #print(' stream = False, ')
-        #stream = False
+
+        # ツール設定
+        tools = []
+        #print(' openrt  : tools = [], ')
+        if True:
+            if (use_tools.lower().find('yes') >= 0):
+                for module_dic in function_modules:
+                    func_dic = module_dic['function']
+                    func_str = json.dumps(func_dic, ensure_ascii=False, )
+                    func_str = func_str.replace('"parameters"', '"input_schema"')
+                    func     = json.loads(func_str)
+                    tools.append(func)
 
         # 実行ループ
         #try:
@@ -531,7 +602,7 @@ class _claudeAPI:
             while (function_name != 'exit') and (n < int(max_step)):
 
                 # 結果
-                res_role      = None
+                res_role      = ''
                 res_content   = ''
                 tool_calls    = []
 
@@ -606,11 +677,11 @@ class _claudeAPI:
                                                             tools=tools, )
 
                 # 共通 response 処理
-                role        = response.role
+                res_role    = response.role
                 contents    = response.content
 
                 # メッセージ保管
-                msg = {"role": role, "content": contents }
+                msg = {"role": res_role, "content": contents }
                 messages.append(msg)
 
                 for c in range(len(contents)):
@@ -838,10 +909,10 @@ if __name__ == '__main__':
                 print(str(res_text))
                 print()
 
-            if False:
+            if True:
                 sysText = None
                 reqText = ''
-                inpText = '兵庫県三木市の天気？'
+                inpText = 'sonnet,toolsで兵庫県三木市の天気を調べて'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
@@ -856,10 +927,10 @@ if __name__ == '__main__':
                 print(str(res_text))
                 print()
 
-            if False:
+            if True:
                 sysText = None
                 reqText = ''
-                inpText = 'この画像はなんだと思いますか？'
+                inpText = '添付画像を説明してください。'
                 filePath = ['_icons/dog.jpg']
                 print()
                 print('[Request]')

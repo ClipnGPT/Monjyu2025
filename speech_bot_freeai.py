@@ -44,7 +44,6 @@ class _freeaiAPI:
         self.bot_auth               = None
 
         self.temperature            = 0.8
-        self.timeOut                = 180
 
         self.freeai_api_type        = 'freeai'
         self.freeai_default_gpt     = 'auto'
@@ -52,6 +51,7 @@ class _freeaiAPI:
         self.freeai_auto_continue   = 3
         self.freeai_max_step        = 10
         self.freeai_max_session     = 5
+        self.freeai_max_wait_sec    = 120
        
         self.freeai_key_id          = None
 
@@ -59,21 +59,25 @@ class _freeaiAPI:
         self.freeai_a_nick_name     = ''
         self.freeai_a_model         = None
         self.freeai_a_token         = 0
+        self.freeai_a_use_tools     = 'no'
 
         self.freeai_b_enable        = False
         self.freeai_b_nick_name     = ''
         self.freeai_b_model         = None
         self.freeai_b_token         = 0
+        self.freeai_b_use_tools     = 'no'
 
         self.freeai_v_enable        = False
         self.freeai_v_nick_name     = ''
         self.freeai_v_model         = None
         self.freeai_v_token         = 0
+        self.freeai_v_use_tools     = 'no'
 
         self.freeai_x_enable        = False
         self.freeai_x_nick_name     = ''
         self.freeai_x_model         = None
         self.freeai_x_token         = 0
+        self.freeai_x_use_tools     = 'no'
 
         self.safety_settings        = [ {"category": "HARM_CATEGORY_DANGEROUS", "threshold": "BLOCK_NONE" },
                                         {"category": "HARM_CATEGORY_HARASSMENT","threshold": "BLOCK_NONE" },
@@ -81,6 +85,7 @@ class _freeaiAPI:
                                         {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE" },
                                         {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE" }, ]
 
+        self.models                 = {}
         self.history                = []
 
         self.seq                    = 0
@@ -115,103 +120,168 @@ class _freeaiAPI:
                      freeai_default_gpt, freeai_default_class,
                      freeai_auto_continue,
                      freeai_max_step, freeai_max_session,
+                     freeai_max_wait_sec,
 
                      freeai_key_id,
 
                      freeai_a_nick_name, freeai_a_model, freeai_a_token, 
+                     freeai_a_use_tools, 
                      freeai_b_nick_name, freeai_b_model, freeai_b_token, 
+                     freeai_b_use_tools, 
                      freeai_v_nick_name, freeai_v_model, freeai_v_token, 
+                     freeai_v_use_tools, 
                      freeai_x_nick_name, freeai_x_model, freeai_x_token, 
+                     freeai_x_use_tools, 
                     ):
-
-        # 設定
 
         # 認証
         self.bot_auth                 = None
         self.freeai_key_id            = freeai_key_id
 
-        self.freeai_default_gpt       = freeai_default_gpt
-        self.freeai_default_class     = freeai_default_class
-        if (str(freeai_auto_continue) != 'auto'):
-            self.freeai_auto_continue = int(freeai_auto_continue)
-        if (str(freeai_max_step)      != 'auto'):
-            self.freeai_max_step      = int(freeai_max_step)
-        if (str(freeai_max_session) != 'auto'):
-            self.freeai_max_session   = int(freeai_max_session)
-
-        # freeai チャットボット
-        if (freeai_a_nick_name != ''):
-            self.freeai_a_enable     = False
-            self.freeai_a_nick_name  = freeai_a_nick_name
-            self.freeai_a_model      = freeai_a_model
-            self.freeai_a_token      = int(freeai_a_token)
-
-        if (freeai_b_nick_name != ''):
-            self.freeai_b_enable     = False
-            self.freeai_b_nick_name  = freeai_b_nick_name
-            self.freeai_b_model      = freeai_b_model
-            self.freeai_b_token      = int(freeai_b_token)
-
-        if (freeai_v_nick_name != ''):
-            self.freeai_v_enable     = False
-            self.freeai_v_nick_name  = freeai_v_nick_name
-            self.freeai_v_model      = freeai_v_model
-            self.freeai_v_token      = int(freeai_v_token)
-
-        if (freeai_x_nick_name != ''):
-            self.freeai_x_enable     = False
-            self.freeai_x_nick_name  = freeai_x_nick_name
-            self.freeai_x_model      = freeai_x_model
-            self.freeai_x_token      = int(freeai_x_token)
-
-        # API-KEYの設定
         if (freeai_key_id[:1] == '<'):
             return False
         try:
             genai.configure(api_key=freeai_key_id, ) 
         except Exception as e:
-            print('configure error', e)
+            print(e)
             return False
 
-        # モデル一覧
-        hit = False
-        #try:
-        if False:
-            for m in genai.list_models():
-                #print(m.supported_generation_methods)
-                if 'generateContent' in m.supported_generation_methods:
-                    model = m.name.replace('models/', '')
-                    #print(model)
-                    if (model == self.freeai_a_model):
-                        #print(model)
-                        self.freeai_a_enable = True
-                        hit = True
-                    if (model == self.freeai_b_model):
-                        #print(model)
-                        self.freeai_b_enable = True
-                        hit = True
-                    if (model == self.freeai_v_model):
-                        #print(model)
-                        self.freeai_v_enable = True
-                        hit = True
-                    if (model == self.freeai_x_model):
-                        #print(model)
-                        self.freeai_x_enable = True
-                        hit = True
-        #except Exception as e:
-        #    print('list_models error', e)
+        # 設定
+        self.freeai_default_gpt         = freeai_default_gpt
+        self.freeai_default_class       = freeai_default_class
+        if (not str(freeai_auto_continue) in ['', 'auto']):
+            self.freeai_auto_continue   = int(freeai_auto_continue)
+        if (not str(freeai_max_step)      in ['', 'auto']):
+            self.freeai_max_step        = int(freeai_max_step)
+        if (not str(freeai_max_session)   in ['', 'auto']):
+            self.freeai_max_session     = int(freeai_max_session)
+        if (not str(freeai_max_wait_sec)  in ['', 'auto']):
+            self.freeai_max_wait_sec    = int(freeai_max_wait_sec)
 
-        self.freeai_a_enable = True
-        self.freeai_b_enable = True
-        self.freeai_v_enable = True
-        self.freeai_x_enable = True
-        hit = True
+        # モデル取得
+        self.models                     = {}
+        self.get_models()
+
+        #ymd = datetime.date.today().strftime('%Y/%m/%d')
+        ymd = '????/??/??'
+
+        # freeai チャットボット
+        if (freeai_a_nick_name != ''):
+            self.freeai_a_enable        = False
+            self.freeai_a_nick_name     = freeai_a_nick_name
+            self.freeai_a_model         = freeai_a_model
+            self.freeai_a_token         = int(freeai_a_token)
+            self.freeai_a_use_tools     = freeai_a_use_tools
+            if (not freeai_a_model in self.models):
+                self.models[freeai_a_model] = {"id": freeai_a_model, "token": str(freeai_a_token), "modality": "text?", "date": ymd, }
+
+        if (freeai_b_nick_name != ''):
+            self.freeai_b_enable        = False
+            self.freeai_b_nick_name     = freeai_b_nick_name
+            self.freeai_b_model         = freeai_b_model
+            self.freeai_b_token         = int(freeai_b_token)
+            self.freeai_b_use_tools     = freeai_b_use_tools
+            if (not freeai_b_model in self.models):
+                self.models[freeai_b_model] = {"id": freeai_b_model, "token": str(freeai_b_token), "modality": "text?", "date": ymd, }
+
+        if (freeai_v_nick_name != ''):
+            self.freeai_v_enable        = False
+            self.freeai_v_nick_name     = freeai_v_nick_name
+            self.freeai_v_model         = freeai_v_model
+            self.freeai_v_token         = int(freeai_v_token)
+            self.freeai_v_use_tools     = freeai_v_use_tools
+            if (not freeai_v_model in self.models):
+                self.models[freeai_v_model] = {"id": freeai_v_model, "token": str(freeai_v_token), "modality": "text+image?", "date": ymd, }
+
+        if (freeai_x_nick_name != ''):
+            self.freeai_x_enable        = False
+            self.freeai_x_nick_name     = freeai_x_nick_name
+            self.freeai_x_model         = freeai_x_model
+            self.freeai_x_token         = int(freeai_x_token)
+            self.freeai_x_use_tools     = freeai_x_use_tools
+            if (not freeai_x_model in self.models):
+                self.models[freeai_x_model] = {"id": freeai_x_model, "token": str(freeai_x_token), "modality": "text+image?", "date": ymd, }
+
+        # モデル
+        hit = False
+        if (self.freeai_a_model != ''):
+            self.freeai_a_enable = True
+            hit = True
+        if (self.freeai_b_model != ''):
+            self.freeai_b_enable = True
+            hit = True
+        if (self.freeai_v_model != ''):
+            self.freeai_v_enable = True
+            hit = True
+        if (self.freeai_x_model != ''):
+            self.freeai_x_enable = True
+            hit = True
 
         if (hit == True):
             self.bot_auth = True
             return True
         else:
             return False
+
+    def get_models(self, ):
+        try:
+            models = genai.list_models()
+            self.models = {}
+            for model in models:
+                #print(model)
+                supported = model.supported_generation_methods
+                if ('generateContent' in supported):
+                    key = model.name.replace('models/', '')
+                    if (key.find('gemini-1.0') < 0) and (key.find('gemini-1.5') < 0):
+                        token = model.input_token_limit
+                        #print(key, token, )
+                        self.models[key] = {"id":key, "token":str(token), "modality":str(supported), "date":'????/??/??', }
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def set_models(self, max_wait_sec='',
+                         a_model='', a_use_tools='',
+                         b_model='', b_use_tools='',
+                         v_model='', v_use_tools='',
+                         x_model='', x_use_tools='', ):
+        try:
+            if (not max_wait_sec in ['', 'auto']):
+                if (str(max_wait_sec) != str(self.freeai_max_wait_sec)):
+                    self.freeai_max_wait_sec = int(max_wait_sec)
+            if (a_model != ''):
+                if (a_model != self.freeai_a_model) and (a_model in self.models):
+                    self.freeai_a_enable = True
+                    self.freeai_a_model = a_model
+                    self.freeai_a_token = int(self.models[a_model]['token'])
+            if (a_use_tools != ''):
+                self.freeai_a_use_tools = a_use_tools
+            if (b_model != ''):
+                if (b_model != self.freeai_b_model) and (b_model in self.models):
+                    self.freeai_b_enable = True
+                    self.freeai_b_model = b_model
+                    self.freeai_b_token = int(self.models[b_model]['token'])
+            if (b_use_tools != ''):
+                self.freeai_b_use_tools = b_use_tools
+            if (v_model != ''):
+                if (v_model != self.freeai_v_model) and (v_model in self.models):
+                    self.freeai_v_enable = True
+                    self.freeai_v_model = v_model
+                    self.freeai_v_token = int(self.models[v_model]['token'])
+            if (v_use_tools != ''):
+                self.freeai_v_use_tools = v_use_tools
+            if (x_model != ''):
+                if (x_model != self.freeai_x_model) and (x_model in self.models):
+                    self.freeai_x_enable = True
+                    self.freeai_x_model = x_model
+                    self.freeai_x_token = int(self.models[x_model]['token'])
+            if (x_use_tools != ''):
+                self.freeai_x_use_tools = x_use_tools
+        except Exception as e:
+            print(e)
+            return False
+        return True
 
     def history_add(self, history=[], sysText=None, reqText=None, inpText='こんにちは', ):
         res_history = history
@@ -340,12 +410,14 @@ class _freeaiAPI:
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
-        res_name = self.freeai_a_nick_name
-        res_api  = self.freeai_a_model
+        res_name  = self.freeai_a_nick_name
+        res_api   = self.freeai_a_model
+        use_tools = self.freeai_a_use_tools
         if  (chat_class == 'freeai'):
             if (self.freeai_b_enable == True):
-                res_name = self.freeai_b_nick_name
-                res_api  = self.freeai_b_model
+                res_name  = self.freeai_b_nick_name
+                res_api   = self.freeai_b_model
+                use_tools = self.freeai_b_use_tools
 
         # モデル 補正 (assistant)
         if ((chat_class == 'assistant') \
@@ -356,8 +428,9 @@ class _freeaiAPI:
         or  (chat_class == 'アシスタント') \
         or  (model_select == 'x')):
             if (self.freeai_x_enable == True):
-                res_name = self.freeai_x_nick_name
-                res_api  = self.freeai_x_model
+                res_name  = self.freeai_x_nick_name
+                res_api   = self.freeai_x_model
+                use_tools = self.freeai_x_use_tools
 
         # model 指定
         if (self.freeai_a_nick_name != ''):
@@ -367,54 +440,65 @@ class _freeaiAPI:
             if (inpText.strip()[:len(self.freeai_b_nick_name)+1].lower() == (self.freeai_b_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.freeai_b_nick_name)+1:]
                 if   (self.freeai_b_enable == True):
-                        res_name = self.freeai_b_nick_name
-                        res_api  = self.freeai_b_model
+                        res_name  = self.freeai_b_nick_name
+                        res_api   = self.freeai_b_model
+                        use_tools = self.freeai_b_use_tools
         if (self.freeai_v_nick_name != ''):
             if (inpText.strip()[:len(self.freeai_v_nick_name)+1].lower() == (self.freeai_v_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.freeai_v_nick_name)+1:]
                 if   (self.freeai_v_enable == True):
                     if  (len(image_urls) > 0) \
                     and (len(image_urls) == len(upload_files)):
-                        res_name = self.freeai_v_nick_name
-                        res_api  = self.freeai_v_model
+                        res_name  = self.freeai_v_nick_name
+                        res_api   = self.freeai_v_model
+                        use_tools = self.freeai_v_use_tools
                 elif (self.freeai_x_enable == True):
-                        res_name = self.freeai_x_nick_name
-                        res_api  = self.freeai_x_model
+                        res_name  = self.freeai_x_nick_name
+                        res_api   = self.freeai_x_model
+                        use_tools = self.freeai_x_use_tools
         if (self.freeai_x_nick_name != ''):
             if (inpText.strip()[:len(self.freeai_x_nick_name)+1].lower() == (self.freeai_x_nick_name.lower() + ',')):
                 inpText = inpText.strip()[len(self.freeai_x_nick_name)+1:]
                 if   (self.freeai_x_enable == True):
-                        res_name = self.freeai_x_nick_name
-                        res_api  = self.freeai_x_model
+                        res_name  = self.freeai_x_nick_name
+                        res_api   = self.freeai_x_model
+                        use_tools = self.freeai_x_use_tools
                 elif (self.freeai_b_enable == True):
-                        res_name = self.freeai_b_nick_name
-                        res_api  = self.freeai_b_model
+                        res_name  = self.freeai_b_nick_name
+                        res_api   = self.freeai_b_model
+                        use_tools = self.freeai_b_use_tools
         if   (inpText.strip()[:5].lower() == ('riki,')):
             inpText = inpText.strip()[5:]
             if   (self.freeai_x_enable == True):
-                        res_name = self.freeai_x_nick_name
-                        res_api  = self.freeai_x_model
+                        res_name  = self.freeai_x_nick_name
+                        res_api   = self.freeai_x_model
+                        use_tools = self.freeai_x_use_tools
             elif (self.freeai_b_enable == True):
-                        res_name = self.freeai_b_nick_name
-                        res_api  = self.freeai_b_model
+                        res_name  = self.freeai_b_nick_name
+                        res_api   = self.freeai_b_model
+                        use_tools = self.freeai_b_use_tools
         elif (inpText.strip()[:7].lower() == ('vision,')):
             inpText = inpText.strip()[7:]
             if   (self.freeai_v_enable == True):
                 if  (len(image_urls) > 0) \
                 and (len(image_urls) == len(upload_files)):
-                        res_name = self.freeai_v_nick_name
-                        res_api  = self.freeai_v_model
+                        res_name  = self.freeai_v_nick_name
+                        res_api   = self.freeai_v_model
+                        use_tools = self.freeai_v_use_tools
             elif (self.freeai_x_enable == True):
-                        res_name = self.freeai_x_nick_name
-                        res_api  = self.freeai_x_model
+                        res_name  = self.freeai_x_nick_name
+                        res_api   = self.freeai_x_model
+                        use_tools = self.freeai_x_use_tools
         elif (inpText.strip()[:10].lower() == ('assistant,')):
             inpText = inpText.strip()[10:]
             if (self.freeai_x_enable == True):
-                        res_name = self.freeai_x_nick_name
-                        res_api  = self.freeai_x_model
+                        res_name  = self.freeai_x_nick_name
+                        res_api   = self.freeai_x_model
+                        use_tools = self.freeai_x_use_tools
             elif (self.freeai_b_enable == True):
-                        res_name = self.freeai_b_nick_name
-                        res_api  = self.freeai_b_model
+                        res_name  = self.freeai_b_nick_name
+                        res_api   = self.freeai_b_model
+                        use_tools = self.freeai_b_use_tools
         elif (inpText.strip()[:7].lower() == ('openai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
@@ -442,23 +526,27 @@ class _freeaiAPI:
 
         # モデル 未設定時
         if (res_api is None):
-            res_name = self.freeai_a_nick_name
-            res_api  = self.freeai_a_model
+            res_name  = self.freeai_a_nick_name
+            res_api   = self.freeai_a_model
+            use_tools = self.freeai_a_use_tools
             if (self.freeai_b_enable == True):
                 if (len(upload_files) > 0) \
                 or (len(inpText) > 1000):
-                    res_name = self.freeai_b_nick_name
-                    res_api  = self.freeai_b_model
+                    res_name  = self.freeai_b_nick_name
+                    res_api   = self.freeai_b_model
+                    use_tools = self.freeai_b_use_tools
 
         # モデル 補正 (vision)
         if  (len(image_urls) > 0) \
         and (len(image_urls) == len(upload_files)):
             if   (self.freeai_v_enable == True):
-                res_name = self.freeai_v_nick_name
-                res_api  = self.freeai_v_model
+                res_name  = self.freeai_v_nick_name
+                res_api   = self.freeai_v_model
+                use_tools = self.freeai_v_use_tools
             elif (self.freeai_x_enable == True):
-                res_name = self.freeai_x_nick_name
-                res_api  = self.freeai_x_model
+                res_name  = self.freeai_x_nick_name
+                res_api   = self.freeai_x_model
+                use_tools = self.freeai_x_use_tools
 
         # history 追加・圧縮 (古いメッセージ)
         res_history = self.history_add(history=res_history, sysText=sysText, reqText=reqText, inpText=inpText, )
@@ -508,21 +596,23 @@ class _freeaiAPI:
                         self.print(session_id, ' FreeAI  : Upload complete.')
                         req_files.append(upload_obj)
 
-        # ***free特別処理*** tools未対応?
+        # tools
         tools = []
-        if (res_api.lower().find('thinking') < 0):
+        #print(' openrt  : tools = [], ')
+        if True:
+            if (use_tools.lower().find('yes') >= 0):
 
-            # tools
-            #tools.append({"code_execution": {}, })
-            #tools.append({"google_search": {}, })
-            for module_dic in function_modules:
-                func_dic = module_dic['function']
-                func_str = json.dumps(func_dic, ensure_ascii=False, )
-                func_str = func_str.replace('"type"', '"type_"')
-                func_str = func_str.replace('"object"', '"OBJECT"')
-                func_str = func_str.replace('"string"', '"STRING"')
-                func     = json.loads(func_str)
-                tools.append(func)
+                # tools
+                #tools.append({"code_execution": {}, })
+                #tools.append({"google_search": {}, })
+                for module_dic in function_modules:
+                    func_dic = module_dic['function']
+                    func_str = json.dumps(func_dic, ensure_ascii=False, )
+                    func_str = func_str.replace('"type"', '"type_"')
+                    func_str = func_str.replace('"object"', '"OBJECT"')
+                    func_str = func_str.replace('"string"', '"STRING"')
+                    func     = json.loads(func_str)
+                    tools.append(func)
 
         # freeai 設定
         if (jsonSchema is None) or (jsonSchema == ''):
@@ -571,16 +661,11 @@ class _freeaiAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             stream = True
+            if (res_api.find('think') >= 0):
+                print(' FreeAI  : stream = False, ')
+                stream = False
         else:
             stream = False
-        #print('stream = False, ')
-        #stream = False
-
-        # ***free特別処理***
-        #res_name = self.freeai_a_nick_name
-        #res_api  = self.freeai_a_model
-        #print('stream = False, ')
-        stream = False
 
         # 実行ループ
         #try:
@@ -591,7 +676,7 @@ class _freeaiAPI:
             while (function_name != 'exit') and (n < int(max_step)):
 
                 # 結果
-                res_role      = None
+                res_role      = ''
                 res_content   = ''
                 tool_calls    = []
 
@@ -612,7 +697,7 @@ class _freeaiAPI:
 
                     # Stream 処理
                     for chunk in streams:
-                        if ((time.time() - chkTime) > self.timeOut):
+                        if ((time.time() - chkTime) > self.freeai_max_wait_sec):
                             break
 
                         for p in range(len(chunk.candidates[0].content.parts)):
@@ -859,11 +944,16 @@ if __name__ == '__main__':
                             freeai_key.getkey('freeai','freeai_default_gpt'), freeai_key.getkey('freeai','freeai_default_class'),
                             freeai_key.getkey('freeai','freeai_auto_continue'),
                             freeai_key.getkey('freeai','freeai_max_step'), freeai_key.getkey('freeai','freeai_max_session'),
+                            freeai_key.getkey('freeai','freeai_max_wait_sec'),
                             freeai_key.getkey('freeai','freeai_key_id'),
                             freeai_key.getkey('freeai','freeai_a_nick_name'), freeai_key.getkey('freeai','freeai_a_model'), freeai_key.getkey('freeai','freeai_a_token'),
+                            freeai_key.getkey('freeai','freeai_a_use_tools'),
                             freeai_key.getkey('freeai','freeai_b_nick_name'), freeai_key.getkey('freeai','freeai_b_model'), freeai_key.getkey('freeai','freeai_b_token'),
+                            freeai_key.getkey('freeai','freeai_b_use_tools'),
                             freeai_key.getkey('freeai','freeai_v_nick_name'), freeai_key.getkey('freeai','freeai_v_model'), freeai_key.getkey('freeai','freeai_v_token'),
+                            freeai_key.getkey('freeai','freeai_v_use_tools'),
                             freeai_key.getkey('freeai','freeai_x_nick_name'), freeai_key.getkey('freeai','freeai_x_model'), freeai_key.getkey('freeai','freeai_x_token'),
+                            freeai_key.getkey('freeai','freeai_x_use_tools'),
                             )
         print('authenticate:', res, )
         if (res == True):
@@ -889,7 +979,6 @@ if __name__ == '__main__':
                 sysText = None
                 reqText = ''
                 inpText = 'おはようございます。'
-                #inpText = 'f-flash,兵庫県三木市の天気？'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
@@ -904,10 +993,10 @@ if __name__ == '__main__':
                 print(str(res_text))
                 print()
 
-            if False:
+            if True:
                 sysText = None
                 reqText = ''
-                inpText = '兵庫県三木市の天気？'
+                inpText = 'free-b,toolsで兵庫県三木市の天気を調べて'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
@@ -922,11 +1011,12 @@ if __name__ == '__main__':
                 print(str(res_text))
                 print()
 
-            if False:
+            if True:
                 sysText = None
                 reqText = ''
-                inpText = 'この画像はなんだと思いますか？'
-                filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
+                inpText = '添付画像を説明してください。'
+                filePath = ['_icons/dog.jpg']
+                #filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
                 print()
                 print('[Request]')
                 print(reqText, inpText )
