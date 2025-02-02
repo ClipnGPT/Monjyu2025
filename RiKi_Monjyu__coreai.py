@@ -716,7 +716,7 @@ class CoreAiClass:
                                         filePath=file_names, inpLang='ja', outLang='ja', )
 
         output_text = ''
-        output_text += f"[ASSISTANT] ({ self.self_port }:{ res_api }) \n"
+        output_text += f"[{ res_engine }] ({ self.self_port }:{ res_api }) \n"
         output_text += res_text
         output_data = res_data
         output_path = res_path
@@ -957,7 +957,8 @@ class CoreAiClass:
                             "out_time": now_time, "out_text": output_text, "out_data": output_data,
                             "status": status,
                             "upd_time": now_time, "dsp_time": None, }
-                    if (req_mode in ['chat', 'websearch', 'serial', 'parallel']):
+                    #if (req_mode in ['chat', 'websearch', 'serial', 'parallel']):
+                    if (req_mode != 'session'):
                         self.data.subai_output_log_key += 1
                         self.data.subai_output_log_all[self.data.subai_output_log_key] = {
                                 "key_val": key_val,

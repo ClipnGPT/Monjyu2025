@@ -25,6 +25,28 @@ let last_engine_setting = {
     ollama: null,
 };
 
+// max_wait_secを設定する関数
+function add_wait_sec_all() {
+    add_wait_sec("30", " 30秒");
+    add_wait_sec("60", " 60秒");
+    add_wait_sec("120", "120秒");
+    add_wait_sec("180", "180秒");
+    add_wait_sec("300", "300秒");
+    add_wait_sec("600", "600秒");
+    add_wait_sec("999", "999秒");
+}
+function add_wait_sec(key, value) {
+    $('#gpt_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#asst_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#gemn_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#free_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#clad_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#ort_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#pplx_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#groq_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#olm_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+}
+
 // エンジンのmodels情報を取得してコンボボックスを設定する関数
 function get_engine_models(engine) {
     $.ajax({
@@ -643,6 +665,9 @@ $(document).ready(function() {
         };
         localStorage.setItem('setting_model_formData', JSON.stringify(formData)); // localStorageに保存
     };
+
+    // max_wait_secを設定する関数
+    add_wait_sec_all();
 
     // エンジンのmodels設定を取得
     get_engine_models('chatgpt');

@@ -47,7 +47,7 @@ qPath_log    = 'temp/_log/'
 qPath_input  = 'temp/input/'
 qPath_output = 'temp/output/'
 qPath_tts    = 'temp/s6_5tts_txt/'
-qPath_reacts = '_cv2data/reacts/'
+qPath_reacts = '_datas/reacts/'
 qPath_templates = '_webui/monjyu'
 qPath_static    = '_webui/monjyu/static'
 DEFAULT_ICON    = qPath_static + '/' + "icon_monjyu.png"
@@ -311,31 +311,13 @@ class WebUiClass:
         try:
             if (self.data is not None) and (self.coreai is not None):
 
-                if (engine == 'chatgpt'):
-                    if (len(self.data.engine_models['chatgpt']) != len(self.coreai.chat_class.chatgptAPI.models)):
-                        self.data.engine_models['chatgpt'] = {}
-                        for key,value in self.coreai.chat_class.chatgptAPI.models.items():
-                            self.data.engine_models['chatgpt'][key]     = self.coreai.chat_class.chatgptAPI.models[key]["date"] + " : " \
-                                                                        + self.coreai.chat_class.chatgptAPI.models[key]["id"] + ", " \
-                                                                        + self.coreai.chat_class.chatgptAPI.models[key]["token"] + ", " \
-                                                                        + self.coreai.chat_class.chatgptAPI.models[key]["modality"] + ", "
-
-                elif (engine == 'assistant'):
-                    if (len(self.data.engine_models['assistant']) != len(self.coreai.chat_class.assistantAPI.models)):
-                        self.data.engine_models['assistant'] = {}
-                        for key,value in self.coreai.chat_class.assistantAPI.models.items():
-                            self.data.engine_models['assistant'][key]   = self.coreai.chat_class.assistantAPI.models[key]["date"] + " : " \
-                                                                        + self.coreai.chat_class.assistantAPI.models[key]["id"] + ", " \
-                                                                        + self.coreai.chat_class.assistantAPI.models[key]["token"] + ", " \
-                                                                        + self.coreai.chat_class.assistantAPI.models[key]["modality"] + ", "
-
-                elif (engine == 'gemini'):
+                if (engine == 'gemini'):
                     if (len(self.data.engine_models['gemini']) != len(self.coreai.chat_class.geminiAPI.models)):
                         self.data.engine_models['gemini'] = {}
                         for key,value in self.coreai.chat_class.geminiAPI.models.items():
                             self.data.engine_models['gemini'][key]      = self.coreai.chat_class.geminiAPI.models[key]["date"] + " : " \
                                                                         + self.coreai.chat_class.geminiAPI.models[key]["id"] + ", " \
-                                                                        + self.coreai.chat_class.geminiAPI.models[key]["token"] + ", " \
+                                                                        + str(self.coreai.chat_class.geminiAPI.models[key]["token"]) + ", " \
                                                                         + self.coreai.chat_class.geminiAPI.models[key]["modality"] + ", "
 
                 elif (engine == 'freeai'):
@@ -344,7 +326,7 @@ class WebUiClass:
                         for key,value in self.coreai.chat_class.freeaiAPI.models.items():
                             self.data.engine_models['freeai'][key]      = self.coreai.chat_class.freeaiAPI.models[key]["date"] + " : " \
                                                                         + self.coreai.chat_class.freeaiAPI.models[key]["id"] + ", " \
-                                                                        + self.coreai.chat_class.freeaiAPI.models[key]["token"] + ", " \
+                                                                        + str(self.coreai.chat_class.freeaiAPI.models[key]["token"]) + ", " \
                                                                         + self.coreai.chat_class.freeaiAPI.models[key]["modality"] + ", "
 
                 elif (engine == 'claude'):
@@ -353,7 +335,7 @@ class WebUiClass:
                         for key,value in self.coreai.chat_class.claudeAPI.models.items():
                             self.data.engine_models['claude'][key]      = self.coreai.chat_class.claudeAPI.models[key]["date"] + " : " \
                                                                         + self.coreai.chat_class.claudeAPI.models[key]["id"] + ", " \
-                                                                        + self.coreai.chat_class.claudeAPI.models[key]["token"] + ", " \
+                                                                        + str(self.coreai.chat_class.claudeAPI.models[key]["token"]) + ", " \
                                                                         + self.coreai.chat_class.claudeAPI.models[key]["modality"] + ", "
 
                 elif (engine == 'openrt'):
@@ -362,7 +344,7 @@ class WebUiClass:
                         for key,value in self.coreai.chat_class.openrtAPI.models.items():
                             self.data.engine_models['openrt'][key]      = self.coreai.chat_class.openrtAPI.models[key]["date"] + " : " \
                                                                         + self.coreai.chat_class.openrtAPI.models[key]["id"] + ", " \
-                                                                        + self.coreai.chat_class.openrtAPI.models[key]["token"] + ", " \
+                                                                        + str(self.coreai.chat_class.openrtAPI.models[key]["token"]) + ", " \
                                                                         + self.coreai.chat_class.openrtAPI.models[key]["modality"] + ", "
 
                 elif (engine == 'perplexity'):
@@ -371,7 +353,7 @@ class WebUiClass:
                         for key,value in self.coreai.chat_class.perplexityAPI.models.items():
                             self.data.engine_models['perplexity'][key]  = self.coreai.chat_class.perplexityAPI.models[key]["date"] + " : " \
                                                                         + self.coreai.chat_class.perplexityAPI.models[key]["id"] + ", " \
-                                                                        + self.coreai.chat_class.perplexityAPI.models[key]["token"] + ", " \
+                                                                        + str(self.coreai.chat_class.perplexityAPI.models[key]["token"]) + ", " \
                                                                         + self.coreai.chat_class.perplexityAPI.models[key]["modality"] + ", "
 
                 elif (engine == 'groq'):
@@ -380,7 +362,7 @@ class WebUiClass:
                         for key,value in self.coreai.chat_class.groqAPI.models.items():
                             self.data.engine_models['groq'][key]        = self.coreai.chat_class.groqAPI.models[key]["date"] + " : " \
                                                                         + self.coreai.chat_class.groqAPI.models[key]["id"] + ", " \
-                                                                        + self.coreai.chat_class.groqAPI.models[key]["token"] + ", " \
+                                                                        + str(self.coreai.chat_class.groqAPI.models[key]["token"]) + ", " \
                                                                         + self.coreai.chat_class.groqAPI.models[key]["modality"] + ", "
 
                 elif (engine == 'ollama'):
@@ -389,7 +371,7 @@ class WebUiClass:
                         for key,value in self.coreai.chat_class.ollamaAPI.models.items():
                             self.data.engine_models['ollama'][key]      = self.coreai.chat_class.ollamaAPI.models[key]["date"] + " : " \
                                                                         + self.coreai.chat_class.ollamaAPI.models[key]["id"] + ", " \
-                                                                        + self.coreai.chat_class.ollamaAPI.models[key]["token"] + ", " \
+                                                                        + str(self.coreai.chat_class.ollamaAPI.models[key]["token"]) + ", " \
                                                                         + self.coreai.chat_class.ollamaAPI.models[key]["modality"] + ", "
 
                 result = self.data.engine_models[engine]
@@ -406,41 +388,7 @@ class WebUiClass:
         try:
             if (self.data is not None) and (self.coreai is not None):
 
-                if (engine == 'chatgpt'):
-                    self.data.engine_setting['chatgpt'] = {
-                        "a_nick_name": self.coreai.chat_class.chatgptAPI.chatgpt_a_nick_name,
-                        "b_nick_name": self.coreai.chat_class.chatgptAPI.chatgpt_b_nick_name,
-                        "v_nick_name": self.coreai.chat_class.chatgptAPI.chatgpt_v_nick_name,
-                        "x_nick_name": self.coreai.chat_class.chatgptAPI.chatgpt_x_nick_name,
-                        "max_wait_sec": str(self.coreai.chat_class.chatgptAPI.chatgpt_max_wait_sec),
-                        "a_model": self.coreai.chat_class.chatgptAPI.chatgpt_a_model,
-                        "a_use_tools": self.coreai.chat_class.chatgptAPI.chatgpt_a_use_tools,
-                        "b_model": self.coreai.chat_class.chatgptAPI.chatgpt_b_model,
-                        "b_use_tools": self.coreai.chat_class.chatgptAPI.chatgpt_b_use_tools,
-                        "v_model": self.coreai.chat_class.chatgptAPI.chatgpt_v_model,
-                        "v_use_tools": self.coreai.chat_class.chatgptAPI.chatgpt_v_use_tools,
-                        "x_model": self.coreai.chat_class.chatgptAPI.chatgpt_x_model,
-                        "x_use_tools": self.coreai.chat_class.chatgptAPI.chatgpt_x_use_tools,
-                    }
-
-                elif (engine == 'assistant'):
-                    self.data.engine_setting['assistant'] = {
-                        "a_nick_name": self.coreai.chat_class.assistantAPI.assistant_a_nick_name,
-                        "b_nick_name": self.coreai.chat_class.assistantAPI.assistant_b_nick_name,
-                        "v_nick_name": self.coreai.chat_class.assistantAPI.assistant_v_nick_name,
-                        "x_nick_name": self.coreai.chat_class.assistantAPI.assistant_x_nick_name,
-                        "max_wait_sec": str(self.coreai.chat_class.assistantAPI.assistant_max_wait_sec),
-                        "a_model": self.coreai.chat_class.assistantAPI.assistant_a_model,
-                        "a_use_tools": self.coreai.chat_class.assistantAPI.assistant_a_use_tools,
-                        "b_model": self.coreai.chat_class.assistantAPI.assistant_b_model,
-                        "b_use_tools": self.coreai.chat_class.assistantAPI.assistant_b_use_tools,
-                        "v_model": self.coreai.chat_class.assistantAPI.assistant_v_model,
-                        "v_use_tools": self.coreai.chat_class.assistantAPI.assistant_v_use_tools,
-                        "x_model": self.coreai.chat_class.assistantAPI.assistant_x_model,
-                        "x_use_tools": self.coreai.chat_class.assistantAPI.assistant_x_use_tools,
-                    }
-
-                elif (engine == 'gemini'):
+                if (engine == 'gemini'):
                     self.data.engine_setting['gemini'] = {
                         "a_nick_name": self.coreai.chat_class.geminiAPI.gemini_a_nick_name,
                         "b_nick_name": self.coreai.chat_class.geminiAPI.gemini_b_nick_name,
@@ -582,30 +530,14 @@ class WebUiClass:
         x_use_tools = str(data.x_use_tools) if data.x_use_tools else ""
         try:
             if (self.data is not None):
-                self.data.engine_setting[engine] = {"max_wait_sec": max_wait_sec,
+                self.data.engine_setting[engine] = {"max_wait_sec": str(max_wait_sec),
                                                     "a_model": a_model, "a_use_tools": a_use_tools,
                                                     "b_model": b_model, "b_use_tools": b_use_tools,
                                                     "v_model": v_model, "v_use_tools": v_use_tools,
                                                     "x_model": x_model, "x_use_tools": x_use_tools, }
                 if (self.coreai is not None):
 
-                    if (engine == 'chatgpt'):
-                        engine_set_thread = threading.Thread(
-                            target=self.coreai.chat_class.chatgptAPI.set_models,
-                            args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
-                                                v_model, v_use_tools, x_model, x_use_tools, ),
-                            daemon=True, )
-                        engine_set_thread.start()
-
-                    elif (engine == 'assistant'):
-                        engine_set_thread = threading.Thread(
-                            target=self.coreai.chat_class.assistantAPI.set_models,
-                            args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
-                                                v_model, v_use_tools, x_model, x_use_tools, ),
-                            daemon=True, )
-                        engine_set_thread.start()
-
-                    elif (engine == 'gemini'):
+                    if (engine == 'gemini'):
                         engine_set_thread = threading.Thread(
                             target=self.coreai.chat_class.geminiAPI.set_models,
                             args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,

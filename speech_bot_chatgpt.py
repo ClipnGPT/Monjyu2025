@@ -167,13 +167,13 @@ class _chatgptAPI:
         # 設定
         self.chatgpt_default_gpt            = chatgpt_default_gpt
         self.chatgpt_default_class          = chatgpt_default_class
-        if (not str(chatgpt_auto_continue)    in ['', 'auto']):
+        if (str(chatgpt_auto_continue)    not in ['', 'auto']):
             self.chatgpt_auto_continue      = int(chatgpt_auto_continue)
-        if (not str(chatgpt_max_step)         in ['', 'auto']):
+        if (str(chatgpt_max_step)         not in ['', 'auto']):
             self.chatgpt_max_step           = int(chatgpt_max_step)
-        if (not str(chatgpt_max_session)      in ['', 'auto']):
+        if (str(chatgpt_max_session)      not in ['', 'auto']):
             self.chatgpt_max_session        = int(chatgpt_max_session)
-        if (not str(chatgpt_max_wait_sec)     in ['', 'auto']):
+        if (str(chatgpt_max_wait_sec)     not in ['', 'auto']):
             self.chatgpt_max_wait_sec       = int(chatgpt_max_wait_sec)
 
         # モデル取得
@@ -190,7 +190,7 @@ class _chatgptAPI:
             self.chatgpt_a_model            = chatgpt_a_model
             self.chatgpt_a_token            = int(chatgpt_a_token)
             self.chatgpt_a_use_tools        = chatgpt_a_use_tools
-            if (not chatgpt_a_model in self.models):
+            if (chatgpt_a_model not in self.models):
                 self.models[chatgpt_a_model] = {"id": chatgpt_a_model, "token": str(chatgpt_a_token), "modality": "text?", "date": ymd, }
 
         if (chatgpt_b_nick_name != ''):
@@ -199,7 +199,7 @@ class _chatgptAPI:
             self.chatgpt_b_model            = chatgpt_b_model
             self.chatgpt_b_token            = int(chatgpt_b_token)
             self.chatgpt_b_use_tools        = chatgpt_b_use_tools
-            if (not chatgpt_b_model in self.models):
+            if (chatgpt_b_model not in self.models):
                 self.models[chatgpt_b_model] = {"id": chatgpt_b_model, "token": str(chatgpt_b_token), "modality": "text?", "date": ymd, }
 
         if (chatgpt_v_nick_name != ''):
@@ -208,7 +208,7 @@ class _chatgptAPI:
             self.chatgpt_v_model            = chatgpt_v_model
             self.chatgpt_v_token            = int(chatgpt_v_token)
             self.chatgpt_v_use_tools        = chatgpt_v_use_tools
-            if (not chatgpt_v_model in self.models):
+            if (chatgpt_v_model not in self.models):
                 self.models[chatgpt_v_model] = {"id": chatgpt_v_model, "token": str(chatgpt_v_token), "modality": "text+image?", "date": ymd, }
 
         if (chatgpt_x_nick_name != ''):
@@ -217,7 +217,7 @@ class _chatgptAPI:
             self.chatgpt_x_model            = chatgpt_x_model
             self.chatgpt_x_token            = int(chatgpt_x_token)
             self.chatgpt_x_use_tools        = chatgpt_x_use_tools
-            if (not chatgpt_x_model in self.models):
+            if (chatgpt_x_model not in self.models):
                 self.models[chatgpt_x_model] = {"id": chatgpt_x_model, "token": str(chatgpt_x_token), "modality": "text+image?", "date": ymd, }
 
         # モデル
@@ -265,7 +265,7 @@ class _chatgptAPI:
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
-            if (not max_wait_sec in ['', 'auto']):
+            if (max_wait_sec not in ['', 'auto']):
                 if (str(max_wait_sec) != str(self.chatgpt_max_wait_sec)):
                     self.chatgpt_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
@@ -443,7 +443,7 @@ class _chatgptAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' chatgpt  : Not Authenticate Error !')
+            self.print(session_id, ' ChatGPT : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
@@ -550,6 +550,8 @@ class _chatgptAPI:
             inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
             inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:11].lower() == ('openrouter,')):
+            inpText = inpText.strip()[11:]
         elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
@@ -600,15 +602,15 @@ class _chatgptAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             stream = True
-            if (res_api.find('o1') >= 0) or (res_api.find('o3') >= 0):
-                print(' chatgpt  : stream = False, ')
+            if (res_api[:1].lower() == 'o'): # o1, o3 ...
+                print(' ChatGPT : stream = False, ')
                 stream = False
         else:
             stream = False
 
         # ツール設定
         tools = []
-        #print(' chatgpt  : tools = [], ')
+        #print(' ChatGPT : tools = [], ')
         if True:
             if (use_tools.lower().find('yes') >= 0):
                 functions = []
@@ -632,41 +634,66 @@ class _chatgptAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" chatgpt  : { res_name.lower() }, { res_api }, pass={ n }, ")
+                self.print(session_id, f" ChatGPT : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # 画像指定
                 if   (res_name == self.chatgpt_v_nick_name) and (len(image_urls) > 0):
                     null_history = self.history_add(history=[], sysText=sysText, reqText=reqText, inpText=inpText, )
                     msg = self.history2msg_vision(history=null_history, image_urls=image_urls,)
                     response = self.client.chat.completions.create(
-                            model           = res_api,
-                            messages        = msg,
-                            #temperature     = float(temperature),
-                            timeout         = self.chatgpt_max_wait_sec, 
-                            stream          = stream, 
-                            )
+                                model           = res_api,
+                                messages        = msg,
+                                #temperature     = float(temperature),
+                                timeout         = self.chatgpt_max_wait_sec, 
+                                stream          = stream, 
+                                )
 
                 # ツール指定
                 elif (len(tools) != 0):
-                    response = self.client.chat.completions.create(
-                            model           = res_api,
-                            messages        = msg,
-                            #temperature     = float(temperature),
-                            tools           = tools, tool_choice = 'auto',
-                            timeout         = self.chatgpt_max_wait_sec,
-                            stream          = stream, 
-                            )
+                        # o3, o4 以外
+                        if (res_api[:2].lower() not in ['o3', 'o4']):
+                            response = self.client.chat.completions.create(
+                                model           = res_api,
+                                messages        = msg,
+                                #temperature     = float(temperature),
+                                tools           = tools, tool_choice = 'auto',
+                                timeout         = self.chatgpt_max_wait_sec,
+                                stream          = stream, 
+                                )
+                        # o3, o4
+                        else:
+                            response = self.client.chat.completions.create(
+                                model           = res_api,
+                                messages        = msg,
+                                #temperature     = float(temperature),
+                                tools           = tools, tool_choice = 'auto',
+                                timeout         = self.chatgpt_max_wait_sec,
+                                stream          = stream, 
+                                reasoning_effort= 'high',
+                                )
 
                 else:
                     # ノーマル
                     if (jsonSchema is None) or (jsonSchema == ''):                        
-                        response = self.client.chat.completions.create(
-                            model           = res_api,
-                            messages        = msg,
-                            #temperature     = float(temperature),
-                            timeout         = self.chatgpt_max_wait_sec,
-                            stream          = stream, 
-                            )
+                        # o3, o4 以外
+                        if (res_api[:2].lower() not in ['o3', 'o4']):
+                            response = self.client.chat.completions.create(
+                                model           = res_api,
+                                messages        = msg,
+                                #temperature     = float(temperature),
+                                timeout         = self.chatgpt_max_wait_sec,
+                                stream          = stream, 
+                                )
+                        # o3, o4
+                        else:
+                            response = self.client.chat.completions.create(
+                                model           = res_api,
+                                messages        = msg,
+                                #temperature     = float(temperature),
+                                timeout         = self.chatgpt_max_wait_sec,
+                                stream          = stream, 
+                                reasoning_effort= 'high',
+                                )
                     else:
                         schema = None
                         try:
@@ -770,8 +797,8 @@ class _chatgptAPI:
                         for module_dic in function_modules:
                             if (f_name == module_dic['func_name']):
                                 hit = True
-                                self.print(session_id, f" chatgpt  :   function_call '{ module_dic['script'] }' ({ f_name })")
-                                self.print(session_id, f" chatgpt  :   → { f_kwargs }")
+                                self.print(session_id, f" ChatGPT :   function_call '{ module_dic['script'] }' ({ f_name })")
+                                self.print(session_id, f" ChatGPT :   → { f_kwargs }")
 
                                 # メッセージ追加格納
                                 self.seq += 1
@@ -790,7 +817,7 @@ class _chatgptAPI:
                                     res_json = json.dumps(dic, ensure_ascii=False, )
 
                                 # tool_result
-                                self.print(session_id, f" chatgpt  :   → { res_json }")
+                                self.print(session_id, f" ChatGPT :   → { res_json }")
                                 self.print(session_id, )
 
                                 # メッセージ追加格納
@@ -818,7 +845,7 @@ class _chatgptAPI:
                                 break
 
                         if (hit == False):
-                            self.print(session_id, f" chatgpt  :   function_call Error ! ({ f_name })")
+                            self.print(session_id, f" ChatGPT :   function_call Error ! ({ f_name })")
                             print(res_role, res_content, f_name, f_kwargs, )
                             break
 
@@ -838,9 +865,9 @@ class _chatgptAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" chatgpt  : { res_name.lower() }, complete.")
+                self.print(session_id, f" ChatGPT : { res_name.lower() }, complete.")
             else:
-                self.print(session_id,  ' chatgpt  : Error !')
+                self.print(session_id,  ' ChatGPT : Error !')
 
         #except Exception as e:
         #    print(e)
@@ -866,10 +893,10 @@ class _chatgptAPI:
         res_history = history
 
         if (sysText is None) or (sysText == ''):
-            sysText = 'あなたは教師のように話す賢いアシスタントです。'
+            sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
 
         if (self.bot_auth is None):
-            self.print(session_id, ' chatgpt : Not Authenticate Error !')
+            self.print(session_id, ' ChatGPT : Not Authenticate Error !')
             return res_text, res_path, nick_name, model_name, res_history
 
         # ファイル分離
@@ -975,7 +1002,7 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'gpt,toolsで兵庫県三木市の天気を調べて'
+                inpText = 'o3mini,toolsで兵庫県三木市の天気を調べて'
                 print()
                 print('[Request]')
                 print(reqText, inpText )

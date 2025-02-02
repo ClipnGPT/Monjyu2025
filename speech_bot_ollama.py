@@ -136,19 +136,19 @@ class _ollamaAPI:
 
         self.ollama_default_gpt         = ollama_default_gpt
         self.ollama_default_class       = ollama_default_class
-        if (not str(ollama_auto_continue) in ['', 'auto']):
+        if (str(ollama_auto_continue) not in ['', 'auto']):
             self.ollama_auto_continue   = int(ollama_auto_continue)
-        if (not str(ollama_max_step)      in ['', 'auto']):
+        if (str(ollama_max_step)      not in ['', 'auto']):
             self.ollama_max_step        = int(ollama_max_step)
-        if (not str(ollama_max_session)   in ['', 'auto']):
+        if (str(ollama_max_session)   not in ['', 'auto']):
             self.ollama_max_session     = int(ollama_max_session)
-        if (not str(ollama_max_wait_sec)  in ['', 'auto']):
+        if (str(ollama_max_wait_sec)  not in ['', 'auto']):
             self.ollama_max_wait_sec    = int(ollama_max_wait_sec)
 
         # ollama サーバー
-        if (not str(ollama_server)        in ['', 'auto']):
+        if (str(ollama_server)        not in ['', 'auto']):
             self.ollama_server          = ollama_server
-        if (not str(ollama_port)          in ['', 'auto']):
+        if (str(ollama_port)          not in ['', 'auto']):
             self.ollama_port            = ollama_port
 
         # 認証
@@ -163,7 +163,7 @@ class _ollamaAPI:
             # モデル取得
             self.get_models()
             for model_name in self.ollama_models:
-                if (not model_name in self.models):
+                if (model_name not in self.models):
                     self.models[model_name] = {"id": model_name, "token": "9999", "modality": "text?", "date": "local", }
 
             # ollama チャットボット
@@ -173,7 +173,7 @@ class _ollamaAPI:
                 self.ollama_a_model      = ollama_a_model
                 self.ollama_a_token      = int(ollama_a_token)
                 self.ollama_a_use_tools  = ollama_a_use_tools
-                if (not ollama_a_model in self.models):
+                if (ollama_a_model not in self.models):
                     self.models[ollama_a_model] = {"id": ollama_a_model, "token": str(ollama_a_token), "modality": "text?", "date": "local", }
 
                 if (self.ollama_a_model in self.ollama_models):
@@ -193,7 +193,7 @@ class _ollamaAPI:
                 self.ollama_b_model      = ollama_b_model
                 self.ollama_b_token      = int(ollama_b_token)
                 self.ollama_b_use_tools  = ollama_b_use_tools
-                if (not ollama_b_model in self.models):
+                if (ollama_b_model not in self.models):
                     self.models[ollama_b_model] = {"id": ollama_b_model, "token": str(ollama_b_token), "modality": "text?", "date": "local", }
 
                 if (self.ollama_b_model in self.ollama_models):
@@ -213,7 +213,7 @@ class _ollamaAPI:
                 self.ollama_v_model      = ollama_v_model
                 self.ollama_v_token      = int(ollama_v_token)
                 self.ollama_v_use_tools  = ollama_v_use_tools
-                if (not ollama_v_model in self.models):
+                if (ollama_v_model not in self.models):
                     self.models[ollama_v_model] = {"id": ollama_v_model, "token": str(ollama_v_token), "modality": "text+image?", "date": "local", }
 
                 if (self.ollama_v_model in self.ollama_models):
@@ -233,7 +233,7 @@ class _ollamaAPI:
                 self.ollama_x_model      = ollama_x_model
                 self.ollama_x_token      = int(ollama_x_token)
                 self.ollama_x_use_tools  = ollama_x_use_tools
-                if (not ollama_x_model in self.models):
+                if (ollama_x_model not in self.models):
                     self.models[ollama_x_model] = {"id": ollama_x_model, "token": str(ollama_x_token), "modality": "text+image?", "date": "local", }
 
                 if (self.ollama_x_model in self.ollama_models):
@@ -262,11 +262,11 @@ class _ollamaAPI:
             for model in get_models:
                 self.ollama_models.append(model.get('model'))
         except:
-            print(' ollama  : server (' + self.ollama_server + ') not enabled! ')
+            print(' Ollama : server (' + self.ollama_server + ') not enabled! ')
             if (self.ollama_server == 'localhost'):
                 self.ollama_client = None
             else:
-                print(' ollama  : localhost try ... ')
+                print(' Ollama : localhost try ... ')
                 try:
                     del self.ollama_client
                     self.ollama_client = ollama.Client(host="http://localhost:11434", )
@@ -303,7 +303,7 @@ class _ollamaAPI:
                     if (model_name == olm_model):
                         return True, olm_model
 
-        print(' ollama  : model download ... (' + model_name + ') ')
+        print(' Ollama : model download ... (' + model_name + ') ')
 
         def download(self, down_name):
             try:
@@ -320,7 +320,7 @@ class _ollamaAPI:
                     time.sleep(2.00)
                     self.update_ollama_models()
                 if (down_name in self.ollama_models):
-                    if (not down_name in self.models):
+                    if (down_name not in self.models):
                         self.models[down_name] = {"id": down_name, "token": "9999", "modality": "text?", "date": "local", }
                     return True, down_name
             except:
@@ -355,10 +355,10 @@ class _ollamaAPI:
                 hit, model = download(self=self, down_name=model_name+':11b', )
 
         if (hit == True):
-            print(' ollama  : model download complete.')
+            print(' Ollama : model download complete.')
             return True, model
         else:
-            print(' ollama  : model download error!')
+            print(' Ollama : model download error!')
             return False, model_name
 
     def get_models(self, ):
@@ -395,7 +395,7 @@ class _ollamaAPI:
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
-            if (not max_wait_sec in ['', 'auto']):
+            if (max_wait_sec not in ['', 'auto']):
                 if (str(max_wait_sec) != str(self.ollama_max_wait_sec)):
                     self.ollama_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
@@ -558,7 +558,7 @@ class _ollamaAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' ollama  : Not Authenticate Error !')
+            self.print(session_id, ' Ollama : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
@@ -655,26 +655,30 @@ class _ollamaAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
+        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('freeai,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('free,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:11].lower() == ('openrouter,')):
+            inpText = inpText.strip()[11:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('openrt,')):
-            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('freeai,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:5].lower() == ('free,')):
-            inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:5].lower() == ('groq,')):
-            inpText = inpText.strip()[5:]
 
         # モデル 未設定時
         if (res_api is None):
@@ -707,7 +711,7 @@ class _ollamaAPI:
         # メッセージ作成
         #msg_text = self.history2msg_text(history=res_history, )
 
-        print(' ollama  : history = "", ')
+        print(' Ollama : history = "", ')
         msg_text = ''
         if (sysText is not None) and (sysText != ''):
             msg_text += sysText + '\n'
@@ -738,7 +742,7 @@ class _ollamaAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             #stream = True
-            print(' ollama  : stream = False, ')
+            print(' Ollama : stream = False, ')
             stream = False
         else:
             stream = False
@@ -757,7 +761,7 @@ class _ollamaAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" ollama  : { res_name.lower() }, { res_api }, pass={ n }, ")
+                self.print(session_id, f" Ollama : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # 結果
                 content_text = None
@@ -801,7 +805,7 @@ class _ollamaAPI:
                 # GPT 会話終了
                 #if (res_role == 'assistant') and (res_content is not None):
                 function_name   = 'exit'
-                self.print(session_id, f" ollama  : { res_name.lower() }, complete.")
+                self.print(session_id, f" Ollama : { res_name.lower() }, complete.")
 
             # 正常回答
             if (res_content is not None):
@@ -810,7 +814,7 @@ class _ollamaAPI:
 
             # 異常回答
             else:
-                self.print(session_id, ' ollama  : Error !')
+                self.print(session_id, ' Ollama : Error !')
 
             # History 追加格納
             if (res_text.strip() != ''):
@@ -845,7 +849,7 @@ class _ollamaAPI:
             sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
 
         if (self.bot_auth is None):
-            self.print(session_id, ' ollama : Not Authenticate Error !')
+            self.print(session_id, ' Ollama : Not Authenticate Error !')
             return res_text, res_path, nick_name, model_name, res_history
 
         # ファイル分離

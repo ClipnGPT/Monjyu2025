@@ -141,24 +141,26 @@ cython_debug/
 # PyCharm
 .idea/
 
-# pyRiKi
+.DS_Store
+.vscode
+
+# Monjyu
 
 *key.py
 *key.json
 *key.*
 *.bak
-*ClipnGPT*.*
-*secret.*
-AZiP*.*
-
-_cv2data/
-temp/
-
-.DS_Store
-.vscode
-
 *.exe
-
 temp*
+
+*secret*
+AZiP*.*
+firiend*
+
+_cache/
+_controls/
+_datas/
+temp/
+julius/
 
 

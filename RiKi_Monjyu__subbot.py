@@ -792,7 +792,8 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot chatgpt ...')
 
                     if (self.data is not None):
-                        self.chatgptAPI.set_models( a_model=self.data.engine_setting['chatgpt']['a_model'],
+                        self.chatgptAPI.set_models( max_wait_sec=self.data.engine_setting['chatgpt']['max_wait_sec'],
+                                                    a_model=self.data.engine_setting['chatgpt']['a_model'],
                                                     a_use_tools=self.data.engine_setting['chatgpt']['a_use_tools'],
                                                     b_model=self.data.engine_setting['chatgpt']['b_model'],
                                                     b_use_tools=self.data.engine_setting['chatgpt']['b_use_tools'],
@@ -889,7 +890,8 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot assistant ...')
 
                     if (self.data is not None) and (self.co is not None) :
-                        self.assistantAPI.set_models(   a_model=self.data.engine_setting['assistant']['a_model'],
+                        self.assistantAPI.set_models(   max_wait_sec=self.data.engine_setting['assistant']['max_wait_sec'],
+                                                        a_model=self.data.engine_setting['assistant']['a_model'],
                                                         a_use_tools=self.data.engine_setting['assistant']['a_use_tools'],
                                                         b_model=self.data.engine_setting['assistant']['b_model'],
                                                         b_use_tools=self.data.engine_setting['assistant']['b_use_tools'],
@@ -979,7 +981,8 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot gemini ...')
 
                     if (self.data is not None):
-                        self.geminiAPI.set_models(  a_model=self.data.engine_setting['gemini']['a_model'],
+                        self.geminiAPI.set_models(  max_wait_sec=self.data.engine_setting['gemini']['max_wait_sec'],
+                                                    a_model=self.data.engine_setting['gemini']['a_model'],
                                                     a_use_tools=self.data.engine_setting['gemini']['a_use_tools'],
                                                     b_model=self.data.engine_setting['gemini']['b_model'],
                                                     b_use_tools=self.data.engine_setting['gemini']['b_use_tools'],
@@ -1072,7 +1075,8 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot claude ...')
 
                     if (self.data is not None):
-                        self.claudeAPI.set_models(  a_model=self.data.engine_setting['claude']['a_model'],
+                        self.claudeAPI.set_models(  max_wait_sec=self.data.engine_setting['claude']['max_wait_sec'],
+                                                    a_model=self.data.engine_setting['claude']['a_model'],
                                                     a_use_tools=self.data.engine_setting['claude']['a_use_tools'],
                                                     b_model=self.data.engine_setting['claude']['b_model'],
                                                     b_use_tools=self.data.engine_setting['claude']['b_use_tools'],
@@ -1162,7 +1166,8 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot openrt ...')
 
                     if (self.data is not None):
-                        self.openrtAPI.set_models(  a_model=self.data.engine_setting['openrt']['a_model'],
+                        self.openrtAPI.set_models(  max_wait_sec=self.data.engine_setting['openrt']['max_wait_sec'],
+                                                    a_model=self.data.engine_setting['openrt']['a_model'],
                                                     a_use_tools=self.data.engine_setting['openrt']['a_use_tools'],
                                                     b_model=self.data.engine_setting['openrt']['b_model'],
                                                     b_use_tools=self.data.engine_setting['openrt']['b_use_tools'],
@@ -1259,7 +1264,8 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot perplexity ...')
 
                     if (self.data is not None):
-                        self.perplexityAPI.set_models(  a_model=self.data.engine_setting['perplexity']['a_model'],
+                        self.perplexityAPI.set_models(  max_wait_sec=self.data.engine_setting['perplexity']['max_wait_sec'],
+                                                        a_model=self.data.engine_setting['perplexity']['a_model'],
                                                         a_use_tools=self.data.engine_setting['perplexity']['a_use_tools'],
                                                         b_model=self.data.engine_setting['perplexity']['b_model'],
                                                         b_use_tools=self.data.engine_setting['perplexity']['b_use_tools'],
@@ -1349,7 +1355,8 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot groq ...')
 
                     if (self.data is not None):
-                        self.groqAPI.set_models(    a_model=self.data.engine_setting['groq']['a_model'],
+                        self.groqAPI.set_models(    max_wait_sec=self.data.engine_setting['groq']['max_wait_sec'],
+                                                    a_model=self.data.engine_setting['groq']['a_model'],
                                                     a_use_tools=self.data.engine_setting['groq']['a_use_tools'],
                                                     b_model=self.data.engine_setting['groq']['b_model'],
                                                     b_use_tools=self.data.engine_setting['groq']['b_use_tools'],
@@ -1446,7 +1453,8 @@ class ChatClass:
                     qLog.log('info', self.proc_id, 'chatBot ollama ...')
 
                     if (self.data is not None):
-                        self.ollamaAPI.set_models(  a_model=self.data.engine_setting['ollama']['a_model'],
+                        self.ollamaAPI.set_models(  max_wait_sec=self.data.engine_setting['ollama']['max_wait_sec'],
+                                                    a_model=self.data.engine_setting['ollama']['a_model'],
                                                     a_use_tools=self.data.engine_setting['ollama']['a_use_tools'],
                                                     b_model=self.data.engine_setting['ollama']['b_model'],
                                                     b_use_tools=self.data.engine_setting['ollama']['b_use_tools'],
@@ -1553,7 +1561,8 @@ class ChatClass:
                         qLog.log('info', self.proc_id, 'chatBot freeai ...')
 
                         if (self.data is not None):
-                            self.freeaiAPI.set_models(  a_model=self.data.engine_setting['freeai']['a_model'],
+                            self.freeaiAPI.set_models(  max_wait_sec=self.data.engine_setting['freeai']['max_wait_sec'],
+                                                        a_model=self.data.engine_setting['freeai']['a_model'],
                                                         a_use_tools=self.data.engine_setting['freeai']['a_use_tools'],
                                                         b_model=self.data.engine_setting['freeai']['b_model'],
                                                         b_use_tools=self.data.engine_setting['freeai']['b_use_tools'],

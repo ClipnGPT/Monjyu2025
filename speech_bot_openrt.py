@@ -148,13 +148,13 @@ class _openrtAPI:
         # 設定
         self.openrt_default_gpt         = openrt_default_gpt
         self.openrt_default_class       = openrt_default_class
-        if (not str(openrt_auto_continue) in ['', 'auto']):
+        if (str(openrt_auto_continue) not in ['', 'auto']):
             self.openrt_auto_continue   = int(openrt_auto_continue)
-        if (not str(openrt_max_step)      in ['', 'auto']):
+        if (str(openrt_max_step)      not in ['', 'auto']):
             self.openrt_max_step        = int(openrt_max_step)
-        if (not str(openrt_max_session)   in ['', 'auto']):
+        if (str(openrt_max_session)   not in ['', 'auto']):
             self.openrt_max_session     = int(openrt_max_session)
-        if (not str(openrt_max_wait_sec)  in ['', 'auto']):
+        if (str(openrt_max_wait_sec)  not in ['', 'auto']):
             self.openrt_max_wait_sec    = int(openrt_max_wait_sec)
 
         # モデル取得
@@ -171,7 +171,7 @@ class _openrtAPI:
             self.openrt_a_model         = openrt_a_model
             self.openrt_a_token         = int(openrt_a_token)
             self.openrt_a_use_tools     = openrt_a_use_tools
-            if (not openrt_a_model in self.models):
+            if (openrt_a_model not in self.models):
                 self.models[openrt_a_model] = {"id": openrt_a_model, "token": str(openrt_a_token), "modality": "text?", "date": ymd, }
 
         if (openrt_b_nick_name != ''):
@@ -180,7 +180,7 @@ class _openrtAPI:
             self.openrt_b_model         = openrt_b_model
             self.openrt_b_token         = int(openrt_b_token)
             self.openrt_b_use_tools     = openrt_b_use_tools
-            if (not openrt_b_model in self.models):
+            if (openrt_b_model not in self.models):
                 self.models[openrt_b_model] = {"id": openrt_b_model, "token": str(openrt_b_token), "modality": "text?", "date": ymd, }
 
         if (openrt_v_nick_name != ''):
@@ -189,7 +189,7 @@ class _openrtAPI:
             self.openrt_v_model         = openrt_v_model
             self.openrt_v_token         = int(openrt_v_token)
             self.openrt_v_use_tools     = openrt_v_use_tools
-            if (not openrt_v_model in self.models):
+            if (openrt_v_model not in self.models):
                 self.models[openrt_v_model] = {"id": openrt_v_model, "token": str(openrt_v_token), "modality": "text+image?", "date": ymd, }
 
         if (openrt_x_nick_name != ''):
@@ -198,7 +198,7 @@ class _openrtAPI:
             self.openrt_x_model         = openrt_x_model
             self.openrt_x_token         = int(openrt_x_token)
             self.openrt_x_use_tools     = openrt_x_use_tools
-            if (not openrt_x_model in self.models):
+            if (openrt_x_model not in self.models):
                 self.models[openrt_x_model] = {"id": openrt_x_model, "token": str(openrt_x_token), "modality": "text+image?", "date": ymd, }
 
         # モデル
@@ -251,7 +251,7 @@ class _openrtAPI:
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
-            if (not max_wait_sec in ['', 'auto']):
+            if (max_wait_sec not in ['', 'auto']):
                 if (str(max_wait_sec) != str(self.openrt_max_wait_sec)):
                     self.openrt_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
@@ -343,7 +343,7 @@ class _openrtAPI:
             if (role != 'function_call'):
             #if True:
                 # openrouter用の処置!
-                if (not role in ['system', 'user', 'assistant']):
+                if (role not in ['system', 'user', 'assistant']):
                     role = 'user'
                 if (name == ''):
                     dic = {'role': role, 'content': content }
@@ -432,7 +432,7 @@ class _openrtAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' openrt  : Not Authenticate Error !')
+            self.print(session_id, ' OpenRT : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
@@ -529,26 +529,30 @@ class _openrtAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
+        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('freeai,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('free,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:11].lower() == ('openrouter,')):
+            inpText = inpText.strip()[11:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('openrt,')):
-            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('freeai,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:5].lower() == ('free,')):
-            inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:5].lower() == ('groq,')):
-            inpText = inpText.strip()[5:]
 
         # モデル 未設定時
         if (res_api is None):
@@ -587,14 +591,14 @@ class _openrtAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             #stream = True
-            print(' openrt  : stream = False, ')
+            print(' OpenRT : stream = False, ')
             stream = False
         else:
             stream = False
 
         # ツール設定
         tools = []
-        #print(' openrt  : tools = [], ')
+        #print(' OpenRT : tools = [], ')
         if True:
             if (use_tools.lower().find('yes') >= 0):
                 functions = []
@@ -618,7 +622,7 @@ class _openrtAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" openrt  : { res_name.lower() }, { res_api }, pass={ n }, ")
+                self.print(session_id, f" OpenRT : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # 画像指定
                 if   (res_name == self.openrt_v_nick_name) and (len(image_urls) > 0):
@@ -756,8 +760,8 @@ class _openrtAPI:
                         for module_dic in function_modules:
                             if (f_name == module_dic['func_name']):
                                 hit = True
-                                self.print(session_id, f" openrt  :   function_call '{ module_dic['script'] }' ({ f_name })")
-                                self.print(session_id, f" openrt  :   → { f_kwargs }")
+                                self.print(session_id, f" OpenRT :   function_call '{ module_dic['script'] }' ({ f_name })")
+                                self.print(session_id, f" OpenRT :   → { f_kwargs }")
 
                                 # メッセージ追加格納
                                 self.seq += 1
@@ -776,7 +780,7 @@ class _openrtAPI:
                                     res_json = json.dumps(dic, ensure_ascii=False, )
 
                                 # tool_result
-                                self.print(session_id, f" openrt  :   → { res_json }")
+                                self.print(session_id, f" OpenRT :   → { res_json }")
                                 self.print(session_id, )
 
                                 # メッセージ追加格納
@@ -804,7 +808,7 @@ class _openrtAPI:
                                 break
 
                         if (hit == False):
-                            self.print(session_id, f" openrt  :   function_call Error ! ({ f_name })")
+                            self.print(session_id, f" OpenRT :   function_call Error ! ({ f_name })")
                             print(res_role, res_content, f_name, f_kwargs, )
                             break
 
@@ -824,9 +828,9 @@ class _openrtAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" openrt  : { res_name.lower() }, complete.")
+                self.print(session_id, f" OpenRT : { res_name.lower() }, complete.")
             else:
-                self.print(session_id,  ' openrt  : Error !')
+                self.print(session_id,  ' OpenRT : Error !')
 
         #except Exception as e:
         #    print(e)
@@ -852,10 +856,10 @@ class _openrtAPI:
         res_history = history
 
         if (sysText is None) or (sysText == ''):
-            sysText = 'あなたは教師のように話す賢いアシスタントです。'
+            sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
 
         if (self.bot_auth is None):
-            self.print(session_id, ' openrt : Not Authenticate Error !')
+            self.print(session_id, ' OpenRT : Not Authenticate Error !')
             return res_text, res_path, nick_name, model_name, res_history
 
         # ファイル分離

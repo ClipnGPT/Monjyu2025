@@ -26,17 +26,17 @@ class yolov8_class:
         
         # yolov8 -> onnx
         self.yolov8_procSize        = 640
-        #self.yolov8_model = YOLO('_cv2data/yolov8/yolov8n.pt')
+        #self.yolov8_model = YOLO('_datas/yolov8/yolov8n.pt')
         #self.yolov8_model.export(format='onnx', imgsz=self.yolov8_procSize, opset=12, )
 
         # yolov8
-        self.yolov8_weights         = '_cv2data/yolov8/yolov8n.onnx'
+        self.yolov8_weights         = '_datas/yolov8/yolov8n.onnx'
         self.yolov8_model           = None
         self.yolov8_threshold_score = 0.8
         self.yolov8_threshold_nms   = 0.45
         self.yolov8_labels          = []
         self.yolov8_colors          = []
-        res, _                      = self.txtsRead('_cv2data/yolov8/yolov8_labels.txt', )
+        res, _                      = self.txtsRead('_datas/yolov8/yolov8_labels.txt', )
         if (res != False):
             self.yolov8_labels      = res
         for n in range(len(self.yolov8_labels)):

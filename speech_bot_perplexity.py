@@ -144,13 +144,13 @@ class _perplexityAPI:
         # 設定
         self.perplexity_default_gpt         = perplexity_default_gpt
         self.perplexity_default_class       = perplexity_default_class
-        if (not str(perplexity_auto_continue) in ['', 'auto']):
+        if (str(perplexity_auto_continue) not in ['', 'auto']):
             self.perplexity_auto_continue   = int(perplexity_auto_continue)
-        if (not str(perplexity_max_step)      in ['', 'auto']):
+        if (str(perplexity_max_step)      not in ['', 'auto']):
             self.perplexity_max_step        = int(perplexity_max_step)
-        if (not str(perplexity_max_session)   in ['', 'auto']):
+        if (str(perplexity_max_session)   not in ['', 'auto']):
             self.perplexity_max_session     = int(perplexity_max_session)
-        if (not str(perplexity_max_wait_sec)  in ['', 'auto']):
+        if (str(perplexity_max_wait_sec)  not in ['', 'auto']):
             self.perplexity_max_wait_sec    = int(perplexity_max_wait_sec)
 
         # モデル取得
@@ -167,7 +167,7 @@ class _perplexityAPI:
             self.perplexity_a_model         = perplexity_a_model
             self.perplexity_a_token         = int(perplexity_a_token)
             self.perplexity_a_use_tools     = perplexity_a_use_tools
-            if (not perplexity_a_model in self.models):
+            if (perplexity_a_model not in self.models):
                 self.models[perplexity_a_model] = {"id": perplexity_a_model, "token": str(perplexity_a_token), "modality": "text?", "date": ymd, }
 
         if (perplexity_b_nick_name != ''):
@@ -176,7 +176,7 @@ class _perplexityAPI:
             self.perplexity_b_model         = perplexity_b_model
             self.perplexity_b_token         = int(perplexity_b_token)
             self.perplexity_b_use_tools     = perplexity_b_use_tools
-            if (not perplexity_b_model in self.models):
+            if (perplexity_b_model not in self.models):
                 self.models[perplexity_b_model] = {"id": perplexity_b_model, "token": str(perplexity_b_token), "modality": "text?", "date": ymd, }
 
         if (perplexity_v_nick_name != ''):
@@ -185,7 +185,7 @@ class _perplexityAPI:
             self.perplexity_v_model         = perplexity_v_model
             self.perplexity_v_token         = int(perplexity_v_token)
             self.perplexity_v_use_tools     = perplexity_v_use_tools
-            if (not perplexity_v_model in self.models):
+            if (perplexity_v_model not in self.models):
                 self.models[perplexity_v_model] = {"id": perplexity_v_model, "token": str(perplexity_v_token), "modality": "text?", "date": ymd, }
 
         if (perplexity_x_nick_name != ''):
@@ -194,7 +194,7 @@ class _perplexityAPI:
             self.perplexity_x_model         = perplexity_x_model
             self.perplexity_x_token         = int(perplexity_x_token)
             self.perplexity_x_use_tools     = perplexity_x_use_tools
-            if (not perplexity_x_model in self.models):
+            if (perplexity_x_model not in self.models):
                 self.models[perplexity_x_model] = {"id": perplexity_x_model, "token": str(perplexity_x_token), "modality": "text?", "date": ymd, }
 
         # モデル
@@ -236,7 +236,7 @@ class _perplexityAPI:
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
-            if (not max_wait_sec in ['', 'auto']):
+            if (max_wait_sec not in ['', 'auto']):
                 if (str(max_wait_sec) != str(self.perplexity_max_wait_sec)):
                     self.perplexity_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
@@ -399,7 +399,7 @@ class _perplexityAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' perplexity  : Not Authenticate Error !')
+            self.print(session_id, ' Perplexity : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
@@ -501,26 +501,30 @@ class _perplexityAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
+        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('freeai,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('free,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:11].lower() == ('openrouter,')):
+            inpText = inpText.strip()[11:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('openrt,')):
-            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('freeai,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:5].lower() == ('free,')):
-            inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:5].lower() == ('groq,')):
-            inpText = inpText.strip()[5:]
 
         # モデル 未設定時
         if (res_api is None):
@@ -562,7 +566,7 @@ class _perplexityAPI:
             stream = False
 
         # ツール設定
-        print(' perplexity  : functions = [], ')
+        print(' Perplexity : functions = [], ')
 
         # 実行ループ
         #try:
@@ -578,7 +582,7 @@ class _perplexityAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" perplexity  : { res_name.lower() }, { res_api }, pass={ n }, ")
+                self.print(session_id, f" Perplexity : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # Stream 表示
                 if (stream == True):
@@ -635,9 +639,9 @@ class _perplexityAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" perplexity  : { res_name.lower() }, complete.")
+                self.print(session_id, f" Perplexity : { res_name.lower() }, complete.")
             else:
-                self.print(session_id,  ' perplexity  : Error !')
+                self.print(session_id,  ' Perplexity : Error !')
 
         #except Exception as e:
         #    print(e)
@@ -663,10 +667,10 @@ class _perplexityAPI:
         res_history = history
 
         if (sysText is None) or (sysText == ''):
-            sysText = 'あなたは教師のように話す賢いアシスタントです。'
+            sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
 
         if (self.bot_auth is None):
-            self.print(session_id, ' perplexity : Not Authenticate Error !')
+            self.print(session_id, ' Perplexity : Not Authenticate Error !')
             return res_text, res_path, nick_name, model_name, res_history
 
         # ファイル分離

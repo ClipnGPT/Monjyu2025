@@ -143,13 +143,13 @@ class _groqAPI:
         # 設定
         self.groq_default_gpt           = groq_default_gpt
         self.groq_default_class         = groq_default_class
-        if (not str(groq_auto_continue)   in ['', 'auto']):
+        if (str(groq_auto_continue)   not in ['', 'auto']):
             self.groq_auto_continue     = int(groq_auto_continue)
-        if (not str(groq_max_step)        in ['', 'auto']):
+        if (str(groq_max_step)        not in ['', 'auto']):
             self.groq_max_step          = int(groq_max_step)
-        if (not str(groq_max_session)     in ['', 'auto']):
+        if (str(groq_max_session)     not in ['', 'auto']):
             self.groq_max_session       = int(groq_max_session)
-        if (not str(groq_max_wait_sec)    in ['', 'auto']):
+        if (str(groq_max_wait_sec)    not in ['', 'auto']):
             self.groq_max_wait_sec      = int(groq_max_wait_sec)
 
         # モデル取得
@@ -166,7 +166,7 @@ class _groqAPI:
             self.groq_a_model           = groq_a_model
             self.groq_a_token           = int(groq_a_token)
             self.groq_a_use_tools       = groq_a_use_tools
-            if (not groq_a_model in self.models):
+            if (groq_a_model not in self.models):
                 self.models[groq_a_model] = {"id": groq_a_model, "token": str(groq_a_token), "modality": "text?", "date": ymd, }
 
         if (groq_b_nick_name != ''):
@@ -175,7 +175,7 @@ class _groqAPI:
             self.groq_b_model           = groq_b_model
             self.groq_b_token           = int(groq_b_token)
             self.groq_b_use_tools       = groq_b_use_tools
-            if (not groq_b_model in self.models):
+            if (groq_b_model not in self.models):
                 self.models[groq_b_model] = {"id": groq_b_model, "token": str(groq_b_token), "modality": "text?", "date": ymd, }
 
         if (groq_v_nick_name != ''):
@@ -184,7 +184,7 @@ class _groqAPI:
             self.groq_v_model           = groq_v_model
             self.groq_v_token           = int(groq_v_token)
             self.groq_v_use_tools       = groq_v_use_tools
-            if (not groq_v_model in self.models):
+            if (groq_v_model not in self.models):
                 self.models[groq_v_model] = {"id": groq_v_model, "token": str(groq_v_token), "modality": "text+image?", "date": ymd, }
 
         if (groq_x_nick_name != ''):
@@ -193,7 +193,7 @@ class _groqAPI:
             self.groq_x_model           = groq_x_model
             self.groq_x_token           = int(groq_x_token)
             self.groq_x_use_tools       = groq_x_use_tools
-            if (not groq_x_model in self.models):
+            if (groq_x_model not in self.models):
                 self.models[groq_x_model] = {"id": groq_x_model, "token": str(groq_x_token), "modality": "text?", "date": ymd, }
 
         # モデル
@@ -239,7 +239,7 @@ class _groqAPI:
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
-            if (not max_wait_sec in ['', 'auto']):
+            if (max_wait_sec not in ['', 'auto']):
                 if (str(max_wait_sec) != str(self.groq_max_wait_sec)):
                     self.groq_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
@@ -417,7 +417,7 @@ class _groqAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' groq  : Not Authenticate Error !')
+            self.print(session_id, ' Groq : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
@@ -514,26 +514,30 @@ class _groqAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
+        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('freeai,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('free,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:11].lower() == ('openrouter,')):
+            inpText = inpText.strip()[11:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('openrt,')):
-            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('freeai,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:5].lower() == ('free,')):
-            inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:5].lower() == ('groq,')):
-            inpText = inpText.strip()[5:]
 
         # モデル 未設定時
         if (res_api is None):
@@ -572,13 +576,13 @@ class _groqAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             #stream = True
-            print(' groq  : stream = False, ')
+            print(' Groq : stream = False, ')
             stream = False
         else:
             stream = False
 
         # ツール設定
-        print(' groq  : functions = [], ')
+        print(' Groq : functions = [], ')
         functions = []
 
         # 実行ループ
@@ -595,7 +599,7 @@ class _groqAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" groq  : { res_name.lower() }, { res_api }, pass={ n }, ")
+                self.print(session_id, f" Groq : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # Stream 表示
                 if (stream == True):
@@ -708,9 +712,9 @@ class _groqAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" groq  : { res_name.lower() }, complete.")
+                self.print(session_id, f" Groq : { res_name.lower() }, complete.")
             else:
-                self.print(session_id,  ' groq  : Error !')
+                self.print(session_id,  ' Groq : Error !')
 
         #except Exception as e:
         #    print(e)
@@ -736,10 +740,10 @@ class _groqAPI:
         res_history = history
 
         if (sysText is None) or (sysText == ''):
-            sysText = 'あなたは教師のように話す賢いアシスタントです。'
+            sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
 
         if (self.bot_auth is None):
-            self.print(session_id, ' groq : Not Authenticate Error !')
+            self.print(session_id, ' Groq : Not Authenticate Error !')
             return res_text, res_path, nick_name, model_name, res_history
 
         # ファイル分離

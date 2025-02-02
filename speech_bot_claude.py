@@ -147,13 +147,13 @@ class _claudeAPI:
         # 設定
         self.claude_default_gpt         = claude_default_gpt
         self.claude_default_class       = claude_default_class
-        if (not str(claude_auto_continue) in ['', 'auto']):
+        if (str(claude_auto_continue) not in ['', 'auto']):
             self.claude_auto_continue   = int(claude_auto_continue)
-        if (not str(claude_max_step)      in ['', 'auto']):
+        if (str(claude_max_step)      not in ['', 'auto']):
             self.claude_max_step        = int(claude_max_step)
-        if (not str(claude_max_session)   in ['', 'auto']):
+        if (str(claude_max_session)   not in ['', 'auto']):
             self.claude_max_session     = int(claude_max_session)
-        if (not str(claude_max_wait_sec)  in ['', 'auto']):
+        if (str(claude_max_wait_sec)  not in ['', 'auto']):
             self.claude_max_wait_sec    = int(claude_max_wait_sec)
 
         # モデル取得
@@ -170,7 +170,7 @@ class _claudeAPI:
             self.claude_a_model         = claude_a_model
             self.claude_a_token         = int(claude_a_token)
             self.claude_a_use_tools     = claude_a_use_tools
-            if (not claude_a_model in self.models):
+            if (claude_a_model not in self.models):
                 self.models[claude_a_model] = {"id": claude_a_model, "token": str(claude_a_token), "modality": "text?", "date": ymd, }
 
         if (claude_b_nick_name != ''):
@@ -179,7 +179,7 @@ class _claudeAPI:
             self.claude_b_model         = claude_b_model
             self.claude_b_token         = int(claude_b_token)
             self.claude_b_use_tools     = claude_b_use_tools
-            if (not claude_b_model in self.models):
+            if (claude_b_model not in self.models):
                 self.models[claude_b_model] = {"id": claude_b_model, "token": str(claude_b_token), "modality": "text?", "date": ymd, }
 
         if (claude_v_nick_name != ''):
@@ -188,7 +188,7 @@ class _claudeAPI:
             self.claude_v_model         = claude_v_model
             self.claude_v_token         = int(claude_v_token)
             self.claude_v_use_tools     = claude_v_use_tools
-            if (not claude_v_model in self.models):
+            if (claude_v_model not in self.models):
                 self.models[claude_v_model] = {"id": claude_v_model, "token": str(claude_v_token), "modality": "text?", "date": ymd, }
 
         if (claude_x_nick_name != ''):
@@ -197,7 +197,7 @@ class _claudeAPI:
             self.claude_x_model         = claude_x_model
             self.claude_x_token         = int(claude_x_token)
             self.claude_x_use_tools     = claude_x_use_tools
-            if (not claude_x_model in self.models):
+            if (claude_x_model not in self.models):
                 self.models[claude_x_model] = {"id": claude_x_model, "token": str(claude_x_token), "modality": "text?", "date": ymd, }
 
         # モデル
@@ -240,7 +240,7 @@ class _claudeAPI:
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
-            if (not max_wait_sec in ['', 'auto']):
+            if (max_wait_sec not in ['', 'auto']):
                 if (str(max_wait_sec) != str(self.claude_max_wait_sec)):
                     self.claude_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
@@ -400,7 +400,7 @@ class _claudeAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' claude  : Not Authenticate Error !')
+            self.print(session_id, ' Claude : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
@@ -499,26 +499,30 @@ class _claudeAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
+        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('freeai,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('free,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:11].lower() == ('openrouter,')):
+            inpText = inpText.strip()[11:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('openrt,')):
-            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('freeai,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:5].lower() == ('free,')):
-            inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:5].lower() == ('groq,')):
-            inpText = inpText.strip()[5:]
 
         # モデル 未設定時
         if (res_api is None):
@@ -576,7 +580,7 @@ class _claudeAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             stream = True
-            #print(' claude  : stream = False, ')
+            #print(' Claude : stream = False, ')
             #stream = False
         else:
             stream = False
@@ -608,7 +612,7 @@ class _claudeAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" claude  : { res_name.lower() }, { res_api }, pass={ n }, ")
+                self.print(session_id, f" Claude : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # max_tokens
                 max_tokens = 8192
@@ -720,8 +724,8 @@ class _claudeAPI:
                         for module_dic in function_modules:
                             if (f_name == module_dic['func_name']):
                                 hit = True
-                                self.print(session_id, f" claude  :   function_call '{ module_dic['script'] }' ({ f_name })")
-                                self.print(session_id, f" claude  :   → { f_kwargs }")
+                                self.print(session_id, f" Claude :   function_call '{ module_dic['script'] }' ({ f_name })")
+                                self.print(session_id, f" Claude :   → { f_kwargs }")
 
                                 # メッセージ追加格納
                                 self.seq += 1
@@ -740,7 +744,7 @@ class _claudeAPI:
                                     res_json = json.dumps(dic, ensure_ascii=False, )
 
                                 # tool_result
-                                self.print(session_id, f" claude  :   → { res_json }")
+                                self.print(session_id, f" Claude :   → { res_json }")
                                 self.print(session_id, )
 
                                 # メッセージ追加格納
@@ -766,7 +770,7 @@ class _claudeAPI:
                                 break
 
                         if (hit == False):
-                            self.print(session_id, f" claude  :   function_call Error ! ({ f_name })")
+                            self.print(session_id, f" Claude :   function_call Error ! ({ f_name })")
                             print(res_role, res_content, f_name, f_kwargs, )
                             break
 
@@ -781,9 +785,9 @@ class _claudeAPI:
 
             # 正常回答
             if (res_text != ''):
-                self.print(session_id, f" claude  : { res_name.lower() }, complete.")
+                self.print(session_id, f" Claude : { res_name.lower() }, complete.")
             else:
-                self.print(session_id,  ' claude  : Error !')
+                self.print(session_id,  ' Claude : Error !')
 
         #except Exception as e:
         #    print(e)
@@ -809,10 +813,10 @@ class _claudeAPI:
         res_history = history
 
         if (sysText is None) or (sysText == ''):
-            sysText = 'あなたは教師のように話す賢いアシスタントです。'
+            sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
 
         if (self.bot_auth is None):
-            self.print(session_id, ' claude : Not Authenticate Error !')
+            self.print(session_id, ' Claude : Not Authenticate Error !')
             return res_text, res_path, nick_name, model_name, res_history
 
         # ファイル分離

@@ -20,8 +20,13 @@ import json
 import queue
 import base64
 
-import requests
+import glob
+import socket
+qHOSTNAME = socket.gethostname().lower()
 
+qPath_temp           = 'temp/'
+qPath_output         = 'temp/output/'
+qPath_chat_work      = 'temp/chat_work/'
 
 
 # assistant チャットボット
@@ -89,6 +94,10 @@ class _assistantAPI:
 
         self.seq                        = 0
         self.reset()
+
+        self.assistant_name             = qHOSTNAME
+        self.assistant_id               = {}
+        self.thread_id                  = {}
 
     def init(self, log_queue=None, ):
         self.log_queue = log_queue
@@ -167,13 +176,13 @@ class _assistantAPI:
         # 設定
         self.assistant_default_gpt          = assistant_default_gpt
         self.assistant_default_class        = assistant_default_class
-        if (not str(assistant_auto_continue)  in ['', 'auto']):
+        if (str(assistant_auto_continue)  not in ['', 'auto']):
             self.assistant_auto_continue    = int(assistant_auto_continue)
-        if (not str(assistant_max_step)       in ['', 'auto']):
+        if (str(assistant_max_step)       not in ['', 'auto']):
             self.assistant_max_step         = int(assistant_max_step)
-        if (not str(assistant_max_session)    in ['', 'auto']):
+        if (str(assistant_max_session)    not in ['', 'auto']):
             self.assistant_max_session      = int(assistant_max_session)
-        if (not str(assistant_max_wait_sec)   in ['', 'auto']):
+        if (str(assistant_max_wait_sec)   not in ['', 'auto']):
             self.assistant_max_wait_sec     = int(assistant_max_wait_sec)
 
         # モデル取得
@@ -190,7 +199,7 @@ class _assistantAPI:
             self.assistant_a_model            = assistant_a_model
             self.assistant_a_token            = int(assistant_a_token)
             self.assistant_a_use_tools        = assistant_a_use_tools
-            if (not assistant_a_model in self.models):
+            if (assistant_a_model not in self.models):
                 self.models[assistant_a_model] = {"id": assistant_a_model, "token": str(assistant_a_token), "modality": "text?", "date": ymd, }
 
         if (assistant_b_nick_name != ''):
@@ -199,7 +208,7 @@ class _assistantAPI:
             self.assistant_b_model            = assistant_b_model
             self.assistant_b_token            = int(assistant_b_token)
             self.assistant_b_use_tools        = assistant_b_use_tools
-            if (not assistant_b_model in self.models):
+            if (assistant_b_model not in self.models):
                 self.models[assistant_b_model] = {"id": assistant_b_model, "token": str(assistant_b_token), "modality": "text?", "date": ymd, }
 
         if (assistant_v_nick_name != ''):
@@ -208,7 +217,7 @@ class _assistantAPI:
             self.assistant_v_model            = assistant_v_model
             self.assistant_v_token            = int(assistant_v_token)
             self.assistant_v_use_tools        = assistant_v_use_tools
-            if (not assistant_v_model in self.models):
+            if (assistant_v_model not in self.models):
                 self.models[assistant_v_model] = {"id": assistant_v_model, "token": str(assistant_v_token), "modality": "text+image?", "date": ymd, }
 
         if (assistant_x_nick_name != ''):
@@ -217,7 +226,7 @@ class _assistantAPI:
             self.assistant_x_model            = assistant_x_model
             self.assistant_x_token            = int(assistant_x_token)
             self.assistant_x_use_tools        = assistant_x_use_tools
-            if (not assistant_x_model in self.models):
+            if (assistant_x_model not in self.models):
                 self.models[assistant_x_model] = {"id": assistant_x_model, "token": str(assistant_x_token), "modality": "text+image?", "date": ymd, }
 
         # モデル
@@ -265,7 +274,7 @@ class _assistantAPI:
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
-            if (not max_wait_sec in ['', 'auto']):
+            if (max_wait_sec not in ['', 'auto']):
                 if (str(max_wait_sec) != str(self.assistant_max_wait_sec)):
                     self.assistant_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
@@ -348,50 +357,6 @@ class _assistantAPI:
 
         return res_history
 
-    def history2msg_assistant(self, history=[], ):
-        res_msg = []
-        for h in range(len(history)):
-            role    = history[h]['role']
-            content = history[h]['content']
-            name    = history[h]['name']
-            if (role != 'function_call'):
-            #if True:
-                if (name == ''):
-                    dic = {'role': role, 'content': content }
-                    res_msg.append(dic)
-                else:
-                    dic = {'role': role, 'name': name, 'content': content }
-                    res_msg.append(dic)
-
-        return res_msg
-
-    def history2msg_vision(self, history=[], image_urls=[], ):
-        res_msg = []
-        last_h  = 0
-        for h in range(len(history)):
-            role    = history[h]['role']
-            if (role != 'function_call') and (role != 'function'):
-                last_h = h 
-
-        for h in range(len(history)):
-            role    = history[h]['role']
-            content = history[h]['content']
-            name    = history[h]['name']
-            if (role != 'function_call') and (role != 'function'):
-                con = []
-                con.append({'type': 'text', 'text': content})
-                if (h == last_h):
-                    for image_url in image_urls:
-                        con.append(image_url)
-                if (name == ''):
-                    dic = {'role': role, 'content': con }
-                    res_msg.append(dic)
-                else:
-                    dic = {'role': role, 'name': name, 'content': con }
-                    res_msg.append(dic)
-
-        return res_msg
-
 
 
     def files_check(self, filePath=[], ):
@@ -427,12 +392,341 @@ class _assistantAPI:
 
 
 
-    def run_gpt(self, chat_class='chat', model_select='auto',
-                nick_name=None, model_name=None,
-                session_id='admin', history=[], function_modules=[],
-                sysText=None, reqText=None, inpText='こんにちは',
-                upload_files=[], image_urls=[], 
-                temperature=0.8, max_step=10, jsonSchema=None, ):
+    def vectorStore_del(self, session_id='admin', assistant_id=None, assistant_name='', ):
+
+        # 2024/04/21時点 azure 未対応
+        if (self.assistant_api_type == 'azure'):
+            return False
+
+        # vector store 削除
+        vector_stores = self.client.beta.vector_stores.list()
+        for v in range(len(vector_stores.data)):
+            vs_id   = vector_stores.data[v].id
+            vs_name = vector_stores.data[v].name
+            if (vs_name == assistant_name):
+
+                vs_files = self.client.beta.vector_stores.files.list(vector_store_id=vs_id)
+
+                for f in range(len(vs_files.data)):
+                    file_id   = vs_files.data[f].id
+                    self.client.files.delete(file_id=file_id, )
+                self.print(session_id, f"  vector store delete! ('{ vs_name }')")
+                self.client.beta.vector_stores.delete(vector_store_id=vs_id)
+
+                break
+        
+        return True
+
+    def vectorStore_set(self, session_id='admin', retrievalFiles_path='_extensions/retrieval_files/', assistant_id=None, assistant_name='', ):
+        vectorStore_ids = []
+
+        # 2024/04/21時点 azure 未対応
+        if (self.assistant_api_type == 'azure'):
+            return vectorStore_ids
+
+        # ファイル一覧
+        proc_files = []
+        path_files = glob.glob(retrievalFiles_path + '*.*')
+        path_files.sort()
+        if (len(path_files) > 0):
+            for f in path_files:
+                proc_files.append(os.path.basename(f))
+
+        # マッチング検査 違いがあれば vector store 削除
+        vector_stores = self.client.beta.vector_stores.list()
+        for v in range(len(vector_stores.data)):
+            vs_id   = vector_stores.data[v].id
+            vs_name = vector_stores.data[v].name
+            if (vs_name == assistant_name):
+                vs_files = self.client.beta.vector_stores.files.list(vector_store_id=vs_id)
+
+                vectorStore_ids = [vs_id]
+                if (len(proc_files) != len(vs_files.data)):
+                    vectorStore_ids = []
+                else:
+                    for f in range(len(vs_files.data)):
+                        file_id   = vs_files.data[f].id
+                        file_info = self.client.files.retrieve(file_id=file_id, )
+                        file_name = file_info.filename
+                        if (file_name not in proc_files):
+                            vectorStore_ids = []
+                            break
+
+                if (len(vectorStore_ids) == 0):
+                    for f in range(len(vs_files.data)):
+                        file_id   = vs_files.data[f].id
+                        self.client.files.delete(file_id=file_id, )
+                    self.print(session_id, f" Assistant : Delete vector store = '{ vs_name }', ")
+                    self.client.beta.vector_stores.delete(vector_store_id=vs_id)
+
+                break
+
+        # 転送不要
+        if (len(vectorStore_ids) == len(proc_files)):
+            return vectorStore_ids
+
+        # vector store 作成
+        if (len(proc_files) > 0):
+
+            # ファイル
+            upload_ids   = []
+            for proc_file in proc_files:
+                file_name = retrievalFiles_path + proc_file
+                if (os.path.isfile(file_name)):
+
+                    # アップロード済み確認
+                    file_id = None
+                    assistant_files_list = self.client.files.list()
+                    for n in range(len(assistant_files_list.data)):
+                        if (proc_file == assistant_files_list.data[n].filename):
+                            file_id   = assistant_files_list.data[n].id
+                            print(f" Assistant : Hit file_name = '{ proc_file }', { file_id }")
+                            break
+
+                    # アップロード
+                    if (file_id == None):
+                        try:
+                            # アップロード
+                            file = open(file_name, 'rb')
+                            upload = self.client.files.create(
+                                        file    = file,
+                                        purpose = 'assistants', )
+                            file_id = upload.id
+                            print(f" Assistant : Upload file_name = '{ proc_file }', { file_id }")
+                        except Exception as e:
+                            print(e)
+
+                    if (file_id != None):
+                        upload_ids.append(file_id)
+
+            # ベクターストア作成
+            if (len(upload_ids) > 0):
+                try:
+
+                    vector_store = self.client.beta.vector_stores.create(
+                                        name = assistant_name,
+                                        # 2025/02/01現在、1GByteまで無料
+                                        #expires_after = {
+                                        #   "anchor": "last_active_at",
+                                        #   "days": 2
+                                        #}
+                                    )
+
+                    file_batch = self.client.beta.vector_stores.file_batches.create_and_poll(
+                                        vector_store_id = vector_store.id,
+                                        file_ids        = upload_ids,
+                                    )
+
+                    self.print(session_id, f" Assistant : { file_batch.status }")
+
+                    vectorStore_ids = [vector_store.id]
+
+                except Exception as e:
+                    print(e)
+
+        # デバッグ用 アップロード確認
+        if False:
+            vector_stores = self.client.beta.vector_stores.list()
+            for v in range(len(vector_stores.data)):
+                vs_id   = vector_stores.data[v].id
+                vs_name = vector_stores.data[v].name
+                if (vs_name == assistant_name):
+                    self.print(session_id, vs_name)
+                    vs_files = self.client.beta.vector_stores.files.list(vector_store_id=vs_id)
+                    for f in range(len(vs_files.data)):
+                        file_id   = vs_files.data[f].id
+                        file_info = self.client.files.retrieve(
+                            file_id=file_id, )
+                        file_name = file_info.filename
+                        self.print(session_id, file_name)
+
+        return vectorStore_ids
+
+    def threadFile_del(self, session_id='admin', assistant_id=None, assistant_name='', ):
+
+        # 2024/04/21時点 azure 未対応
+        if (self.assistant_api_type == 'azure'):
+            return False
+
+        assistant_files_list = self.client.files.list()
+        for f in range(len(assistant_files_list.data)):
+            file_id   = assistant_files_list.data[f].id
+            file_name = assistant_files_list.data[f].filename
+
+            x = len(assistant_name)
+            if (file_name[:x] == assistant_name):
+                res = self.client.files.delete(
+                    file_id=file_id, )
+
+        return True
+
+    def threadFile_set(self, session_id='admin', upload_files=[], assistant_id=None, assistant_name='', ):
+        upload_ids = []
+
+        # 2024/04/21時点 azure 未対応
+        if (self.assistant_api_type == 'azure'):
+            return upload_ids
+
+        if (not os.path.isdir(qPath_chat_work)):
+            os.makedirs(qPath_chat_work)
+        for upload_file in upload_files:
+            base_name   = os.path.basename(upload_file)
+            work_name   = assistant_name + '_' + base_name
+            upload_work = qPath_chat_work + work_name
+            shutil.copy(upload_file, upload_work)
+
+            # 既に存在なら、置換えの為、削除
+            assistant_files_list = self.client.files.list()
+            for f in range(len(assistant_files_list.data)):
+                file_id   = assistant_files_list.data[f].id
+                file_name = assistant_files_list.data[f].filename
+                if (file_name == work_name):
+                    res = self.client.files.delete(
+                        file_id=file_id, )
+
+            # アップロード
+            upload = self.client.files.create(
+                file = open(upload_work, 'rb'),
+                purpose='assistants', )
+            upload_ids.append(upload.id)
+
+            self.print(session_id, f" Assistant : Upload ... { upload.id }, { base_name },")
+
+            # proc? wait
+            #time.sleep(0.50)
+
+        return upload_ids
+
+    def threadFile_reset(self, session_id='admin', upload_ids=[], assistant_id=None, assistant_name='', ):
+
+        # 2024/04/21時点 azure 未対応
+        if (self.assistant_api_type == 'azure'):
+            return False
+
+        # 削除
+        for upload_id in upload_ids:
+            try:
+                res = self.client.files.delete(
+                    file_id=upload_id, )
+                self.print(session_id, f" Assistant : Delete ... { upload_id },")
+            except:
+                pass
+
+        return True
+
+    def my_assistant_update(self, session_id='admin', my_assistant_id=None, my_assistant_name='',
+                            model_name='gpt-4o', use_tools='yes', instructions='', 
+                            functions=[], vectorStore_ids=[], upload_ids=[], ):
+
+        try:
+
+            # ツール設定
+            tools = []
+            if (use_tools.lower().find('yes') >= 0):
+                if (model_name[:1].lower() != 'o'): # o1, o3, ... 以外
+                    tools.append({"type": "code_interpreter"})
+                    if (len(vectorStore_ids) > 0):
+                        tools.append({"type": "file_search"})
+                if (len(functions) != 0):
+                    for f in range(len(functions)):
+                        tools.append({"type": "function", "function": functions[f]})
+            #print(tools)
+
+            # アシスタント取得
+            assistant = self.client.beta.assistants.retrieve(
+                assistant_id = my_assistant_id, )
+            try:
+                as_vector_ids = []
+                as_vector_ids = assistant.tool_resources.file_search.vector_store_ids
+            except:
+                pass
+            try:
+                as_file_ids   = []
+                as_file_ids   = assistant.tool_resources.code_interpreter.file_ids
+            except:
+                pass
+
+            # アシスタント更新
+            change_flag = False
+            if (model_name      != assistant.model):
+                change_flag = True
+                self.print(session_id, f" Assistant : Change model, { model_name },")
+
+            if (instructions    != assistant.instructions):
+                change_flag = True
+                self.print(session_id, f" Assistant : Change instructions ...")
+            if (len(tools)      != len(assistant.tools)):
+                change_flag = True
+                self.print(session_id, f" Assistant : Change tools ...")
+                #self.print(tools, )
+                #self.print(assistant.tools, )
+            if (vectorStore_ids != as_vector_ids):
+                change_flag = True
+                self.print(session_id, f" Assistant : Change vector store ids ...")
+            if (upload_ids      != as_file_ids):
+                change_flag = True
+                self.print(session_id, f" Assistant : Change file ids ...")
+
+            if (change_flag != True):
+                return False
+            else:
+                self.print(session_id, f" Assistant : Update assistant_name = '{ my_assistant_name }',")
+
+                # OPENAI
+                if (self.assistant_api_type != 'azure'):
+
+                    tool_resouces = {}
+                    if (model_name[:1].lower() != 'o'): # o1, o3, ... 以外
+                        if (len(vectorStore_ids) > 0):
+                            tool_resouces["file_search"] = { "vector_store_ids": vectorStore_ids }
+                        if (len(upload_ids) > 0):
+                            tool_resouces["code_interpreter"] = { "file_ids": upload_ids }
+
+                    assistant = self.client.beta.assistants.update(
+                                        assistant_id = my_assistant_id,
+                                        model        = model_name,
+                                        instructions = instructions,
+                                        tools        = tools,
+                                        timeout      = self.assistant_max_wait_sec,
+                                        tool_resources = tool_resouces,
+                                    )
+
+                # Azure
+                else:
+
+                    assistant = self.client.beta.assistants.update(
+                                        assistant_id = my_assistant_id,
+                                        model        = model_name,
+                                        instructions = instructions,
+                                        tools        = tools,
+                                        timeout      = self.assistant_max_wait_sec,
+
+                                        # 2024/04/21時点 azure 未対応
+                                        #tool_resources = {
+                                        #    "file_search": {
+                                        #        "vector_store_ids": vectorStore_ids
+                                        #        },
+                                        #    "code_interpreter": {
+                                        #        "file_ids": upload_ids
+                                        #        }
+                                        #    },
+                                    )
+
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def run_assistant(self, chat_class='assistant', model_select='auto',
+                      nick_name=None, model_name=None,
+                      session_id='admin', history=[], function_modules=[],
+                      sysText=None, reqText=None, inpText='こんにちは',
+                      upload_files=[], image_urls=[],
+                      temperature=0.8, max_step=10, jsonSchema=None, ):
+
+        functions = []
+        for module_dic in function_modules:
+            functions.append(module_dic['function'])
 
         # 戻り値
         res_text        = ''
@@ -443,7 +737,7 @@ class _assistantAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' assistant  : Not Authenticate Error !')
+            self.print(session_id, ' Assistant : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
@@ -550,6 +844,8 @@ class _assistantAPI:
             inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
             inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:11].lower() == ('openrouter,')):
+            inpText = inpText.strip()[11:]
         elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
@@ -563,225 +859,367 @@ class _assistantAPI:
         elif (inpText.strip()[:6].lower() == ('local,')):
             inpText = inpText.strip()[6:]
 
-        # モデル 未設定時
-        if (res_api is None):
-            res_name  = self.assistant_a_nick_name
-            res_api   = self.assistant_a_model
-            use_tools = self.assistant_a_use_tools
-            if (self.assistant_b_enable == True):
-                if (len(upload_files) > 0) \
-                or (len(inpText) > 1000):
-                    res_name  = self.assistant_b_nick_name
-                    res_api   = self.assistant_b_model
-                    use_tools = self.assistant_b_use_tools
-
-        # モデル 補正 (vision)
-        if  (len(image_urls) > 0) \
-        and (len(image_urls) == len(upload_files)):
-            if   (self.assistant_v_enable == True):
-                res_name  = self.assistant_v_nick_name
-                res_api   = self.assistant_v_model
-                use_tools = self.assistant_v_use_tools
-            elif (self.assistant_x_enable == True):
-                res_name  = self.assistant_x_nick_name
-                res_api   = self.assistant_x_model
-                use_tools = self.assistant_x_use_tools
-
         # history 追加・圧縮 (古いメッセージ)
         res_history = self.history_add(history=res_history, sysText=sysText, reqText=reqText, inpText=inpText, )
         res_history = self.history_zip1(history=res_history, )
 
-        # メッセージ作成
-        if (model_select != 'v'):
-            msg = self.history2msg_assistant(history=res_history, )
-        else:
-            msg = self.history2msg_vision(history=res_history, image_urls=image_urls,)
+        # 結果
+        res_role      = None
+        res_content   = None
+
+        upload_ids    = []
+
+        exit_status   = None
+        last_status   = None
+
+        # アシスタント確認
+        my_assistant_name   = self.assistant_name + '-' + str(session_id)
+        my_assistant_id     = self.assistant_id.get(str(session_id))
+        if (my_assistant_id is None):
+
+            # 動作設定
+            instructions = sysText
+            if (instructions is None) or (instructions == ''):
+                instructions = 'あなたは美しい日本語を話す賢いアシスタントです。'
+
+            # アシスタント検索
+            assistants = self.client.beta.assistants.list(
+                order = "desc",
+                limit = "100", )
+            for a in range(len(assistants.data)):
+                assistant = assistants.data[a]
+                if (assistant.name == my_assistant_name):
+                    my_assistant_id = assistant.id
+                    break
+
+            # モデルの変更時は削除
+            if (my_assistant_id is not None):
+                if (res_api != assistant.model):
+                    change_flag = True
+                    self.print(session_id, f" Assistant : Change model, { res_api },")
+
+                    for assistant in assistants.data:
+                        if (assistant.name == my_assistant_name):
+                            self.print(session_id, f" Assistant : Delete assistant_name = '{ assistant.name }',")
+
+                            # アシスタント削除
+                            res = self.client.beta.assistants.delete(assistant_id = assistant.id, )
+                            my_assistant_id == None
+
+                            # アシスタント再検索
+                            assistants = self.client.beta.assistants.list(
+                                order = "desc",
+                                limit = "100", )
+                            for a in range(len(assistants.data)):
+                                assistant = assistants.data[a]
+                                if (assistant.name == my_assistant_name):
+                                    my_assistant_id = assistant.id
+                                    break
+
+        # アシスタント生成
+        if (my_assistant_id is None):
+
+            # アシスタント削除
+            if (self.assistant_max_session > 0) and (len(assistants.data) > 0):
+                for a in range(self.assistant_max_session -1 , len(assistants.data)):
+                    assistant = assistants.data[a]
+                    if (assistant.name != my_assistant_name):
+                        self.print(session_id, f" Assistant : Delete assistant_name = '{ assistant.name }',")
+
+                        # vector store 削除
+                        res = self.vectorStore_del( session_id     = session_id,
+                                                    assistant_id   = my_assistant_id, 
+                                                    assistant_name = my_assistant_name, )
+
+                        # ファイル 削除
+                        res = self.threadFile_del(  session_id     = session_id,
+                                                    assistant_id   = my_assistant_id,
+                                                    assistant_name = my_assistant_name, )
+
+                        # アシスタント削除
+                        res = self.client.beta.assistants.delete(assistant_id = assistant.id, )
+                        my_assistant_id == None
+
+            # アシスタント生成
+            self.print(session_id, f" Assistant : Create assistant_name = '{ my_assistant_name }',")
+            assistant = self.client.beta.assistants.create(
+                    name     = my_assistant_name,
+                    model    = res_api,
+                    instructions = instructions,
+                    tools    = [], )
+
+            my_assistant_id = assistant.id
+            self.assistant_id[str(session_id)] = my_assistant_id
+
+            # vector store 作成
+            vectorStore_ids = self.vectorStore_set(     session_id          = session_id,
+                                                        retrievalFiles_path = '_extensions/retrieval_files/',
+                                                        assistant_id        = my_assistant_id, 
+                                                        assistant_name      = my_assistant_name, )
+
+            # ファイルアップロード
+            upload_ids = self.threadFile_set(           session_id     = session_id,
+                                                        upload_files   = upload_files,
+                                                        assistant_id   = my_assistant_id,
+                                                        assistant_name = my_assistant_name, )
+            #self.print(session_id, f"##{ upload_ids }##")
+            # proc? wait
+            #if (len(upload_files) > 0):
+            #    time.sleep(1.00 * len(upload_files))
+
+            # アシスタント更新
+            if (my_assistant_id is not None):
+                res = self.my_assistant_update(         session_id        = session_id,
+                                                        my_assistant_id   = my_assistant_id,
+                                                        my_assistant_name = my_assistant_name,
+                                                        model_name        = res_api, 
+                                                        use_tools         = use_tools,
+                                                        instructions      = instructions, 
+                                                        functions         = functions,
+                                                        vectorStore_ids   = vectorStore_ids,
+                                                        upload_ids        = upload_ids, )
+                # proc? wait
+                #if (res == True):
+                #    time.sleep(1.00)
+
+        # スレッド確認
+        my_thread_id = self.thread_id.get(str(session_id))
+        if (my_thread_id is None):
+
+            # スレッド生成
+            self.print(session_id, f" Assistant : Create thread (assistant_name) = '{ my_assistant_name }',")
+            thread = self.client.beta.threads.create(
+                metadata = {'assistant_name': my_assistant_name}, )
+            my_thread_id = thread.id
+            self.thread_id[str(session_id)] = my_thread_id
+
+            # 過去メッセージ追加
+            for m in range(len(res_history) - 1):
+                role    = res_history[m].get('role','')
+                content = res_history[m].get('content','')
+                name    = res_history[m].get('name','')
+                if (role != 'system'):
+                    # 全てユーザーメッセージにて処理
+                    if (name is None) or (name == ''):
+                        msg_text = '(' + role + ')' + '\n' + content
+                    else:
+                        if (role == 'function_call'):
+                            msg_text = '(function ' + name + ' call)'  + '\n' + content
+                        else:
+                            msg_text = '(function ' + name + ' result) ' + '\n' + content
+                    #self.print(session_id, msg_text)
+                    res = self.client.beta.threads.messages.create(
+                        thread_id = my_thread_id,
+                        role      = 'user',
+                        content   = msg_text, )
+
+        # メッセージ生成
+        res = self.client.beta.threads.messages.create(
+            thread_id = my_thread_id,
+            role      = 'user',
+            content   = inpText, )
 
         # ストリーム実行?
         if (session_id == 'admin'):
-            stream = True
-            if (res_api.find('o1') >= 0) or (res_api.find('o3') >= 0):
-                print(' assistant  : stream = False, ')
-                stream = False
+            #stream = True
+            print(' Assistant : stream = False, ')
+            stream = False
         else:
             stream = False
 
-        # ツール設定
-        tools = []
-        #print(' assistant  : tools = [], ')
-        if True:
-            if (use_tools.lower().find('yes') >= 0):
-                functions = []
-                for module_dic in function_modules:
-                    functions.append(module_dic['function'])
-                for f in range(len(functions)):
-                    tools.append({"type": "function", "function": functions[f]})
-
-        # 実行ループ
+        # 実行開始        
         #try:
         if True:
 
-            n = 0
-            function_name = ''
-            while (function_name != 'exit') and (n < int(max_step)):
+            # 実行開始
+            run = self.client.beta.threads.runs.create(
+                assistant_id = my_assistant_id,
+                thread_id    = my_thread_id, )
+            my_run_id = run.id
 
-                # 結果
-                res_role      = ''
-                res_content   = ''
-                tool_calls    = []
+            # 実行ループ
+            exit_status    = None
+            last_status    = None
+            count_run_step = 0
+            messages = self.client.beta.threads.messages.list(
+                        thread_id = my_thread_id, 
+                        order     = 'asc', )
+            last_msg_step = len(messages.data) # First msg is request
+            last_message  = None
+            
+            chkTime       = time.time()
+            while (exit_status is None) and ((time.time() - chkTime) < self.assistant_max_wait_sec):
 
-                # GPT
-                n += 1
-                self.print(session_id, f" assistant  : { res_name.lower() }, { res_api }, pass={ n }, ")
-
-                # 画像指定
-                if   (res_name == self.assistant_v_nick_name) and (len(image_urls) > 0):
-                    null_history = self.history_add(history=[], sysText=sysText, reqText=reqText, inpText=inpText, )
-                    msg = self.history2msg_vision(history=null_history, image_urls=image_urls,)
-                    response = self.client.chat.completions.create(
-                            model           = res_api,
-                            messages        = msg,
-                            #temperature     = float(temperature),
-                            timeout         = self.assistant_max_wait_sec, 
-                            stream          = stream, 
-                            )
-
-                # ツール指定
-                elif (len(tools) != 0):
-                    response = self.client.chat.completions.create(
-                            model           = res_api,
-                            messages        = msg,
-                            #temperature     = float(temperature),
-                            tools           = tools, tool_choice = 'auto',
-                            timeout         = self.assistant_max_wait_sec,
-                            stream          = stream, 
-                            )
-
-                else:
-                    # ノーマル
-                    if (jsonSchema is None) or (jsonSchema == ''):                        
-                        response = self.client.chat.completions.create(
-                            model           = res_api,
-                            messages        = msg,
-                            #temperature     = float(temperature),
-                            timeout         = self.assistant_max_wait_sec,
-                            stream          = stream, 
-                            )
-                    else:
-                        schema = None
-                        try:
-                            schema = json.loads(jsonSchema)
-                        except:
-                            pass
-                        # スキーマ指定無し
-                        if (schema is None):
-                            response = self.client.chat.completions.create(
-                                model           = res_api,
-                                messages        = msg,
-                                #temperature     = float(temperature),
-                                timeout         = self.assistant_max_wait_sec, 
-                                response_format = { "type": "json_object" },
-                                stream          = stream, 
-                                )
-                        # スキーマ指定有り
-                        else:
-                            response = self.client.chat.completions.create(
-                                model           = res_api,
-                                messages        = msg,
-                                #temperature     = float(temperature),
-                                timeout         = self.assistant_max_wait_sec, 
-                                response_format = { "type": "json_schema", "json_schema": schema },
-                                stream          = stream, 
-                                )
-
-                # Stream 表示
-                if (stream == True):
-
+                # ステータス
+                run = self.client.beta.threads.runs.retrieve(
+                        thread_id = my_thread_id,
+                        run_id    = my_run_id, )
+                if (run.status != last_status):
+                    last_status = run.status
                     chkTime     = time.time()
-                    for chunk in response:
-                        if ((time.time() - chkTime) > self.assistant_max_wait_sec):
-                            break
-                        delta   = chunk.choices[0].delta
-                        if (delta is not None):
-                            if (delta.content is not None):
-                                #res_role    = delta.role
-                                res_role    = 'assistant'
-                                content     = delta.content
-                                res_content += content
-                                self.stream(session_id, content)
+                    self.print(session_id, f" Assistant : { last_status }")
 
-                            elif (delta.tool_calls is not None):
-                                #res_role    = delta.role
-                                res_role    = 'assistant'
-                                tcchunklist = delta.tool_calls
-                                for tcchunk in tcchunklist:
-                                    if len(tool_calls) <= tcchunk.index:
-                                        tool_calls.append({"id": "", "type": "function", "function": { "name": "", "arguments": "" } })
-                                    tc = tool_calls[tcchunk.index]
-                                    if tcchunk.id:
-                                        tc["id"]                    += tcchunk.id
-                                    if tcchunk.function.name:
-                                        tc["function"]["name"]      += tcchunk.function.name
-                                    if tcchunk.function.arguments:
-                                        tc["function"]["arguments"] += tcchunk.function.arguments
+                # 完了時は少し待機
+                #if (last_status == 'completed'):
+                #    time.sleep(0.25)
 
-                    # 改行
-                    if (res_content != ''):
-                        self.print(session_id, )
-
-                # 通常実行
-                if (stream == False):
-
-                    # response 処理
-                    try:
-                        res_role    = str(response.choices[0].message.role)
-                        res_content = str(response.choices[0].message.content)
-
-                        # 新 function 
-                        if (response.choices[0].finish_reason=='tool_calls'):
-                            for tool_call in response.choices[0].message.tool_calls:
-                                t_id     = str(tool_call.id)
-                                f_name   = str(tool_call.function.name)
-                                f_kwargs = str(tool_call.function.arguments)
+                # 実行ステップ確認
+                #time.sleep(0.25)
+                run_steps = self.client.beta.threads.runs.steps.list(
+                        thread_id = my_thread_id,
+                        run_id    = my_run_id,
+                        order     = 'asc', )
+                if (len(run_steps.data) > count_run_step):
+                    for r in range(count_run_step, len(run_steps.data)):
+                        step_details_type = run_steps.data[r].step_details.type
+                        if (step_details_type != 'tool_calls'):
+                            self.print(session_id, f" Assistant : ({ step_details_type })")
+                        else:
+                            #self.print(session_id, run_steps.data[r].step_details)
+                            step_details_tool_type = None
+                            try:
+                                step_details_tool_type = run_steps.data[r].step_details.tool_calls[0].type
+                            except:
                                 try:
-                                    wk_dic      = json.loads(f_kwargs)
-                                    wk_text     = json.dumps(wk_dic, ensure_ascii=False, )
-                                    f_kwargs = wk_text
+                                    tc = run_steps.data[r].step_details.tool_calls[0]
+                                    step_details_tool_type = tc.get('type')
                                 except:
                                     pass
-                                tool_calls.append({"id": t_id, "type": "function", "function": { "name": f_name, "arguments": f_kwargs } })
+                            if (step_details_tool_type is not None):
+                                self.print(session_id, f" Assistant : ({ step_details_tool_type }...)")
+                            else:
+                                self.print(session_id, f" Assistant : ({ step_details_type })")
 
-                    except Exception as e:
-                        print(response)
-                        #print(e)
+                        if (step_details_type == 'message_creation'):
+                            message_id = run_steps.data[r].step_details.message_creation.message_id
+                            if (message_id is not None):
+                                messages = self.client.beta.threads.messages.retrieve(
+                                        thread_id  = my_thread_id, 
+                                        message_id = message_id, )
+                                for c in range(len(messages.content)):
+                                    content_type = messages.content[c].type
+                                    if (content_type == 'text'):
+                                        content_value = messages.content[c].text.value
+                                        if (content_value is not None) and (content_value != ''):
+                                            if (last_status != 'completed'):
+                                                if (content_value != last_message):
+                                                    last_message = content_value 
+                                                    self.print(session_id, last_message)
+                                                    self.print(session_id, )
 
-                # function 指示?
-                if (len(tool_calls) > 0):
+                    count_run_step = len(run_steps.data)
+
+                # 最大ステップ  10step x (3auto+1) / 2 = 20
+                limit_step = int((int(max_step) * (int(self.assistant_auto_continue)+1)) / 2)
+                if (count_run_step > limit_step):
+                    exit_status = 'overstep'
+                    self.print(session_id, f" Assistant : overstep! (n={ count_run_step }!)")
+                    break
+
+                # 実行メッセージ確認
+                #time.sleep(0.25)
+                messages = self.client.beta.threads.messages.list(
+                        thread_id = my_thread_id, 
+                        order     = 'asc', )
+                if (len(messages.data) > last_msg_step):
+                    for m in range(last_msg_step, len(messages.data)):
+
+                        res_role = messages.data[m].role
+                        for c in range(len(messages.data[m].content)):
+                            content_type = messages.data[m].content[c].type
+                            #if (content_type == 'image_file'):
+                            #    file_type   = content_type
+                            #    file_id     = messages.data[m].content[c].image_file.file_id
+                            #    if (file_id is not None):
+                            #        self.print(session_id, f" Assistant : ( { file_type }, { file_id } )")
+
+                            if (content_type == 'text'):
+                                content_value = messages.data[m].content[c].text.value
+                                if (content_value is not None) and (content_value != ''):
+                                    last_msg_step = m
+                                    if (last_status != 'completed'):
+                                        if (content_value != last_message):
+                                            last_message = content_value 
+                                            self.print(session_id, last_message)
+                                            self.print(session_id, )
+                                    else:
+                                        res_content  = content_value
+
+                                for a in range(len(messages.data[m].content[c].text.annotations)):
+                                    try:
+                                        file_type = messages.data[m].content[c].text.annotations[a].type
+                                        file_text = messages.data[m].content[c].text.annotations[a].text
+                                        file_id   = messages.data[m].content[c].text.annotations[a].file_path.file_id
+
+                                        file_dic  = self.client.files.retrieve(file_id)
+                                        filename = os.path.basename(file_dic.filename)
+                                        content_file = self.client.files.content(file_id)
+                                        data_bytes   = content_file.read()
+                                        if (not os.path.isdir(qPath_output)):
+                                            os.makedirs(qPath_output)
+                                        with open(qPath_output + filename, "wb") as file:
+                                            file.write(data_bytes)
+
+                                        res_path = qPath_output + filename
+                                        self.print(session_id, f" Assistant : Download ... { file_text }")
+                                    except:
+                                        pass
+
+                # 処理中
+                if   (last_status is None):
+                    self.print(session_id, ' Assistant : status is None ???')
+
+                elif (last_status == 'in_progress') \
+                or   (last_status == 'queued') \
+                or   (last_status == 'cancelling'):
+                    pass
+
+                # 終了
+                elif (last_status == 'completed') \
+                or   (last_status == 'cancelled') \
+                or   (last_status == 'failed') \
+                or   (last_status == 'expired'):
+                    exit_status = last_status
+
+                    # 正常終了
+                    if (last_status == 'completed'):
+                        break
+
+                    # その他終了
+                    else:
+                        self.print(session_id, ' Assistant : !')
+                        break
+
+                # ファンクション
+                elif (last_status == 'requires_action'):
+                    tool_result = []
+                    upload_flag = False
 
                     self.print(session_id, )
-                    for tc in tool_calls:
-                        #print(tc)
-                        f_id     = tc['id']
-                        f_name   = tc['function'].get('name')
-                        f_kwargs = tc['function'].get('arguments')
+                    tool_calls = run.required_action.submit_tool_outputs.tool_calls
+                    for t in range(len(tool_calls)):
+                        tool_call_id  = tool_calls[t].id
+                        function_name = tool_calls[t].function.name
+                        json_kwargs   = tool_calls[t].function.arguments
 
                         hit = False
-
                         for module_dic in function_modules:
-                            if (f_name == module_dic['func_name']):
+                            if (function_name == module_dic['func_name']):
                                 hit = True
-                                self.print(session_id, f" assistant  :   function_call '{ module_dic['script'] }' ({ f_name })")
-                                self.print(session_id, f" assistant  :   → { f_kwargs }")
+                                self.print(session_id, f" Assistant :   function_call '{ module_dic['script'] }' ({  function_name })")
+                                self.print(session_id, f" Assistant :   → { json_kwargs }")
+
+                                chkTime     = time.time()
 
                                 # メッセージ追加格納
                                 self.seq += 1
-                                dic = {'seq': self.seq, 'time': time.time(), 'role': 'function_call', 'name': f_name, 'content': f_kwargs }
+                                dic = {'seq': self.seq, 'time': time.time(), 'role': 'function_call', 'name': function_name, 'content': json_kwargs }
                                 res_history.append(dic)
 
                                 # function 実行
                                 try:
                                     ext_func_proc  = module_dic['func_proc']
-                                    res_json = ext_func_proc( f_kwargs )
+                                    res_json       = ext_func_proc( json_kwargs )
                                 except Exception as e:
                                     print(e)
                                     # エラーメッセージ
@@ -789,62 +1227,128 @@ class _assistantAPI:
                                     dic['error'] = e 
                                     res_json = json.dumps(dic, ensure_ascii=False, )
 
-                                # tool_result
-                                self.print(session_id, f" assistant  :   → { res_json }")
-                                self.print(session_id, )
+                                chkTime     = time.time()
 
                                 # メッセージ追加格納
-                                # dic = {'role': 'function', 'name': f_name, 'content': res_json }
-                                # openrouter用の処置!
-                                dic = {'role': 'user', 'name': f_name, 'content': res_json }
-                                msg.append(dic)
                                 self.seq += 1
-                                dic = {'seq': self.seq, 'time': time.time(), 'role': 'function', 'name': f_name, 'content': res_json }
+                                dic = {'seq': self.seq, 'time': time.time(), 'role': 'function', 'name': function_name, 'content': res_json }
                                 res_history.append(dic)
 
                                 # パス情報確認
                                 try:
                                     dic  = json.loads(res_json)
-                                    path = dic['image_path']
+                                    path = dic.get('image_path')
                                     if (path is None):
                                         path = dic.get('excel_path')
                                     if (path is not None):
                                         res_path = path
                                         res_files.append(path)
-                                        res_files = list(set(res_files))
-                                except:
-                                    pass
+                                        upload_files.append(path)
+                                        res_files    = list(set(res_files))
+                                        upload_files = list(set(upload_files))
 
-                                break
+                                        # ファイルアップロード
+                                        upload_ids = self.threadFile_set(session_id     = session_id,
+                                                                        upload_files   = upload_files,
+                                                                        assistant_id   = my_assistant_id,
+                                                                        assistant_name = my_assistant_name, )
+                                        upload_flag = True
+
+                                except Exception as e:
+                                    print(e)
 
                         if (hit == False):
-                            self.print(session_id, f" assistant  :   function_call Error ! ({ f_name })")
-                            print(res_role, res_content, f_name, f_kwargs, )
-                            break
+                            self.print(session_id, f" Assistant :   function_call Error ! ({ function_name })")
+                            self.print(session_id, json_kwargs, )
 
-                # 実行終了
-                elif (res_role == 'assistant') and (res_content != '' ):
+                            dic = {}
+                            dic['result'] = 'error' 
+                            res_json = json.dumps(dic, ensure_ascii=False, )
 
-                    function_name = 'exit'
-                    if (res_content.strip() != ''):
-                        res_text += res_content.rstrip() + '\n'
+                        # tool_result
+                        self.print(session_id, f" Assistant :   → { res_json }")
+                        self.print(session_id, )
+                        tool_result.append({"tool_call_id": tool_call_id, "output": res_json})
 
-                        self.seq += 1
-                        dic = {'seq': self.seq, 'time': time.time(), 'role': 'assistant', 'name': '', 'content': res_content }
-                        res_history.append(dic)
+                    # 結果通知
+                    run = self.client.beta.threads.runs.submit_tool_outputs(
+                        thread_id    = my_thread_id,
+                        run_id       = my_run_id,
+                        tool_outputs = tool_result, )
+
+                    # アシスタント更新
+                    if (upload_flag == True):
+                        res = self.my_assistant_update( session_id        = session_id,
+                                                        my_assistant_id   = my_assistant_id,
+                                                        my_assistant_name = my_assistant_name,
+                                                        model_name        = res_api, 
+                                                        instructions      = instructions, 
+                                                        functions         = functions,
+                                                        vectorStore_ids   = vectorStore_ids,
+                                                        upload_ids        = upload_ids, )
 
                 else:
-                    print('loop???', res_role, res_content)
-
-            # 正常回答
-            if (res_text != ''):
-                self.print(session_id, f" assistant  : { res_name.lower() }, complete.")
-            else:
-                self.print(session_id,  ' assistant  : Error !')
+                    self.print(session_id, run)
+                    self.print(session_id, )
+                    #time.sleep(0.50)
 
         #except Exception as e:
         #    print(e)
-        #    res_text = ''
+        #    res_content = None
+
+        if (exit_status is None):
+            exit_status = 'timeout'
+            self.print(session_id, f" Assistant : timeout! ({ self.assistant_max_wait_sec }s)")
+            #raise RuntimeError('assistant run timeout !')
+            
+        # 結果確認
+        if (exit_status == 'completed'):
+
+            if (res_content is not None):
+                #self.print(session_id, res_content.rstrip())
+                res_text += res_content.rstrip() + '\n'
+
+            # History 追加格納
+            self.seq += 1
+            dic = {'seq': self.seq, 'time': time.time(), 'role': res_role, 'name': '', 'content': res_text }
+            res_history.append(dic)
+
+        # 異常終了
+        else:
+            res_text = ''
+
+            # History 追加格納
+            self.seq += 1
+            dic = {'seq': self.seq, 'time': time.time(), 'role': 'assistant', 'name': '', 'content': exit_status }
+            res_history.append(dic)
+
+        # 実行キャンセル
+        runs = self.client.beta.threads.runs.list(
+            thread_id = my_thread_id, )
+        for r in range(len(runs.data)):
+            run_id     = runs.data[r].id
+            run_status = runs.data[r].status
+            if  (run_status != 'completed') \
+            and (run_status != 'cancelled') \
+            and (run_status != 'failed') \
+            and (run_status != 'expired') \
+            and (run_status != 'cancelling'):
+                try:
+                    run = self.client.beta.threads.runs.cancel(
+                        thread_id = my_thread_id, 
+                        run_id    = run_id, )
+                    self.print(session_id, f" Assistant : run cancel ... { run_id }")
+                except:
+                    pass
+
+        # ファイル削除
+        #res = self.threadFile_reset(session_id     = session_id,
+        #                            upload_ids     = upload_ids,
+        #                            assistant_id   = my_assistant_id,
+        #                            assistant_name = my_assistant_name, )
+        self.work_upload_ids     = upload_ids
+        self.work_assistant_id   = my_assistant_id
+        self.work_assistant_name = my_assistant_name
 
         return res_text, res_path, res_files, res_name, res_api, res_history
 
@@ -866,10 +1370,10 @@ class _assistantAPI:
         res_history = history
 
         if (sysText is None) or (sysText == ''):
-            sysText = 'あなたは教師のように話す賢いアシスタントです。'
+            sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
 
         if (self.bot_auth is None):
-            self.print(session_id, ' assistant : Not Authenticate Error !')
+            self.print(session_id, ' Assistant : Not Authenticate Error !')
             return res_text, res_path, nick_name, model_name, res_history
 
         # ファイル分離
@@ -886,12 +1390,20 @@ class _assistantAPI:
 
         # assistant
         res_text, res_path, res_files, nick_name, model_name, res_history = \
-        self.run_gpt(   chat_class=chat_class, model_select=model_select,
-                        nick_name=nick_name, model_name=model_name,
-                        session_id=session_id, history=res_history, function_modules=function_modules,
-                        sysText=sysText, reqText=reqText, inpText=inpText,
-                        upload_files=upload_files, image_urls=image_urls,
-                        temperature=temperature, max_step=max_step, jsonSchema=jsonSchema, )
+        self.run_assistant( chat_class=chat_class, model_select=model_select,
+                            nick_name=nick_name, model_name=model_name,
+                            session_id=session_id, history=res_history, function_modules=function_modules,
+                            sysText=sysText, reqText=reqText, inpText=inpText,
+                            upload_files=upload_files, image_urls=image_urls,
+                            temperature=temperature, max_step=max_step, jsonSchema=jsonSchema, )
+
+        #res_text, res_path, res_files, nick_name, model_name, res_history = \
+        #self.run_gpt(   chat_class=chat_class, model_select=model_select,
+        #                nick_name=nick_name, model_name=model_name,
+        #                session_id=session_id, history=res_history, function_modules=function_modules,
+        #                sysText=sysText, reqText=reqText, inpText=inpText,
+        #                upload_files=upload_files, image_urls=image_urls,
+        #                temperature=temperature, max_step=max_step, jsonSchema=jsonSchema, )
 
         # 文書成形
         if (res_text.strip() == ''):
@@ -957,7 +1469,7 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'おはようございます。'
+                inpText = 'assistant-b,おはようございます。'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
@@ -990,7 +1502,7 @@ if __name__ == '__main__':
                 print(str(res_text))
                 print()
 
-            if True:
+            if False:
                 sysText = None
                 reqText = ''
                 inpText = '添付画像を説明してください。'

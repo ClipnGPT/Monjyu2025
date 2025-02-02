@@ -149,13 +149,13 @@ class _geminiAPI:
         # 設定
         self.gemini_default_gpt         = gemini_default_gpt
         self.gemini_default_class       = gemini_default_class
-        if (not str(gemini_auto_continue) in ['', 'auto']):
+        if (str(gemini_auto_continue) not in ['', 'auto']):
             self.gemini_auto_continue   = int(gemini_auto_continue)
-        if (not str(gemini_max_step)      in ['', 'auto']):
+        if (str(gemini_max_step)      not in ['', 'auto']):
             self.gemini_max_step        = int(gemini_max_step)
-        if (not str(gemini_max_session)   in ['', 'auto']):
+        if (str(gemini_max_session)   not in ['', 'auto']):
             self.gemini_max_session     = int(gemini_max_session)
-        if (not str(gemini_max_wait_sec)  in ['', 'auto']):
+        if (str(gemini_max_wait_sec)  not in ['', 'auto']):
             self.gemini_max_wait_sec    = int(gemini_max_wait_sec)
 
         # モデル取得
@@ -172,7 +172,7 @@ class _geminiAPI:
             self.gemini_a_model         = gemini_a_model
             self.gemini_a_token         = int(gemini_a_token)
             self.gemini_a_use_tools     = gemini_a_use_tools
-            if (not gemini_a_model in self.models):
+            if (gemini_a_model not in self.models):
                 self.models[gemini_a_model] = {"id": gemini_a_model, "token": str(gemini_a_token), "modality": "text?", "date": ymd, }
 
         if (gemini_b_nick_name != ''):
@@ -181,7 +181,7 @@ class _geminiAPI:
             self.gemini_b_model         = gemini_b_model
             self.gemini_b_token         = int(gemini_b_token)
             self.gemini_b_use_tools     = gemini_b_use_tools
-            if (not gemini_b_model in self.models):
+            if (gemini_b_model not in self.models):
                 self.models[gemini_b_model] = {"id": gemini_b_model, "token": str(gemini_b_token), "modality": "text?", "date": ymd, }
 
         if (gemini_v_nick_name != ''):
@@ -190,7 +190,7 @@ class _geminiAPI:
             self.gemini_v_model         = gemini_v_model
             self.gemini_v_token         = int(gemini_v_token)
             self.gemini_v_use_tools     = gemini_v_use_tools
-            if (not gemini_v_model in self.models):
+            if (gemini_v_model not in self.models):
                 self.models[gemini_v_model] = {"id": gemini_v_model, "token": str(gemini_v_token), "modality": "text+image?", "date": ymd, }
 
         if (gemini_x_nick_name != ''):
@@ -199,7 +199,7 @@ class _geminiAPI:
             self.gemini_x_model         = gemini_x_model
             self.gemini_x_token         = int(gemini_x_token)
             self.gemini_x_use_tools     = gemini_x_use_tools
-            if (not gemini_x_model in self.models):
+            if (gemini_x_model not in self.models):
                 self.models[gemini_x_model] = {"id": gemini_x_model, "token": str(gemini_x_token), "modality": "text+image?", "date": ymd, }
 
         # モデル
@@ -247,7 +247,7 @@ class _geminiAPI:
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
-            if (not max_wait_sec in ['', 'auto']):
+            if (max_wait_sec not in ['', 'auto']):
                 if (str(max_wait_sec) != str(self.gemini_max_wait_sec)):
                     self.gemini_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
@@ -406,7 +406,7 @@ class _geminiAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' Gemini  : Not Authenticate Error !')
+            self.print(session_id, ' Gemini : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
@@ -503,26 +503,30 @@ class _geminiAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
+        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('freeai,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('free,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:11].lower() == ('openrouter,')):
+            inpText = inpText.strip()[11:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('openrt,')):
-            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('freeai,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:5].lower() == ('free,')):
-            inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:5].lower() == ('groq,')):
-            inpText = inpText.strip()[5:]
 
         # モデル 未設定時
         if (res_api is None):
@@ -577,21 +581,21 @@ class _geminiAPI:
                     if (hit == False):
 
                         # 送信
-                        self.print(session_id, f" Gemini  : Upload file '{ file_name }'.")
+                        self.print(session_id, f" Gemini : Upload file '{ file_name }'.")
                         upload_file = genai.upload_file(file_name, display_name=os.path.basename(file_name), )
                         upload_obj  = genai.get_file(upload_file.name)
 
                         # 待機
-                        self.print(session_id, f" Gemini  : Upload processing ... '{ upload_file.name }'")
+                        self.print(session_id, f" Gemini : Upload processing ... '{ upload_file.name }'")
                         chkTime = time.time()
                         while ((time.time() - chkTime) < 120) and (upload_file.state.name == "PROCESSING"):
                             time.sleep(5.00)
                         if (upload_file.state.name == "PROCESSING"):
-                            self.print(session_id, ' Gemini  : Upload timeout. (120s)')
+                            self.print(session_id, ' Gemini : Upload timeout. (120s)')
                             return res_text, res_path, res_name, res_api, res_history
 
                         # 完了
-                        self.print(session_id, ' Gemini  : Upload complete.')
+                        self.print(session_id, ' Gemini : Upload complete.')
                         req_files.append(upload_obj)
 
         # tools
@@ -645,7 +649,7 @@ class _geminiAPI:
         # # ファイル削除
         # files = genai.list_files()
         # for f in files:
-        #    self.print(session_id, f" Gemini  : Delete file { f.name }.")
+        #    self.print(session_id, f" Gemini : Delete file { f.name }.")
         #    genai.delete_file(f.name)
 
         request = []
@@ -660,7 +664,7 @@ class _geminiAPI:
         if (session_id == 'admin'):
             stream = True
             if (res_api.find('think') >= 0):
-                print(' Gemini  : stream = False, ')
+                print(' Gemini : stream = False, ')
                 stream = False
         else:
             stream = False
@@ -680,7 +684,7 @@ class _geminiAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" Gemini  : { res_name.lower() }, { res_api }, pass={ n }, ")
+                self.print(session_id, f" Gemini : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # 結果
                 content_text  = ''
@@ -776,8 +780,8 @@ class _geminiAPI:
                         for module_dic in function_modules:
                             if (f_name == module_dic['func_name']):
                                 hit = True
-                                self.print(session_id, f" Gemini  :   function_call '{ module_dic['script'] }' ({ f_name })")
-                                self.print(session_id, f" Gemini  :   → { f_kwargs }")
+                                self.print(session_id, f" Gemini :   function_call '{ module_dic['script'] }' ({ f_name })")
+                                self.print(session_id, f" Gemini :   → { f_kwargs }")
 
                                 # メッセージ追加格納
                                 self.seq += 1
@@ -796,7 +800,7 @@ class _geminiAPI:
                                     res_json = json.dumps(dic, ensure_ascii=False, )
 
                                 # tool_result
-                                self.print(session_id, f" Gemini  :   → { res_json }")
+                                self.print(session_id, f" Gemini :   → { res_json }")
                                 self.print(session_id, )
 
                                 # メッセージ追加格納
@@ -835,14 +839,14 @@ class _geminiAPI:
 
                         if (hit == False):
                             print(tc, )
-                            self.print(session_id, f" Gemini  :   function_call Error ! ({ f_name })")
+                            self.print(session_id, f" Gemini :   function_call Error ! ({ f_name })")
                             print(res_role, res_content, f_name, f_kwargs, )
                             break
                 
                 # GPT 会話終了
                 elif (res_role == 'assistant') and (res_content != ''):
                     function_name   = 'exit'
-                    self.print(session_id, f" Gemini  : { res_name.lower() }, complete.")
+                    self.print(session_id, f" Gemini : { res_name.lower() }, complete.")
 
             # 正常回答
             if (res_content != ''):
@@ -851,7 +855,7 @@ class _geminiAPI:
 
             # 異常回答
             else:
-                self.print(session_id, ' Gemini  : Error !')
+                self.print(session_id, ' Gemini : Error !')
 
             # History 追加格納
             if (res_text.strip() != ''):
@@ -864,7 +868,7 @@ class _geminiAPI:
             # # ファイル削除
             # files = genai.list_files()
             # for f in files:
-            #    self.print(session_id, f" Gemini  : Delete file { f.name }.")
+            #    self.print(session_id, f" Gemini : Delete file { f.name }.")
             #    genai.delete_file(f.name)
 
         #except Exception as e:

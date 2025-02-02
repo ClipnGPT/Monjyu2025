@@ -149,13 +149,13 @@ class _freeaiAPI:
         # 設定
         self.freeai_default_gpt         = freeai_default_gpt
         self.freeai_default_class       = freeai_default_class
-        if (not str(freeai_auto_continue) in ['', 'auto']):
+        if (str(freeai_auto_continue) not in ['', 'auto']):
             self.freeai_auto_continue   = int(freeai_auto_continue)
-        if (not str(freeai_max_step)      in ['', 'auto']):
+        if (str(freeai_max_step)      not in ['', 'auto']):
             self.freeai_max_step        = int(freeai_max_step)
-        if (not str(freeai_max_session)   in ['', 'auto']):
+        if (str(freeai_max_session)   not in ['', 'auto']):
             self.freeai_max_session     = int(freeai_max_session)
-        if (not str(freeai_max_wait_sec)  in ['', 'auto']):
+        if (str(freeai_max_wait_sec)  not in ['', 'auto']):
             self.freeai_max_wait_sec    = int(freeai_max_wait_sec)
 
         # モデル取得
@@ -172,7 +172,7 @@ class _freeaiAPI:
             self.freeai_a_model         = freeai_a_model
             self.freeai_a_token         = int(freeai_a_token)
             self.freeai_a_use_tools     = freeai_a_use_tools
-            if (not freeai_a_model in self.models):
+            if (freeai_a_model not in self.models):
                 self.models[freeai_a_model] = {"id": freeai_a_model, "token": str(freeai_a_token), "modality": "text?", "date": ymd, }
 
         if (freeai_b_nick_name != ''):
@@ -181,7 +181,7 @@ class _freeaiAPI:
             self.freeai_b_model         = freeai_b_model
             self.freeai_b_token         = int(freeai_b_token)
             self.freeai_b_use_tools     = freeai_b_use_tools
-            if (not freeai_b_model in self.models):
+            if (freeai_b_model not in self.models):
                 self.models[freeai_b_model] = {"id": freeai_b_model, "token": str(freeai_b_token), "modality": "text?", "date": ymd, }
 
         if (freeai_v_nick_name != ''):
@@ -190,7 +190,7 @@ class _freeaiAPI:
             self.freeai_v_model         = freeai_v_model
             self.freeai_v_token         = int(freeai_v_token)
             self.freeai_v_use_tools     = freeai_v_use_tools
-            if (not freeai_v_model in self.models):
+            if (freeai_v_model not in self.models):
                 self.models[freeai_v_model] = {"id": freeai_v_model, "token": str(freeai_v_token), "modality": "text+image?", "date": ymd, }
 
         if (freeai_x_nick_name != ''):
@@ -199,7 +199,7 @@ class _freeaiAPI:
             self.freeai_x_model         = freeai_x_model
             self.freeai_x_token         = int(freeai_x_token)
             self.freeai_x_use_tools     = freeai_x_use_tools
-            if (not freeai_x_model in self.models):
+            if (freeai_x_model not in self.models):
                 self.models[freeai_x_model] = {"id": freeai_x_model, "token": str(freeai_x_token), "modality": "text+image?", "date": ymd, }
 
         # モデル
@@ -247,7 +247,7 @@ class _freeaiAPI:
                          v_model='', v_use_tools='',
                          x_model='', x_use_tools='', ):
         try:
-            if (not max_wait_sec in ['', 'auto']):
+            if (max_wait_sec not in ['', 'auto']):
                 if (str(max_wait_sec) != str(self.freeai_max_wait_sec)):
                     self.freeai_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
@@ -406,7 +406,7 @@ class _freeaiAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' FreeAI  : Not Authenticate Error !')
+            self.print(session_id, ' FreeAI : Not Authenticate Error !')
             return res_text, res_path, res_name, res_api, res_history
 
         # モデル 設定
@@ -503,26 +503,30 @@ class _freeaiAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
+        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('gemini,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:7].lower() == ('freeai,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('free,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('claude,')):
+            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:11].lower() == ('openrouter,')):
+            inpText = inpText.strip()[11:]
+        elif (inpText.strip()[:7].lower() == ('openrt,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:11].lower() == ('perplexity,')):
             inpText = inpText.strip()[11:]
         elif (inpText.strip()[:5].lower() == ('pplx,')):
             inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:7].lower() == ('gemini,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:7].lower() == ('openrt,')):
-            inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:5].lower() == ('groq,')):
+            inpText = inpText.strip()[5:]
         elif (inpText.strip()[:7].lower() == ('ollama,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('local,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('freeai,')):
-            inpText = inpText.strip()[7:]
-        elif (inpText.strip()[:5].lower() == ('free,')):
-            inpText = inpText.strip()[5:]
-        elif (inpText.strip()[:5].lower() == ('groq,')):
-            inpText = inpText.strip()[5:]
 
         # モデル 未設定時
         if (res_api is None):
@@ -579,21 +583,21 @@ class _freeaiAPI:
                     if True:
 
                         # 送信
-                        self.print(session_id, f" FreeAI  : Upload file '{ file_name }'.")
+                        self.print(session_id, f" FreeAI : Upload file '{ file_name }'.")
                         upload_file = genai.upload_file(file_name, display_name=os.path.basename(file_name), )
                         upload_obj  = genai.get_file(upload_file.name)
 
                         # 待機
-                        self.print(session_id, f" FreeAI  : Upload processing ... '{ upload_file.name }'")
+                        self.print(session_id, f" FreeAI : Upload processing ... '{ upload_file.name }'")
                         chkTime = time.time()
                         while ((time.time() - chkTime) < 120) and (upload_file.state.name == "PROCESSING"):
                             time.sleep(5.00)
                         if (upload_file.state.name == "PROCESSING"):
-                            self.print(session_id, ' FreeAI  : Upload timeout. (120s)')
+                            self.print(session_id, ' FreeAI : Upload timeout. (120s)')
                             return res_text, res_path, res_name, res_api, res_history
 
                         # 完了
-                        self.print(session_id, ' FreeAI  : Upload complete.')
+                        self.print(session_id, ' FreeAI : Upload complete.')
                         req_files.append(upload_obj)
 
         # tools
@@ -647,7 +651,7 @@ class _freeaiAPI:
         # # ファイル削除
         # files = genai.list_files()
         # for f in files:
-        #    self.print(session_id, f" FreeAI  : Delete file { f.name }.")
+        #    self.print(session_id, f" FreeAI : Delete file { f.name }.")
         #    genai.delete_file(f.name)
 
         request = []
@@ -662,7 +666,7 @@ class _freeaiAPI:
         if (session_id == 'admin'):
             stream = True
             if (res_api.find('think') >= 0):
-                print(' FreeAI  : stream = False, ')
+                print(' FreeAI : stream = False, ')
                 stream = False
         else:
             stream = False
@@ -682,7 +686,7 @@ class _freeaiAPI:
 
                 # GPT
                 n += 1
-                self.print(session_id, f" FreeAI  : { res_name.lower() }, { res_api }, pass={ n }, ")
+                self.print(session_id, f" FreeAI : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # 結果
                 content_text  = ''
@@ -778,8 +782,8 @@ class _freeaiAPI:
                         for module_dic in function_modules:
                             if (f_name == module_dic['func_name']):
                                 hit = True
-                                self.print(session_id, f" FreeAI  :   function_call '{ module_dic['script'] }' ({ f_name })")
-                                self.print(session_id, f" FreeAI  :   → { f_kwargs }")
+                                self.print(session_id, f" FreeAI :   function_call '{ module_dic['script'] }' ({ f_name })")
+                                self.print(session_id, f" FreeAI :   → { f_kwargs }")
 
                                 # メッセージ追加格納
                                 self.seq += 1
@@ -798,7 +802,7 @@ class _freeaiAPI:
                                     res_json = json.dumps(dic, ensure_ascii=False, )
 
                                 # tool_result
-                                self.print(session_id, f" FreeAI  :   → { res_json }")
+                                self.print(session_id, f" FreeAI :   → { res_json }")
                                 self.print(session_id, )
 
                                 # メッセージ追加格納
@@ -837,14 +841,14 @@ class _freeaiAPI:
 
                         if (hit == False):
                             print(tc, )
-                            self.print(session_id, f" FreeAI  :   function_call Error ! ({ f_name })")
+                            self.print(session_id, f" FreeAI :   function_call Error ! ({ f_name })")
                             print(res_role, res_content, f_name, f_kwargs, )
                             break
                 
                 # GPT 会話終了
                 elif (res_role == 'assistant') and (res_content != ''):
                     function_name   = 'exit'
-                    self.print(session_id, f" FreeAI  : { res_name.lower() }, complete.")
+                    self.print(session_id, f" FreeAI : { res_name.lower() }, complete.")
 
             # 正常回答
             if (res_content != ''):
@@ -853,7 +857,7 @@ class _freeaiAPI:
 
             # 異常回答
             else:
-                self.print(session_id, ' FreeAI  : Error !')
+                self.print(session_id, ' FreeAI : Error !')
 
             # History 追加格納
             if (res_text.strip() != ''):
@@ -866,7 +870,7 @@ class _freeaiAPI:
             # # ファイル削除
             # files = genai.list_files()
             # for f in files:
-            #    self.print(session_id, f" FreeAI  : Delete file { f.name }.")
+            #    self.print(session_id, f" FreeAI : Delete file { f.name }.")
             #    genai.delete_file(f.name)
 
         #except Exception as e:
