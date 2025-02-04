@@ -181,7 +181,7 @@ class _chatgptAPI:
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = '????/??/??'
+        ymd = 'default'
 
         # chatgpt チャットボット
         if (chatgpt_a_nick_name != ''):
@@ -192,6 +192,8 @@ class _chatgptAPI:
             self.chatgpt_a_use_tools        = chatgpt_a_use_tools
             if (chatgpt_a_model not in self.models):
                 self.models[chatgpt_a_model] = {"id": chatgpt_a_model, "token": str(chatgpt_a_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[chatgpt_a_model]['date'] = ymd
 
         if (chatgpt_b_nick_name != ''):
             self.chatgpt_b_enable           = False
@@ -201,6 +203,8 @@ class _chatgptAPI:
             self.chatgpt_b_use_tools        = chatgpt_b_use_tools
             if (chatgpt_b_model not in self.models):
                 self.models[chatgpt_b_model] = {"id": chatgpt_b_model, "token": str(chatgpt_b_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[chatgpt_b_model]['date'] = ymd
 
         if (chatgpt_v_nick_name != ''):
             self.chatgpt_v_enable           = False
@@ -210,6 +214,9 @@ class _chatgptAPI:
             self.chatgpt_v_use_tools        = chatgpt_v_use_tools
             if (chatgpt_v_model not in self.models):
                 self.models[chatgpt_v_model] = {"id": chatgpt_v_model, "token": str(chatgpt_v_token), "modality": "text+image?", "date": ymd, }
+            else:
+                #self.models[chatgpt_v_model]['date'] = ymd
+                self.models[chatgpt_v_model]['modality'] = "text+image?"
 
         if (chatgpt_x_nick_name != ''):
             self.chatgpt_x_enable           = False
@@ -219,6 +226,8 @@ class _chatgptAPI:
             self.chatgpt_x_use_tools        = chatgpt_x_use_tools
             if (chatgpt_x_model not in self.models):
                 self.models[chatgpt_x_model] = {"id": chatgpt_x_model, "token": str(chatgpt_x_token), "modality": "text+image?", "date": ymd, }
+            #else:
+            #    self.models[chatgpt_x_model]['date'] = ymd
 
         # モデル
         hit = False
@@ -248,11 +257,10 @@ class _chatgptAPI:
             for model in models:
                 #print(model)
                 key = model.id
-                #if (key.find('gpt-3') < 0) and (key.find('audio') < 0) and (key.find('realtime') < 0) \
-                #and (key.find('dall-e') < 0) and (key.find('whisper') < 0) and (key.find('davinci') < 0) and (key.find('tts') < 0) \
-                #and (key.find('embedding') < 0) and (key.find('babbage') < 0) and (key.find('omni-moderation') < 0):
-                if True:
-                    ymd = datetime.datetime.fromtimestamp(model.created).strftime("%Y/%m/%d")
+                ymd = datetime.datetime.fromtimestamp(model.created).strftime("%Y/%m/%d")
+                if (ymd >= '2025/01/01') \
+                or (key.find('gpt-4o') >= 0) or (key.find('o1') >= 0) or (key.find('o3') >= 0):
+                #if True:
                     #print(key, ymd, )
                     self.models[key] = {"id":key, "token":"9999", "modality":"text?", "date": ymd, }
         except Exception as e:

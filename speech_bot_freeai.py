@@ -163,7 +163,7 @@ class _freeaiAPI:
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = '????/??/??'
+        ymd = 'default'
 
         # freeai チャットボット
         if (freeai_a_nick_name != ''):
@@ -174,6 +174,8 @@ class _freeaiAPI:
             self.freeai_a_use_tools     = freeai_a_use_tools
             if (freeai_a_model not in self.models):
                 self.models[freeai_a_model] = {"id": freeai_a_model, "token": str(freeai_a_token), "modality": "text?", "date": ymd, }
+            else:
+                self.models[freeai_a_model]['date'] = ymd
 
         if (freeai_b_nick_name != ''):
             self.freeai_b_enable        = False
@@ -183,6 +185,8 @@ class _freeaiAPI:
             self.freeai_b_use_tools     = freeai_b_use_tools
             if (freeai_b_model not in self.models):
                 self.models[freeai_b_model] = {"id": freeai_b_model, "token": str(freeai_b_token), "modality": "text?", "date": ymd, }
+            else:
+                self.models[freeai_b_model]['date'] = ymd
 
         if (freeai_v_nick_name != ''):
             self.freeai_v_enable        = False
@@ -192,6 +196,9 @@ class _freeaiAPI:
             self.freeai_v_use_tools     = freeai_v_use_tools
             if (freeai_v_model not in self.models):
                 self.models[freeai_v_model] = {"id": freeai_v_model, "token": str(freeai_v_token), "modality": "text+image?", "date": ymd, }
+            else:
+                self.models[freeai_v_model]['date'] = ymd
+                self.models[freeai_v_model]['modality'] = "text+image?"
 
         if (freeai_x_nick_name != ''):
             self.freeai_x_enable        = False
@@ -201,6 +208,8 @@ class _freeaiAPI:
             self.freeai_x_use_tools     = freeai_x_use_tools
             if (freeai_x_model not in self.models):
                 self.models[freeai_x_model] = {"id": freeai_x_model, "token": str(freeai_x_token), "modality": "text+image?", "date": ymd, }
+            else:
+                self.models[freeai_x_model]['date'] = ymd
 
         # モデル
         hit = False
@@ -232,9 +241,8 @@ class _freeaiAPI:
                 supported = model.supported_generation_methods
                 if ('generateContent' in supported):
                     key = model.name.replace('models/', '')
-                    #if  (key not in ['gemini-pro', 'gemini-pro-vision']) \
-                    #and (key.find('gemini-1.0') < 0) and (key.find('gemini-1.5') < 0):
-                    if True:
+                    if  (key.find('gemini-2') >= 0):
+                    #if True:
                         token = model.input_token_limit
                         #print(key, token, )
                         self.models[key] = {"id":key, "token":str(token), "modality":str(supported), "date":'????/??/??', }

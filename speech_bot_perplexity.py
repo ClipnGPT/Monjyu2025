@@ -158,7 +158,7 @@ class _perplexityAPI:
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = '????/??/??'
+        ymd = 'default'
 
         # perplexity チャットボット
         if (perplexity_a_nick_name != ''):
@@ -169,6 +169,8 @@ class _perplexityAPI:
             self.perplexity_a_use_tools     = perplexity_a_use_tools
             if (perplexity_a_model not in self.models):
                 self.models[perplexity_a_model] = {"id": perplexity_a_model, "token": str(perplexity_a_token), "modality": "text?", "date": ymd, }
+            else:
+                self.models[perplexity_a_model]['date'] = ymd
 
         if (perplexity_b_nick_name != ''):
             self.perplexity_b_enable        = False
@@ -178,6 +180,8 @@ class _perplexityAPI:
             self.perplexity_b_use_tools     = perplexity_b_use_tools
             if (perplexity_b_model not in self.models):
                 self.models[perplexity_b_model] = {"id": perplexity_b_model, "token": str(perplexity_b_token), "modality": "text?", "date": ymd, }
+            else:
+                self.models[perplexity_b_model]['date'] = ymd
 
         if (perplexity_v_nick_name != ''):
             self.perplexity_v_enable        = False
@@ -187,6 +191,9 @@ class _perplexityAPI:
             self.perplexity_v_use_tools     = perplexity_v_use_tools
             if (perplexity_v_model not in self.models):
                 self.models[perplexity_v_model] = {"id": perplexity_v_model, "token": str(perplexity_v_token), "modality": "text?", "date": ymd, }
+            else:
+                self.models[perplexity_v_model]['date'] = ymd
+            #    self.models[perplexity_v_model]['modality'] = "text+image?"
 
         if (perplexity_x_nick_name != ''):
             self.perplexity_x_enable        = False
@@ -196,6 +203,8 @@ class _perplexityAPI:
             self.perplexity_x_use_tools     = perplexity_x_use_tools
             if (perplexity_x_model not in self.models):
                 self.models[perplexity_x_model] = {"id": perplexity_x_model, "token": str(perplexity_x_token), "modality": "text?", "date": ymd, }
+            else:
+                self.models[perplexity_x_model]['date'] = ymd
 
         # モデル
         hit = False

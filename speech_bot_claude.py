@@ -161,7 +161,7 @@ class _claudeAPI:
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = '????/??/??'
+        ymd = 'default'
 
         # claude チャットボット
         if (claude_a_nick_name != ''):
@@ -172,6 +172,8 @@ class _claudeAPI:
             self.claude_a_use_tools     = claude_a_use_tools
             if (claude_a_model not in self.models):
                 self.models[claude_a_model] = {"id": claude_a_model, "token": str(claude_a_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[claude_a_model]['date'] = ymd
 
         if (claude_b_nick_name != ''):
             self.claude_b_enable        = False
@@ -181,6 +183,8 @@ class _claudeAPI:
             self.claude_b_use_tools     = claude_b_use_tools
             if (claude_b_model not in self.models):
                 self.models[claude_b_model] = {"id": claude_b_model, "token": str(claude_b_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[claude_b_model]['date'] = ymd
 
         if (claude_v_nick_name != ''):
             self.claude_v_enable        = False
@@ -189,7 +193,10 @@ class _claudeAPI:
             self.claude_v_token         = int(claude_v_token)
             self.claude_v_use_tools     = claude_v_use_tools
             if (claude_v_model not in self.models):
-                self.models[claude_v_model] = {"id": claude_v_model, "token": str(claude_v_token), "modality": "text?", "date": ymd, }
+                self.models[claude_v_model] = {"id": claude_v_model, "token": str(claude_v_token), "modality": "text+image?", "date": ymd, }
+            else:
+                #self.models[claude_v_model]['date'] = ymd
+                self.models[claude_v_model]['modality'] = "text+image?"
 
         if (claude_x_nick_name != ''):
             self.claude_x_enable        = False
@@ -198,7 +205,9 @@ class _claudeAPI:
             self.claude_x_token         = int(claude_x_token)
             self.claude_x_use_tools     = claude_x_use_tools
             if (claude_x_model not in self.models):
-                self.models[claude_x_model] = {"id": claude_x_model, "token": str(claude_x_token), "modality": "text?", "date": ymd, }
+                self.models[claude_x_model] = {"id": claude_x_model, "token": str(claude_x_token), "modality": "text+image?", "date": ymd, }
+            #else:
+            #    self.models[claude_x_model]['date'] = ymd
 
         # モデル
         hit = False

@@ -60,6 +60,11 @@ function get_engine_models(engine) {
         async: false, // 同期処理
         success: function(data) {
 
+            // オブジェクトの場合、エントリの配列に変換してソートする
+            const sortedEntries = Object.entries(data).sort((a, b) => {
+                return b[1].localeCompare(a[1]);
+            });
+            
             // chatgpt
             if (engine === 'chatgpt') {
                 if (JSON.stringify(data) !== last_engine_models.chatgpt) {
@@ -73,12 +78,13 @@ function get_engine_models(engine) {
                     $('#gpt_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#gpt_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#gpt_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#gpt_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#gpt_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#gpt_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#gpt_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.chatgpt = JSON.stringify(data);
                 }
             }
@@ -96,12 +102,13 @@ function get_engine_models(engine) {
                     $('#asst_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#asst_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#asst_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#asst_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#asst_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#asst_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#asst_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.assistant = JSON.stringify(data);
                 }
             }
@@ -119,12 +126,13 @@ function get_engine_models(engine) {
                     $('#gemn_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#gemn_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#gemn_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#gemn_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#gemn_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#gemn_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#gemn_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.gemini = JSON.stringify(data);
                 }
             }
@@ -142,12 +150,13 @@ function get_engine_models(engine) {
                     $('#free_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#free_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#free_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#free_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#free_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#free_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#free_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.freeai = JSON.stringify(data);
                 }
             }
@@ -165,12 +174,13 @@ function get_engine_models(engine) {
                     $('#clad_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#clad_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#clad_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#clad_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#clad_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#clad_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#clad_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.claude = JSON.stringify(data);
                 }
             }
@@ -188,12 +198,13 @@ function get_engine_models(engine) {
                     $('#ort_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#ort_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#ort_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#ort_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#ort_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#ort_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#ort_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.openrt = JSON.stringify(data);
                 }
             }
@@ -211,12 +222,13 @@ function get_engine_models(engine) {
                     $('#pplx_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#pplx_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#pplx_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#pplx_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#pplx_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#pplx_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#pplx_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.perplexity = JSON.stringify(data);
                 }
             }
@@ -234,12 +246,13 @@ function get_engine_models(engine) {
                     $('#grok_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#grok_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#grok_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#grok_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#grok_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#grok_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#grok_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.grok = JSON.stringify(data);
                 }
             }
@@ -257,12 +270,13 @@ function get_engine_models(engine) {
                     $('#groq_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#groq_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#groq_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#groq_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#groq_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#groq_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#groq_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.groq = JSON.stringify(data);
                 }
             }
@@ -280,12 +294,13 @@ function get_engine_models(engine) {
                     $('#olm_b_model').append(`<option value="">Auto (自動)</option>`);
                     $('#olm_v_model').append(`<option value="">Auto (自動)</option>`);
                     $('#olm_x_model').append(`<option value="">Auto (自動)</option>`);
-                    for (var [key, value] of Object.entries(data)) {
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
                         $('#olm_a_model').append(`<option value="${key}">${value}</option>`);
                         $('#olm_b_model').append(`<option value="${key}">${value}</option>`);
                         $('#olm_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#olm_x_model').append(`<option value="${key}">${value}</option>`);
-                    }
+                    });
                     last_engine_models.ollama = JSON.stringify(data);
                 }
             }

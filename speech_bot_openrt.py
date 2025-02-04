@@ -162,7 +162,7 @@ class _openrtAPI:
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = '????/??/??'
+        ymd = 'default'
 
         # openrt チャットボット
         if (openrt_a_nick_name != ''):
@@ -173,6 +173,8 @@ class _openrtAPI:
             self.openrt_a_use_tools     = openrt_a_use_tools
             if (openrt_a_model not in self.models):
                 self.models[openrt_a_model] = {"id": openrt_a_model, "token": str(openrt_a_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[openrt_a_model]['date'] = ymd
 
         if (openrt_b_nick_name != ''):
             self.openrt_b_enable        = False
@@ -182,6 +184,8 @@ class _openrtAPI:
             self.openrt_b_use_tools     = openrt_b_use_tools
             if (openrt_b_model not in self.models):
                 self.models[openrt_b_model] = {"id": openrt_b_model, "token": str(openrt_b_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[openrt_b_model]['date'] = ymd
 
         if (openrt_v_nick_name != ''):
             self.openrt_v_enable        = False
@@ -191,6 +195,9 @@ class _openrtAPI:
             self.openrt_v_use_tools     = openrt_v_use_tools
             if (openrt_v_model not in self.models):
                 self.models[openrt_v_model] = {"id": openrt_v_model, "token": str(openrt_v_token), "modality": "text+image?", "date": ymd, }
+            else:
+                #self.models[openrt_v_model]['date'] = ymd
+                self.models[openrt_v_model]['modality'] = "text+image?"
 
         if (openrt_x_nick_name != ''):
             self.openrt_x_enable        = False
@@ -200,6 +207,8 @@ class _openrtAPI:
             self.openrt_x_use_tools     = openrt_x_use_tools
             if (openrt_x_model not in self.models):
                 self.models[openrt_x_model] = {"id": openrt_x_model, "token": str(openrt_x_token), "modality": "text+image?", "date": ymd, }
+            #else:
+            #    self.models[openrt_x_model]['date'] = ymd
 
         # モデル
         hit = False

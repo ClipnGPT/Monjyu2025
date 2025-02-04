@@ -259,6 +259,7 @@ class CoreAiClass:
             return self.last_models_list
 
         models = {}
+        openrt_first_auth = False
 
         # ChatGPT
         if self.chat_class.chatgpt_enable is None:
@@ -350,6 +351,7 @@ class CoreAiClass:
             self.chat_class.openrt_auth()
             if self.chat_class.openrt_enable:
                 qLog.log('info', self.proc_id, f" OpenRouter : Ready, (Models count={ len(self.chat_class.openrtAPI.models) })")
+                openrt_first_auth = True
         if self.chat_class.openrt_enable:
             if True:
                 models['[openrt]'] = '[OpenRouter]'
@@ -429,6 +431,101 @@ class CoreAiClass:
                     models[self.chat_class.ollamaAPI.ollama_v_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_v_nick_name
                 if self.chat_class.ollamaAPI.ollama_x_enable and self.chat_class.ollamaAPI.ollama_x_nick_name:
                     models[self.chat_class.ollamaAPI.ollama_x_nick_name.lower()] = ' ' + self.chat_class.ollamaAPI.ollama_x_nick_name
+
+        # openrtの情報でmodel情報を更新
+        if (openrt_first_auth == True):
+            sorted_model = {k: self.chat_class.openrtAPI.models[k] for k in sorted(self.chat_class.openrtAPI.models)}
+            for key in sorted_model.keys():
+                id = sorted_model[key]['id']
+                token = sorted_model[key]['token']
+                modality = sorted_model[key]['modality']
+                date_ymd = sorted_model[key]['date']
+                if (id.find('/') > 0):
+                    model = id[id.find('/')+1:]
+
+                    # chatgpt
+                    modelx = model
+                    if (modelx == 'o1'):
+                        modelx =  'o1-2024-12-17'
+                    if (modelx == 'o3-mini'):
+                        modelx =  'o3-mini-2025-01-31'
+                    if (model in self.chat_class.chatgptAPI.models):
+                        self.chat_class.chatgptAPI.models[model]['token'] = str(token)
+                        self.chat_class.chatgptAPI.models[model]['modality'] = str(modality)
+                        #self.chat_class.chatgptAPI.models[model]['date'] = str(date_ymd)
+                    if (modelx in self.chat_class.chatgptAPI.models):
+                        self.chat_class.chatgptAPI.models[modelx]['token'] = str(token)
+                        self.chat_class.chatgptAPI.models[modelx]['modality'] = str(modality)
+                        #self.chat_class.chatgptAPI.models[modelx]['date'] = str(date_ymd)
+
+                    # assistant
+                    if (model in self.chat_class.assistantAPI.models):
+                        self.chat_class.assistantAPI.models[model]['token'] = str(token)
+                        self.chat_class.assistantAPI.models[model]['modality'] = str(modality)
+                        #self.chat_class.assistantAPI.models[model]['date'] = str(date_ymd)
+                    if (modelx in self.chat_class.assistantAPI.models):
+                        self.chat_class.assistantAPI.models[modelx]['token'] = str(token)
+                        self.chat_class.assistantAPI.models[modelx]['modality'] = str(modality)
+                        #self.chat_class.assistantAPI.models[modelx]['date'] = str(date_ymd)
+
+                    # gemini
+                    modelx = model
+                    if (modelx == 'gemini-2.0-flash-thinking-exp:free'):
+                        modelx =  'gemini-2.0-flash-thinking-exp-01-21'
+                    modelx = modelx.replace(':free', '')
+                    model  = model.replace(':free', '')
+                    if (model in self.chat_class.geminiAPI.models):
+                        #self.chat_class.geminiAPI.models[model]['token'] = str(token)
+                        self.chat_class.geminiAPI.models[model]['modality'] = str(modality)
+                        self.chat_class.geminiAPI.models[model]['date'] = str(date_ymd)
+                    if (modelx in self.chat_class.geminiAPI.models):
+                        #self.chat_class.geminiAPI.models[modelx]['token'] = str(token)
+                        self.chat_class.geminiAPI.models[modelx]['modality'] = str(modality)
+                        self.chat_class.geminiAPI.models[modelx]['date'] = str(date_ymd)
+
+                    # freeai
+                    if (model in self.chat_class.freeaiAPI.models):
+                        #self.chat_class.freeaiAPI.models[model]['token'] = str(token)
+                        self.chat_class.freeaiAPI.models[model]['modality'] = str(modality)
+                        self.chat_class.freeaiAPI.models[model]['date'] = str(date_ymd)
+                    if (modelx in self.chat_class.freeaiAPI.models):
+                        #self.chat_class.freeaiAPI.models[modelx]['token'] = str(token)
+                        self.chat_class.freeaiAPI.models[modelx]['modality'] = str(modality)
+                        self.chat_class.freeaiAPI.models[modelx]['date'] = str(date_ymd)
+
+                    # claude
+                    modelx = model
+                    if (modelx == 'claude-3-opus'):
+                        modelx =  'claude-3-opus-20240229'
+                    if (modelx == 'claude-3.5-sonnet'):
+                        modelx =  'claude-3-5-sonnet-20241022'
+                    modelx = modelx.replace('claude-3.5', 'claude-3-5')
+                    if (model in self.chat_class.claudeAPI.models):
+                        self.chat_class.claudeAPI.models[model]['token'] = str(token)
+                        self.chat_class.claudeAPI.models[model]['modality'] = str(modality)
+                        #self.chat_class.claudeAPI.models[model]['date'] = str(date_ymd)
+                    if (modelx in self.chat_class.claudeAPI.models):
+                        self.chat_class.claudeAPI.models[modelx]['token'] = str(token)
+                        self.chat_class.claudeAPI.models[modelx]['modality'] = str(modality)
+                        #self.chat_class.claudeAPI.models[modelx]['date'] = str(date_ymd)
+
+                    # perplexity
+                    if (model in self.chat_class.perplexityAPI.models):
+                        self.chat_class.perplexityAPI.models[model]['token'] = str(token)
+                        self.chat_class.perplexityAPI.models[model]['modality'] = str(modality)
+                        self.chat_class.perplexityAPI.models[model]['date'] = str(date_ymd)
+
+                    # grok
+                    if (model in self.chat_class.grokAPI.models):
+                        self.chat_class.grokAPI.models[model]['token'] = str(token)
+                        self.chat_class.grokAPI.models[model]['modality'] = str(modality)
+                        #self.chat_class.grokAPI.models[model]['date'] = str(date_ymd)
+
+                    # groq
+                    if (model in self.chat_class.groqAPI.models):
+                        #self.chat_class.groqAPI.models[model]['token'] = str(token)
+                        self.chat_class.groqAPI.models[model]['modality'] = str(modality)
+                        #self.chat_class.groqAPI.models[model]['date'] = str(date_ymd)
 
         self.last_models_list = models
         return self.last_models_list

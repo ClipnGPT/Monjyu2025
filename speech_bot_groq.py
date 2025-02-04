@@ -157,7 +157,7 @@ class _groqAPI:
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = '????/??/??'
+        ymd = 'default'
 
         # groq チャットボット
         if (groq_a_nick_name != ''):
@@ -168,6 +168,8 @@ class _groqAPI:
             self.groq_a_use_tools       = groq_a_use_tools
             if (groq_a_model not in self.models):
                 self.models[groq_a_model] = {"id": groq_a_model, "token": str(groq_a_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[groq_a_model]['date'] = ymd
 
         if (groq_b_nick_name != ''):
             self.groq_b_enable          = False
@@ -177,6 +179,8 @@ class _groqAPI:
             self.groq_b_use_tools       = groq_b_use_tools
             if (groq_b_model not in self.models):
                 self.models[groq_b_model] = {"id": groq_b_model, "token": str(groq_b_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[groq_b_model]['date'] = ymd
 
         if (groq_v_nick_name != ''):
             self.groq_v_enable          = False
@@ -186,6 +190,9 @@ class _groqAPI:
             self.groq_v_use_tools       = groq_v_use_tools
             if (groq_v_model not in self.models):
                 self.models[groq_v_model] = {"id": groq_v_model, "token": str(groq_v_token), "modality": "text+image?", "date": ymd, }
+            else:
+                #self.models[groq_v_model]['date'] = ymd
+                self.models[groq_v_model]['modality'] = "text+image?"
 
         if (groq_x_nick_name != ''):
             self.groq_x_enable          = False
@@ -194,7 +201,9 @@ class _groqAPI:
             self.groq_x_token           = int(groq_x_token)
             self.groq_x_use_tools       = groq_x_use_tools
             if (groq_x_model not in self.models):
-                self.models[groq_x_model] = {"id": groq_x_model, "token": str(groq_x_token), "modality": "text?", "date": ymd, }
+                self.models[groq_x_model] = {"id": groq_x_model, "token": str(groq_x_token), "modality": "text+image?", "date": ymd, }
+            #else:
+            #    self.models[groq_x_model]['date'] = ymd
 
         # モデル
         hit = False
@@ -227,7 +236,7 @@ class _groqAPI:
                 unix_timestamp = model.created
                 ymd = datetime.datetime.fromtimestamp(unix_timestamp).strftime("%Y/%m/%d")
                 #print(key, )
-                self.models[key] = {"id":key, "token": str(token), "modality":"text", "date": ymd, }
+                self.models[key] = {"id":key, "token": str(token), "modality":"text?", "date": ymd, }
         except Exception as e:
             print(e)
             return False

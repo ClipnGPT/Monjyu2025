@@ -162,7 +162,7 @@ class _grokAPI:
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = '????/??/??'
+        ymd = 'default'
 
         # grok チャットボット
         if (grok_a_nick_name != ''):
@@ -173,6 +173,8 @@ class _grokAPI:
             self.grok_a_use_tools     = grok_a_use_tools
             if (grok_a_model not in self.models):
                 self.models[grok_a_model] = {"id": grok_a_model, "token": str(grok_a_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[grok_a_model]['date'] = ymd
 
         if (grok_b_nick_name != ''):
             self.grok_b_enable        = False
@@ -182,6 +184,8 @@ class _grokAPI:
             self.grok_b_use_tools     = grok_b_use_tools
             if (grok_b_model not in self.models):
                 self.models[grok_b_model] = {"id": grok_b_model, "token": str(grok_b_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[grok_b_model]['date'] = ymd
 
         if (grok_v_nick_name != ''):
             self.grok_v_enable        = False
@@ -191,6 +195,9 @@ class _grokAPI:
             self.grok_v_use_tools     = grok_v_use_tools
             if (grok_v_model not in self.models):
                 self.models[grok_v_model] = {"id": grok_v_model, "token": str(grok_v_token), "modality": "text+image?", "date": ymd, }
+            else:
+            #    self.models[grok_v_model]['date'] = ymd
+                self.models[grok_v_model]['modality'] = "text+image?"
 
         if (grok_x_nick_name != ''):
             self.grok_x_enable        = False
@@ -200,6 +207,8 @@ class _grokAPI:
             self.grok_x_use_tools     = grok_x_use_tools
             if (grok_x_model not in self.models):
                 self.models[grok_x_model] = {"id": grok_x_model, "token": str(grok_x_token), "modality": "text+image?", "date": ymd, }
+            #else:
+            #    self.models[grok_x_model]['date'] = ymd
 
         # モデル
         hit = False

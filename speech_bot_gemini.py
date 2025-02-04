@@ -163,7 +163,7 @@ class _geminiAPI:
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = '????/??/??'
+        ymd = 'default'
 
         # gemini チャットボット
         if (gemini_a_nick_name != ''):
@@ -174,6 +174,8 @@ class _geminiAPI:
             self.gemini_a_use_tools     = gemini_a_use_tools
             if (gemini_a_model not in self.models):
                 self.models[gemini_a_model] = {"id": gemini_a_model, "token": str(gemini_a_token), "modality": "text?", "date": ymd, }
+            else:
+                self.models[gemini_a_model]['date'] = ymd
 
         if (gemini_b_nick_name != ''):
             self.gemini_b_enable        = False
@@ -183,6 +185,8 @@ class _geminiAPI:
             self.gemini_b_use_tools     = gemini_b_use_tools
             if (gemini_b_model not in self.models):
                 self.models[gemini_b_model] = {"id": gemini_b_model, "token": str(gemini_b_token), "modality": "text?", "date": ymd, }
+            else:
+                self.models[gemini_b_model]['date'] = ymd
 
         if (gemini_v_nick_name != ''):
             self.gemini_v_enable        = False
@@ -192,6 +196,9 @@ class _geminiAPI:
             self.gemini_v_use_tools     = gemini_v_use_tools
             if (gemini_v_model not in self.models):
                 self.models[gemini_v_model] = {"id": gemini_v_model, "token": str(gemini_v_token), "modality": "text+image?", "date": ymd, }
+            else:
+                self.models[gemini_v_model]['date'] = ymd
+                self.models[gemini_v_model]['modality'] = "text+image?"
 
         if (gemini_x_nick_name != ''):
             self.gemini_x_enable        = False
@@ -201,6 +208,8 @@ class _geminiAPI:
             self.gemini_x_use_tools     = gemini_x_use_tools
             if (gemini_x_model not in self.models):
                 self.models[gemini_x_model] = {"id": gemini_x_model, "token": str(gemini_x_token), "modality": "text+image?", "date": ymd, }
+            else:
+                self.models[gemini_x_model]['date'] = ymd
 
         # モデル
         hit = False
@@ -232,9 +241,8 @@ class _geminiAPI:
                 supported = model.supported_generation_methods
                 if ('generateContent' in supported):
                     key = model.name.replace('models/', '')
-                    #if  (key not in ['gemini-pro', 'gemini-pro-vision']) \
-                    #and (key.find('gemini-1.0') < 0) and (key.find('gemini-1.5') < 0):
-                    if True:
+                    if  (key.find('gemini-2') >= 0):
+                    #if True:
                         token = model.input_token_limit
                         #print(key, token, )
                         self.models[key] = {"id":key, "token":str(token), "modality":str(supported), "date": '????/??/??', }

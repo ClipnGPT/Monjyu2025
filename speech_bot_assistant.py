@@ -190,7 +190,7 @@ class _assistantAPI:
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
-        ymd = '????/??/??'
+        ymd = 'default'
 
         # assistant チャットボット
         if (assistant_a_nick_name != ''):
@@ -201,6 +201,8 @@ class _assistantAPI:
             self.assistant_a_use_tools        = assistant_a_use_tools
             if (assistant_a_model not in self.models):
                 self.models[assistant_a_model] = {"id": assistant_a_model, "token": str(assistant_a_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[assistant_a_model]['date'] = ymd
 
         if (assistant_b_nick_name != ''):
             self.assistant_b_enable           = False
@@ -210,6 +212,8 @@ class _assistantAPI:
             self.assistant_b_use_tools        = assistant_b_use_tools
             if (assistant_b_model not in self.models):
                 self.models[assistant_b_model] = {"id": assistant_b_model, "token": str(assistant_b_token), "modality": "text?", "date": ymd, }
+            #else:
+            #    self.models[assistant_b_model]['date'] = ymd
 
         if (assistant_v_nick_name != ''):
             self.assistant_v_enable           = False
@@ -219,6 +223,9 @@ class _assistantAPI:
             self.assistant_v_use_tools        = assistant_v_use_tools
             if (assistant_v_model not in self.models):
                 self.models[assistant_v_model] = {"id": assistant_v_model, "token": str(assistant_v_token), "modality": "text+image?", "date": ymd, }
+            else:
+                #self.models[assistant_v_model]['date'] = ymd
+                self.models[assistant_v_model]['modality'] = "text+image?"
 
         if (assistant_x_nick_name != ''):
             self.assistant_x_enable           = False
@@ -228,6 +235,8 @@ class _assistantAPI:
             self.assistant_x_use_tools        = assistant_x_use_tools
             if (assistant_x_model not in self.models):
                 self.models[assistant_x_model] = {"id": assistant_x_model, "token": str(assistant_x_token), "modality": "text+image?", "date": ymd, }
+            #else:
+            #    self.models[assistant_x_model]['date'] = ymd
 
         # モデル
         hit = False
@@ -257,11 +266,10 @@ class _assistantAPI:
             for model in models:
                 #print(model)
                 key = model.id
-                #if (key.find('gpt-3') < 0) and (key.find('audio') < 0) and (key.find('realtime') < 0) \
-                #and (key.find('dall-e') < 0) and (key.find('whisper') < 0) and (key.find('davinci') < 0) and (key.find('tts') < 0) \
-                #and (key.find('embedding') < 0) and (key.find('babbage') < 0) and (key.find('omni-moderation') < 0):
-                if True:
-                    ymd = datetime.datetime.fromtimestamp(model.created).strftime("%Y/%m/%d")
+                ymd = datetime.datetime.fromtimestamp(model.created).strftime("%Y/%m/%d")
+                if (ymd >= '2025/01/01') \
+                or (key.find('gpt-4o') >= 0) or (key.find('o1') >= 0) or (key.find('o3') >= 0):
+                #if True:
                     #print(key, ymd, )
                     self.models[key] = {"id":key, "token":"9999", "modality":"text?", "date": ymd, }
         except Exception as e:
