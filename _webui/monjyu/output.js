@@ -172,6 +172,22 @@ function post_tts_text(speech_text) {
     });
 }
 
+// Live出力(text)
+function post_live_request(live_req, live_text) {
+    $.ajax({
+        url: '/post_live_request',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ live_req: live_req, live_text: live_text }),
+        success: function(response) {
+            console.log('post_live_request:', response); // レスポンスをログに表示
+        },
+        error: function(xhr, status, error) {
+            console.error('post_live_request error:', error); // エラーログを出力
+        }
+    });
+}
+
 
 
 // ドキュメントが読み込まれた時に実行される処理
@@ -252,6 +268,18 @@ $(document).ready(function() {
     });
     $('#tts-data-button').click(function() {
         post_tts_text( $('#output_data').val() );
+    });
+    $('#live-data-button').click(function() {
+        post_live_request( '', $('#output_data').val() );
+    });
+    $('#live-data-youyaku').click(function() {
+        post_live_request( '以下を要約して、音声で教えてください。', $('#output_data').val() );
+    });
+    $('#live-data-roudoku').click(function() {
+        post_live_request( '以下の小説を、感情豊かに朗読してください。', $('#output_data').val() );
+    });
+    $('#live-data-honyaku').click(function() {
+        post_live_request( '以下を日本語に翻訳し要約して、音声で教えてください。', $('#output_data').val() );
     });
 
 });

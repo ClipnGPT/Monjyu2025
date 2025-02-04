@@ -52,6 +52,9 @@ qPath_templates = '_webui/monjyu'
 qPath_static    = '_webui/monjyu/static'
 DEFAULT_ICON    = qPath_static + '/' + "icon_monjyu.png"
 
+# インターフェース
+qIO_py2live       = 'temp/browser操作Agent_py2live.txt'
+
 # 共通ルーチンのインポートと初期化
 import _v6__qLog
 qLog = _v6__qLog.qLog_class()
@@ -132,6 +135,11 @@ class sttFieldModel(BaseModel):
 # 音声合成文字列モデル
 class ttsTextModel(BaseModel):
     speech_text: str
+
+# Live送信文字列モデル
+class liveRequestModel(BaseModel):
+    live_req: str
+    live_text: str
 
 # speech json 文字列モデル
 class speechJsonModel(BaseModel):
@@ -244,6 +252,7 @@ class WebUiClass:
         self.app.get("/get_output_file/{filename}")(self.get_output_file)
         self.app.get("/get_source")(self.get_source)
         self.app.post("/post_tts_text")(self.post_tts_text)
+        self.app.post("/post_live_request")(self.post_live_request)
         self.app.post("/post_tts_csv")(self.post_tts_csv)
         self.app.get("/get_stt")(self.get_stt)
         self.app.get("/get_url_to_text")(self.get_url_to_text)
@@ -311,7 +320,25 @@ class WebUiClass:
         try:
             if (self.data is not None) and (self.coreai is not None):
 
-                if (engine == 'gemini'):
+                if (engine == 'chatgpt'):
+                    if (len(self.data.engine_models['chatgpt']) != len(self.coreai.chat_class.chatgptAPI.models)):
+                        self.data.engine_models['chatgpt'] = {}
+                        for key,value in self.coreai.chat_class.chatgptAPI.models.items():
+                            self.data.engine_models['chatgpt'][key]      = self.coreai.chat_class.chatgptAPI.models[key]["date"] + " : " \
+                                                                         + self.coreai.chat_class.chatgptAPI.models[key]["id"] + ", " \
+                                                                         + str(self.coreai.chat_class.chatgptAPI.models[key]["token"]) + ", " \
+                                                                         + self.coreai.chat_class.chatgptAPI.models[key]["modality"] + ", "
+
+                elif (engine == 'assistant'):
+                    if (len(self.data.engine_models['assistant']) != len(self.coreai.chat_class.assistantAPI.models)):
+                        self.data.engine_models['assistant'] = {}
+                        for key,value in self.coreai.chat_class.assistantAPI.models.items():
+                            self.data.engine_models['assistant'][key]      = self.coreai.chat_class.assistantAPI.models[key]["date"] + " : " \
+                                                                           + self.coreai.chat_class.assistantAPI.models[key]["id"] + ", " \
+                                                                           + str(self.coreai.chat_class.assistantAPI.models[key]["token"]) + ", " \
+                                                                           + self.coreai.chat_class.assistantAPI.models[key]["modality"] + ", "
+
+                elif (engine == 'gemini'):
                     if (len(self.data.engine_models['gemini']) != len(self.coreai.chat_class.geminiAPI.models)):
                         self.data.engine_models['gemini'] = {}
                         for key,value in self.coreai.chat_class.geminiAPI.models.items():
@@ -356,6 +383,15 @@ class WebUiClass:
                                                                         + str(self.coreai.chat_class.perplexityAPI.models[key]["token"]) + ", " \
                                                                         + self.coreai.chat_class.perplexityAPI.models[key]["modality"] + ", "
 
+                elif (engine == 'grok'):
+                    if (len(self.data.engine_models['grok']) != len(self.coreai.chat_class.grokAPI.models)):
+                        self.data.engine_models['grok'] = {}
+                        for key,value in self.coreai.chat_class.grokAPI.models.items():
+                            self.data.engine_models['grok'][key]        = self.coreai.chat_class.grokAPI.models[key]["date"] + " : " \
+                                                                        + self.coreai.chat_class.grokAPI.models[key]["id"] + ", " \
+                                                                        + str(self.coreai.chat_class.grokAPI.models[key]["token"]) + ", " \
+                                                                        + self.coreai.chat_class.grokAPI.models[key]["modality"] + ", "
+
                 elif (engine == 'groq'):
                     if (len(self.data.engine_models['groq']) != len(self.coreai.chat_class.groqAPI.models)):
                         self.data.engine_models['groq'] = {}
@@ -380,7 +416,8 @@ class WebUiClass:
 
         except Exception as e:
             #print(e)
-            raise HTTPException(status_code=500, detail='post_engine_models error:' + e)
+            #raise HTTPException(status_code=500, detail='post_engine_models error:' + e)
+            return JSONResponse(content={})
         return JSONResponse(content=result)
 
     async def get_engine_setting(self, engine: str):
@@ -388,7 +425,41 @@ class WebUiClass:
         try:
             if (self.data is not None) and (self.coreai is not None):
 
-                if (engine == 'gemini'):
+                if (engine == 'chatgpt'):
+                    self.data.engine_setting['chatgpt'] = {
+                        "a_nick_name": self.coreai.chat_class.chatgptAPI.chatgpt_a_nick_name,
+                        "b_nick_name": self.coreai.chat_class.chatgptAPI.chatgpt_b_nick_name,
+                        "v_nick_name": self.coreai.chat_class.chatgptAPI.chatgpt_v_nick_name,
+                        "x_nick_name": self.coreai.chat_class.chatgptAPI.chatgpt_x_nick_name,
+                        "max_wait_sec": str(self.coreai.chat_class.chatgptAPI.chatgpt_max_wait_sec),
+                        "a_model": self.coreai.chat_class.chatgptAPI.chatgpt_a_model,
+                        "a_use_tools": self.coreai.chat_class.chatgptAPI.chatgpt_a_use_tools,
+                        "b_model": self.coreai.chat_class.chatgptAPI.chatgpt_b_model,
+                        "b_use_tools": self.coreai.chat_class.chatgptAPI.chatgpt_b_use_tools,
+                        "v_model": self.coreai.chat_class.chatgptAPI.chatgpt_v_model,
+                        "v_use_tools": self.coreai.chat_class.chatgptAPI.chatgpt_v_use_tools,
+                        "x_model": self.coreai.chat_class.chatgptAPI.chatgpt_x_model,
+                        "x_use_tools": self.coreai.chat_class.chatgptAPI.chatgpt_x_use_tools,
+                    }
+
+                elif (engine == 'assistant'):
+                    self.data.engine_setting['assistant'] = {
+                        "a_nick_name": self.coreai.chat_class.assistantAPI.assistant_a_nick_name,
+                        "b_nick_name": self.coreai.chat_class.assistantAPI.assistant_b_nick_name,
+                        "v_nick_name": self.coreai.chat_class.assistantAPI.assistant_v_nick_name,
+                        "x_nick_name": self.coreai.chat_class.assistantAPI.assistant_x_nick_name,
+                        "max_wait_sec": str(self.coreai.chat_class.assistantAPI.assistant_max_wait_sec),
+                        "a_model": self.coreai.chat_class.assistantAPI.assistant_a_model,
+                        "a_use_tools": self.coreai.chat_class.assistantAPI.assistant_a_use_tools,
+                        "b_model": self.coreai.chat_class.assistantAPI.assistant_b_model,
+                        "b_use_tools": self.coreai.chat_class.assistantAPI.assistant_b_use_tools,
+                        "v_model": self.coreai.chat_class.assistantAPI.assistant_v_model,
+                        "v_use_tools": self.coreai.chat_class.assistantAPI.assistant_v_use_tools,
+                        "x_model": self.coreai.chat_class.assistantAPI.assistant_x_model,
+                        "x_use_tools": self.coreai.chat_class.assistantAPI.assistant_x_use_tools,
+                    }
+
+                elif (engine == 'gemini'):
                     self.data.engine_setting['gemini'] = {
                         "a_nick_name": self.coreai.chat_class.geminiAPI.gemini_a_nick_name,
                         "b_nick_name": self.coreai.chat_class.geminiAPI.gemini_b_nick_name,
@@ -473,6 +544,23 @@ class WebUiClass:
                         "x_use_tools": self.coreai.chat_class.perplexityAPI.perplexity_x_use_tools,
                     }
 
+                elif (engine == 'grok'):
+                    self.data.engine_setting['grok'] = {
+                        "a_nick_name": self.coreai.chat_class.grokAPI.grok_a_nick_name,
+                        "b_nick_name": self.coreai.chat_class.grokAPI.grok_b_nick_name,
+                        "v_nick_name": self.coreai.chat_class.grokAPI.grok_v_nick_name,
+                        "x_nick_name": self.coreai.chat_class.grokAPI.grok_x_nick_name,
+                        "max_wait_sec": str(self.coreai.chat_class.grokAPI.grok_max_wait_sec),
+                        "a_model": self.coreai.chat_class.grokAPI.grok_a_model,
+                        "a_use_tools": self.coreai.chat_class.grokAPI.grok_a_use_tools,
+                        "b_model": self.coreai.chat_class.grokAPI.grok_b_model,
+                        "b_use_tools": self.coreai.chat_class.grokAPI.grok_b_use_tools,
+                        "v_model": self.coreai.chat_class.grokAPI.grok_v_model,
+                        "v_use_tools": self.coreai.chat_class.grokAPI.grok_v_use_tools,
+                        "x_model": self.coreai.chat_class.grokAPI.grok_x_model,
+                        "x_use_tools": self.coreai.chat_class.grokAPI.grok_x_use_tools,
+                    }
+
                 elif (engine == 'groq'):
                     self.data.engine_setting['groq'] = {
                         "a_nick_name": self.coreai.chat_class.groqAPI.groq_a_nick_name,
@@ -537,7 +625,23 @@ class WebUiClass:
                                                     "x_model": x_model, "x_use_tools": x_use_tools, }
                 if (self.coreai is not None):
 
-                    if (engine == 'gemini'):
+                    if (engine == 'chatgpt'):
+                        engine_set_thread = threading.Thread(
+                            target=self.coreai.chat_class.chatgptAPI.set_models,
+                            args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
+                                                v_model, v_use_tools, x_model, x_use_tools, ),
+                            daemon=True, )
+                        engine_set_thread.start()
+
+                    elif (engine == 'assistant'):
+                        engine_set_thread = threading.Thread(
+                            target=self.coreai.chat_class.assistantAPI.set_models,
+                            args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
+                                                v_model, v_use_tools, x_model, x_use_tools, ),
+                            daemon=True, )
+                        engine_set_thread.start()
+
+                    elif (engine == 'gemini'):
                         engine_set_thread = threading.Thread(
                             target=self.coreai.chat_class.geminiAPI.set_models,
                             args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
@@ -577,6 +681,14 @@ class WebUiClass:
                             daemon=True, )
                         engine_set_thread.start()
 
+                    elif (engine == 'grok'):
+                        engine_set_thread = threading.Thread(
+                            target=self.coreai.chat_class.grokAPI.set_models,
+                            args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
+                                                v_model, v_use_tools, x_model, x_use_tools, ),
+                            daemon=True, )
+                        engine_set_thread.start()
+
                     elif (engine == 'groq'):
                         engine_set_thread = threading.Thread(
                             target=self.coreai.chat_class.groqAPI.set_models,
@@ -595,7 +707,7 @@ class WebUiClass:
 
         except Exception as e:
             #print(e)
-            raise HTTPException(status_code=500, detail='post_engine_setting error:' + str(e))
+            raise HTTPException(status_code=500, detail='post_engine_setting error:' + e)
         return JSONResponse(content={'message': 'post_engine_setting successfully'})
 
     async def get_addins_setting(self):
@@ -835,7 +947,7 @@ class WebUiClass:
             raise HTTPException(status_code=503, detail='get_source error:' + str(source_name))
 
     async def post_tts_text(self, data: ttsTextModel):
-        speech_text = data.speech_text
+        speech_text = str(data.speech_text) if data.speech_text else ""
 
         # 音声合成
         ext_module = self.addin.addin_modules.get('addin_UI_TTS', None)
@@ -865,8 +977,31 @@ class WebUiClass:
 
         return JSONResponse({'message': 'post_tts_text successfully'})
 
+    async def post_live_request(self, data: liveRequestModel):
+        live_req  = str(data.live_req) if data.live_req else ""
+        live_text = str(data.live_text) if data.live_text else ""
+
+        # live送信
+        filename = qIO_py2live
+        text = ''
+        if (live_req != ''):
+            text += live_req.rstrip() + '\n'
+        if (live_text != ''):
+            text += live_text.rstrip() + '\n'
+
+        try:
+            w = codecs.open(filename, 'w', 'utf-8')
+            w.write(text)
+            w.close()
+            w = None
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail='post_live_request error:' + e)
+
+        return JSONResponse({'message': 'post_live_request successfully'})
+
     async def post_tts_csv(self, data: ttsTextModel):
-        speech_text = data.speech_text
+        speech_text = str(data.speech_text) if data.speech_text else ""
 
         # 音声合成
         ext_module = self.addin.addin_modules.get('addin_UI_TTS', None)

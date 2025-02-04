@@ -232,7 +232,9 @@ class _freeaiAPI:
                 supported = model.supported_generation_methods
                 if ('generateContent' in supported):
                     key = model.name.replace('models/', '')
-                    if (key.find('gemini-1.0') < 0) and (key.find('gemini-1.5') < 0):
+                    #if  (key not in ['gemini-pro', 'gemini-pro-vision']) \
+                    #and (key.find('gemini-1.0') < 0) and (key.find('gemini-1.5') < 0):
+                    if True:
                         token = model.input_token_limit
                         #print(key, token, )
                         self.models[key] = {"id":key, "token":str(token), "modality":str(supported), "date":'????/??/??', }
@@ -602,7 +604,7 @@ class _freeaiAPI:
 
         # tools
         tools = []
-        #print(' openrt  : tools = [], ')
+        #print(' openrt  : tools=[], ')
         if True:
             if (use_tools.lower().find('yes') >= 0):
 
@@ -666,7 +668,7 @@ class _freeaiAPI:
         if (session_id == 'admin'):
             stream = True
             if (res_api.find('think') >= 0):
-                print(' FreeAI : stream = False, ')
+                print(' FreeAI : stream=False, ')
                 stream = False
         else:
             stream = False

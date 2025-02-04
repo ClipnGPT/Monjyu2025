@@ -263,6 +263,8 @@ class CoreAiClass:
         # ChatGPT
         if self.chat_class.chatgpt_enable is None:
             self.chat_class.chatgpt_auth()
+            if self.chat_class.chatgpt_enable:
+                qLog.log('info', self.proc_id, f" ChatGPT    : Ready, (Models count={ len(self.chat_class.chatgptAPI.models) })")
         if self.chat_class.chatgpt_enable:
             if (req_mode == 'chat'):
                 models['[chatgpt]'] = '[ChatGPT]'
@@ -278,6 +280,8 @@ class CoreAiClass:
         # Assistant
         if self.chat_class.assistant_enable is None:
             self.chat_class.assistant_auth()
+            if self.chat_class.assistant_enable:
+                qLog.log('info', self.proc_id, f" Assistant  : Ready, (Models count={ len(self.chat_class.assistantAPI.models) })")
         if self.chat_class.assistant_enable:
             if (req_mode == 'chat'):
                 models['[assistant]'] = '[Assistant]'
@@ -293,6 +297,8 @@ class CoreAiClass:
         # Gemini
         if self.chat_class.gemini_enable is None:
             self.chat_class.gemini_auth()
+            if self.chat_class.gemini_enable:
+                qLog.log('info', self.proc_id, f" Gemini     : Ready, (Models count={ len(self.chat_class.geminiAPI.models) })")
         if self.chat_class.gemini_enable:
             if (req_mode == 'chat'):
                 models['[gemini]'] = '[Gemini]'
@@ -308,6 +314,8 @@ class CoreAiClass:
         # FreeAI
         if self.chat_class.freeai_enable is None:
             self.chat_class.freeai_auth()
+            if self.chat_class.freeai_enable:
+                qLog.log('info', self.proc_id, f" FreeAI     : Ready, (Models count={ len(self.chat_class.freeaiAPI.models) })")
         if self.chat_class.freeai_enable:
             if True:
                 models['[freeai]'] = '[FreeAI]'
@@ -323,6 +331,8 @@ class CoreAiClass:
         # Claude
         if self.chat_class.claude_enable is None:
             self.chat_class.claude_auth()
+            if self.chat_class.claude_enable:
+                qLog.log('info', self.proc_id, f" Claude     : Ready, (Models count={ len(self.chat_class.claudeAPI.models) })")
         if self.chat_class.claude_enable:
             if (req_mode == 'chat'):
                 models['[claude]'] = '[Claude]'
@@ -338,6 +348,8 @@ class CoreAiClass:
         # OpenRouter
         if self.chat_class.openrt_enable is None:
             self.chat_class.openrt_auth()
+            if self.chat_class.openrt_enable:
+                qLog.log('info', self.proc_id, f" OpenRouter : Ready, (Models count={ len(self.chat_class.openrtAPI.models) })")
         if self.chat_class.openrt_enable:
             if True:
                 models['[openrt]'] = '[OpenRouter]'
@@ -353,6 +365,8 @@ class CoreAiClass:
         # Perplexity
         if self.chat_class.perplexity_enable is None:
             self.chat_class.perplexity_auth()
+            if self.chat_class.perplexity_enable:
+                qLog.log('info', self.proc_id, f" Perplexity : Ready, (Models count={ len(self.chat_class.perplexityAPI.models) })")
         if self.chat_class.perplexity_enable:
             if (req_mode == 'chat'):
                 models['[perplexity]'] = '[Perplexity]'
@@ -365,9 +379,28 @@ class CoreAiClass:
                 if self.chat_class.perplexityAPI.perplexity_x_enable and self.chat_class.perplexityAPI.perplexity_x_nick_name:
                     models[self.chat_class.perplexityAPI.perplexity_x_nick_name.lower()] = ' ' + self.chat_class.perplexityAPI.perplexity_x_nick_name
 
+        # Grok
+        if self.chat_class.grok_enable is None:
+            self.chat_class.grok_auth()
+            if self.chat_class.grok_enable:
+                qLog.log('info', self.proc_id, f" Grok       : Ready, (Models count={ len(self.chat_class.grokAPI.models) })")
+        if self.chat_class.grok_enable:
+            if (req_mode == 'chat'):
+                models['[grok]'] = '[Grok]'
+                if self.chat_class.grokAPI.grok_a_enable and self.chat_class.grokAPI.grok_a_nick_name:
+                    models[self.chat_class.grokAPI.grok_a_nick_name.lower()] = ' ' + self.chat_class.grokAPI.grok_a_nick_name
+                if self.chat_class.grokAPI.grok_b_enable and self.chat_class.grokAPI.grok_b_nick_name:
+                    models[self.chat_class.grokAPI.grok_b_nick_name.lower()] = ' ' + self.chat_class.grokAPI.grok_b_nick_name
+                if self.chat_class.grokAPI.grok_v_enable and self.chat_class.grokAPI.grok_v_nick_name:
+                    models[self.chat_class.grokAPI.grok_v_nick_name.lower()] = ' ' + self.chat_class.grokAPI.grok_v_nick_name
+                if self.chat_class.grokAPI.grok_x_enable and self.chat_class.grokAPI.grok_x_nick_name:
+                    models[self.chat_class.grokAPI.grok_x_nick_name.lower()] = ' ' + self.chat_class.grokAPI.grok_x_nick_name
+
         # Groq
         if self.chat_class.groq_enable is None:
             self.chat_class.groq_auth()
+            if self.chat_class.groq_enable:
+                qLog.log('info', self.proc_id, f" Groq       : Ready, (Models count={ len(self.chat_class.groqAPI.models) })")
         if self.chat_class.groq_enable:
             if (req_mode == 'chat'):
                 models['[groq]'] = '[Groq]'
@@ -383,6 +416,8 @@ class CoreAiClass:
         # Ollama
         if self.chat_class.ollama_enable is None:
             self.chat_class.ollama_auth()
+            if self.chat_class.ollama_enable:
+                qLog.log('info', self.proc_id, f" Ollama     : Ready, (Models count={ len(self.chat_class.ollamaAPI.models) })")
         if self.chat_class.ollama_enable:
             if True:
                 models['[ollama]'] = '[Ollama]'

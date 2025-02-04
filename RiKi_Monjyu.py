@@ -327,12 +327,14 @@ if __name__ == '__main__':
 
     # 起動メッセージ
     print()
-    qLog.log('info', main_id, "Thank you for using our systems.")
-    qLog.log('info', main_id, "To use [ Assistant AI 文殊/Monjyu(もんじゅ) ], Access 'http://localhost:8008/' in your browser.")
+    qLog.log('info', main_id, "================================================================================================")
+    qLog.log('info', main_id, " Thank you for using our systems.")
+    qLog.log('info', main_id, " To use [ Assistant AI 文殊/Monjyu(もんじゅ) ], Access 'http://localhost:8008/' in your browser.")
     if (liveai_enable == True):
-        qLog.log('info', main_id, "To use [ Live AI 力/RiKi(りき) ], Press ctrl-l or ctrl-r three times.")
+        qLog.log('info', main_id, " To use [ Live AI 力/RiKi(りき) ], Press ctrl-l or ctrl-r three times.")
     if (webAgent_enable == True):
-        qLog.log('info', main_id, "To use [ Agentic AI WebAgent(ウェブエージェント) ], Specify use at the prompt.")
+        qLog.log('info', main_id, " To use [ Agentic AI WebAgent(ウェブエージェント) ], Specify use at the prompt.")
+    qLog.log('info', main_id, "================================================================================================")
     print()
     main.main_all_ready = True
 

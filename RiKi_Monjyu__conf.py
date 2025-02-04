@@ -65,6 +65,7 @@ class _conf_class:
         self.claude_key_id = '< your claude key >'
         self.openrt_key_id = '< your openrt key >'
         self.perplexity_key_id = '< your perplexity key >'
+        self.grok_key_id = '< your grok key >'
         self.groq_key_id = '< your groq key >'
         self.ollama_server = 'auto'
         self.ollama_port = 'auto'
@@ -116,6 +117,7 @@ class _conf_class:
             dic['claude_key_id'] = self.claude_key_id
             dic['openrt_key_id'] = self.openrt_key_id
             dic['perplexity_key_id'] = self.perplexity_key_id
+            dic['grok_key_id'] = self.grok_key_id
             dic['groq_key_id'] = self.groq_key_id
             dic['ollama_server'] = self.ollama_server
             dic['ollama_port'] = self.ollama_port
@@ -145,6 +147,7 @@ class _conf_class:
             self.claude_key_id = dic['claude_key_id']
             self.openrt_key_id = dic['openrt_key_id']
             self.perplexity_key_id = dic['perplexity_key_id']
+            self.grok_key_id = dic['grok_key_id']
             self.groq_key_id = dic['groq_key_id']
             self.ollama_server = dic['ollama_server']
             self.ollama_port = dic['ollama_port']

@@ -742,7 +742,7 @@ class _ollamaAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             #stream = True
-            print(' Ollama : stream = False, ')
+            print(' Ollama : stream=False, ')
             stream = False
         else:
             stream = False

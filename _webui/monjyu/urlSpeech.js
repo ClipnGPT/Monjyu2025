@@ -246,7 +246,7 @@ function post_speech_json(speech_json, tts_yesno) {
 $(document).ready(function() {
 
     // ローカルストレージからデータ復元
-    const storedData = JSON.parse(localStorage.getItem('url_formData'));
+    const storedData = JSON.parse(localStorage.getItem('urlSpeech_formData'));
 
     // データが存在する場合
     if (storedData) {
@@ -281,7 +281,7 @@ $(document).ready(function() {
             speaker_etc: $('#speaker_etc').val(),
         };
         // ローカルストレージに保存
-        localStorage.setItem('url_formData', JSON.stringify(formData));
+        localStorage.setItem('urlSpeech_formData', JSON.stringify(formData));
     };
     
     // 各テキストエリアにダブルクリックイベントを追加

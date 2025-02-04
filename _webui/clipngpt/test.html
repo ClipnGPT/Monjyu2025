@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Advanced Audio Recorder with Custom Silence Detection</title>
+</head>
+<body>
+
+<button id="initButton">Initialize Mic</button>
+<button id="startButton" disabled>Start Recording</button>
+<button id="stopButton" disabled>Stop Recording</button>
+<button id="disconnectButton" disabled>Disconnect Mic</button>
+<div id="info"></div>
+
+<script>
+let audioChunks = [];
+let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let mediaRecorder;
+let mediaStream;
+let source;
+let analyser = audioContext.createAnalyser();
+let dataArray;
+let silenceChecker;
+let startTime;
+let noiseLevel = 0;
+let voiceLevel = 0;
+
+async function initializeMic() {
+  mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  document.getElementById("initButton").disabled = true;
+  document.getElementById("startButton").disabled = false;
+  document.getElementById("disconnectButton").disabled = false;
+}
+
+async function disconnectMic() {
+  mediaStream.getTracks().forEach(track => track.stop());
+  mediaStream = null;
+  document.getElementById("initButton").disabled = false;
+  document.getElementById("startButton").disabled = true;
+  document.getElementById("disconnectButton").disabled = true;
+}
+
+async function startRecording() {
+  audioChunks = [];  // Reset the audio chunks buffer
+  startTime = Date.now();
+  silenceChecker = setInterval(checkForSilence, 1000);
+
+  analyser.fftSize = 2048;
+  const bufferLength = analyser.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
+
+  source = audioContext.createMediaStreamSource(mediaStream);
+  source.connect(analyser);
+  mediaRecorder = new MediaRecorder(mediaStream);
+  
+  mediaRecorder.ondataavailable = event => {
+    audioChunks.push(event.data);
+  };
+
+  mediaRecorder.onstop = () => {
+    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+    playAudio(audioBlob);
+    sendDataToServer(audioBlob);
+  };
+
+  mediaRecorder.start();
+  document.getElementById("startButton").disabled = true;
+  document.getElementById("stopButton").disabled = false;
+  document.getElementById("disconnectButton").disabled = true;
+}
+
+function stopRecording() {
+  clearInterval(silenceChecker);
+  mediaRecorder.stop();
+  mediaRecorder = null;
+  source.disconnect(analyser);  // Disconnect the source from the analyser
+  source = null;  // Nullify the source
+
+  document.getElementById("startButton").disabled = false;
+  document.getElementById("stopButton").disabled = true;
+  document.getElementById("disconnectButton").disabled = false;
+}
+
+function playAudio(audioBlob) {
+  const audioUrl = URL.createObjectURL(audioBlob);
+  const audio = new Audio(audioUrl);
+  audio.play();
+}
+
+document.getElementById("initButton").addEventListener("click", initializeMic);
+document.getElementById("startButton").addEventListener("click", startRecording);
+document.getElementById("stopButton").addEventListener("click", stopRecording);
+document.getElementById("disconnectButton").addEventListener("click", disconnectMic);
+
+function calculateAmplitudeLevel(dataArray) {
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += Math.abs(dataArray[i] - 128);
+  }
+  return sum / dataArray.length;
+}
+
+function checkForSilence() {
+  analyser.getByteTimeDomainData(dataArray);
+  const currentLevel = calculateAmplitudeLevel(dataArray);
+
+  let currentTime = Date.now();
+  let elapsedTime = currentTime - startTime;
+
+  if (currentLevel > 0 && noiseLevel === 0) {
+    noiseLevel = currentLevel;
+  }
+  if (elapsedTime >= 2000 && currentLevel > voiceLevel) {
+    voiceLevel = currentLevel;
+  }
+  if (elapsedTime >= 5000) {
+    const threshold = noiseLevel + 0.1 * (voiceLevel - noiseLevel);
+
+    // document.getElementById("info").innerText = 
+    //   `Noise Level: ${noiseLevel.toFixed(2)}, Voice Level: ${voiceLevel.toFixed(2)}, Current Level: ${currentLevel.toFixed(2)}`;
+
+    if (currentLevel <= threshold) {
+      stopRecording();
+    }
+  }
+}
+
+async function sendDataToServer(audioBlob) {
+  const formData = new FormData();
+  formData.append("audio", audioBlob);
+
+  // const response = await fetch("http://localhost:8000/speech_to_text", {
+  //  method: "POST",
+  //  body: formData
+  // });
+  //if (response.ok) {
+  //  console.log("Audio successfully sent to the server");
+  //} else {
+  //  console.log("Error sending audio to the server");
+  //}
+}
+</script>
+
+</body>
+</html>

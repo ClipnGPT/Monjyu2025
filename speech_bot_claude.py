@@ -580,14 +580,14 @@ class _claudeAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             stream = True
-            #print(' Claude : stream = False, ')
+            #print(' Claude : stream=False, ')
             #stream = False
         else:
             stream = False
 
         # ツール設定
         tools = []
-        #print(' openrt  : tools = [], ')
+        #print(' openrt  : tools=[], ')
         if True:
             if (use_tools.lower().find('yes') >= 0):
                 for module_dic in function_modules:

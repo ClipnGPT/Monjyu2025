@@ -595,10 +595,10 @@ class _live_api_freeai:
             while (self.session is not None) and (not self.break_flag):
                 text = io_text_read(qIO_py2live)
                 if (text != ''):
-                    request_text = "''' AIエージェントからの実行報告\n"
-                    request_text += text.rstrip() + "\n"
-                    request_text += "'''\n"
-                    await self.send_request_async(request_text=request_text,)
+                    #request_text = "''' AIエージェントからの実行報告\n"
+                    #request_text += text.rstrip() + "\n"
+                    #request_text += "'''\n"
+                    await self.send_request_async(request_text=text,)
                 await asyncio.sleep(0.25)
         except Exception as e:
             print(f"agent_result: {e}")

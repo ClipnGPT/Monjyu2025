@@ -10,6 +10,7 @@ let last_engine_models = {
     claude: null,
     openrt: null,
     perplexity: null,
+    grok: null,
     groq: null,
     ollama: null,
 };
@@ -21,6 +22,7 @@ let last_engine_setting = {
     claude: null,
     openrt: null,
     perplexity: null,
+    grok: null,
     groq: null,
     ollama: null,
 };
@@ -43,6 +45,7 @@ function add_wait_sec(key, value) {
     $('#clad_max_wait_sec').append(`<option value="${key}">${value}</option>`);
     $('#ort_max_wait_sec').append(`<option value="${key}">${value}</option>`);
     $('#pplx_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#grok_max_wait_sec').append(`<option value="${key}">${value}</option>`);
     $('#groq_max_wait_sec').append(`<option value="${key}">${value}</option>`);
     $('#olm_max_wait_sec').append(`<option value="${key}">${value}</option>`);
 }
@@ -218,6 +221,29 @@ function get_engine_models(engine) {
                 }
             }
 
+            // grok
+            if (engine === 'grok') {
+                if (JSON.stringify(data) !== last_engine_models.grok) {
+                    // 既存の選択肢を削除
+                    $('#grok_a_model').empty();
+                    $('#grok_b_model').empty();
+                    $('#grok_v_model').empty();
+                    $('#grok_x_model').empty();
+                    // 取得した選択肢を設定
+                    $('#grok_a_model').append(`<option value="">Auto (自動)</option>`);
+                    $('#grok_b_model').append(`<option value="">Auto (自動)</option>`);
+                    $('#grok_v_model').append(`<option value="">Auto (自動)</option>`);
+                    $('#grok_x_model').append(`<option value="">Auto (自動)</option>`);
+                    for (var [key, value] of Object.entries(data)) {
+                        $('#grok_a_model').append(`<option value="${key}">${value}</option>`);
+                        $('#grok_b_model').append(`<option value="${key}">${value}</option>`);
+                        $('#grok_v_model').append(`<option value="${key}">${value}</option>`);
+                        $('#grok_x_model').append(`<option value="${key}">${value}</option>`);
+                    }
+                    last_engine_models.grok = JSON.stringify(data);
+                }
+            }
+
             // groq
             if (engine === 'groq') {
                 if (JSON.stringify(data) !== last_engine_models.groq) {
@@ -280,6 +306,7 @@ function get_engine_setting_all(engine) {
     get_engine_setting('claude');
     get_engine_setting('openrt');
     get_engine_setting('perplexity');
+    get_engine_setting('grok');
     get_engine_setting('groq');
     get_engine_models( 'ollama');
     get_engine_setting('ollama');
@@ -430,6 +457,26 @@ function get_engine_setting(engine) {
                     $('#pplx_x_model').val(data.x_model || '');
                     $('#pplx_x_use_tools').val(data.x_use_tools || '');
                     last_engine_setting.perplexity = JSON.stringify(data);
+                }
+            }
+
+            // grok
+            if (engine === 'grok') {
+                if (JSON.stringify(data) !== last_engine_setting.grok) {
+                    $('#grok_a_nick_name').val(data.a_nick_name || '');
+                    $('#grok_b_nick_name').val(data.b_nick_name || '');
+                    $('#grok_v_nick_name').val(data.v_nick_name || '');
+                    $('#grok_x_nick_name').val(data.x_nick_name || '');
+                    $('#grok_max_wait_sec').val(data.max_wait_sec || '');
+                    $('#grok_a_model').val(data.a_model || '');
+                    $('#grok_a_use_tools').val(data.a_use_tools || '');
+                    $('#grok_b_model').val(data.b_model || '');
+                    $('#grok_b_use_tools').val(data.b_use_tools || '');
+                    $('#grok_v_model').val(data.v_model || '');
+                    $('#grok_v_use_tools').val(data.v_use_tools || '');
+                    $('#grok_x_model').val(data.x_model || '');
+                    $('#grok_x_use_tools').val(data.x_use_tools || '');
+                    last_engine_setting.grok = JSON.stringify(data);
                 }
             }
 
@@ -596,6 +643,22 @@ function post_engine_setting(engine) {
         }
     }
 
+    // grok
+    if (engine === 'grok') {
+        formData = {
+            engine: 'grok',
+            max_wait_sec: $('#grok_max_wait_sec').val(),
+            a_model: $('#grok_a_model').val(),
+            a_use_tools: $('#grok_a_use_tools').val(),
+            b_model: $('#grok_b_model').val(),
+            b_use_tools: $('#grok_b_use_tools').val(),
+            v_model: $('#grok_v_model').val(),
+            v_use_tools: $('#grok_v_use_tools').val(),
+            x_model: $('#grok_x_model').val(),
+            x_use_tools: $('#grok_x_use_tools').val(),
+        }
+    }
+
     // groq
     if (engine === 'groq') {
         formData = {
@@ -677,6 +740,7 @@ $(document).ready(function() {
     get_engine_models('claude');
     get_engine_models('openrt');
     get_engine_models('perplexity');
+    get_engine_models('grok');
     get_engine_models('groq');
     get_engine_models('ollama');
 
@@ -772,6 +836,19 @@ $(document).ready(function() {
         $('#pplx_x_model').val( $('#pplx_a_model').val() );
         $('#pplx_x_use_tools').val( $('#pplx_a_use_tools').val() );
         post_engine_setting('perplexity');
+    });
+
+    $('#grok_max_wait_sec, #grok_a_model, #grok_a_use_tools, #grok_b_model, #grok_b_use_tools, #grok_v_model, #grok_v_use_tools, #grok_x_model, #grok_x_use_tools').change(function() {
+        post_engine_setting('grok');
+    });
+    $('#grok-a2bvx-button').click(function() {
+        $('#grok_b_model').val( $('#grok_a_model').val() );
+        $('#grok_b_use_tools').val( $('#grok_a_use_tools').val() );
+        $('#grok_v_model').val( $('#grok_a_model').val() );
+        $('#grok_v_use_tools').val( $('#grok_a_use_tools').val() );
+        $('#grok_x_model').val( $('#grok_a_model').val() );
+        $('#grok_x_use_tools').val( $('#grok_a_use_tools').val() );
+        post_engine_setting('grok');
     });
 
     $('#groq_max_wait_sec, #groq_a_model, #groq_a_use_tools, #groq_b_model, #groq_b_use_tools, #groq_v_model, #groq_v_use_tools, #groq_x_model, #groq_x_use_tools').change(function() {

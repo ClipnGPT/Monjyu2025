@@ -181,7 +181,7 @@ async function novel_serial1(tts) {
 
 // 自動執筆（小説）
 async function novel_serial2(tts) {
-    if (confirm("全話の順次生成を実行しますか?")) {
+    if (confirm("（★開発中★全話実行するので注意！）１話の生成を実行しますか?")) {
         var ymdhms = getYMDHMS();
         $('#last_text').val('');
         var n_max = parseInt( $('#n_max').val() );

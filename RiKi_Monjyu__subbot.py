@@ -57,6 +57,8 @@ import speech_bot_openrt
 import speech_bot_openrt_key as openrt_key
 import speech_bot_perplexity
 import speech_bot_perplexity_key as perplexity_key
+import speech_bot_grok
+import speech_bot_grok_key as grok_key
 import speech_bot_groq
 import speech_bot_groq_key as groq_key
 import speech_bot_ollama
@@ -119,11 +121,49 @@ class ChatClass:
         self.claude_enable      = None
         self.openrt_enable      = None
         self.perplexity_enable  = None
+        self.grok_enable        = None
         self.groq_enable        = None
         self.ollama_enable      = None
 
         # CANCEL要求
         self.bot_cancel_request = False
+
+    def text_replace_sub(self, text='', ):
+        if (text.strip() == ''):
+            return ''
+
+        text = text.replace('\r', '')
+
+        text = text.replace('。', '。\n')
+        text = text.replace('?', '?\n')
+        text = text.replace('？', '?\n')
+        text = text.replace('!', '!\n')
+        text = text.replace('！', '!\n')
+        text = text.replace('。\n」','。」')
+        text = text.replace('。\n"' ,'。"')
+        text = text.replace("。\n'" ,"。'")
+        text = text.replace('?\n」','?」')
+        text = text.replace('?\n"' ,'?"')
+        text = text.replace("?\n'" ,"?'")
+        text = text.replace('!\n」','!」')
+        text = text.replace('!\n"' ,'!"')
+        text = text.replace("!\n'" ,"!'")
+        text = text.replace("!\n=" ,"!=")
+        text = text.replace("!\n--" ,"!--")
+
+        text = text.replace('\n \n ' ,'\n')
+
+        hit = True
+        while (hit == True):
+            if (text.find('\n\n')>0):
+                hit = True
+                text = text.replace('\n  \n', '\n')
+                text = text.replace('\n \n', '\n')
+                text = text.replace('\n\n', '\n')
+            else:
+                hit = False
+
+        return text.strip()
 
     def chatgpt_auth(self):
         """
@@ -449,6 +489,48 @@ class ChatClass:
 
         return self.perplexity_enable
 
+    def grok_auth(self):
+        """
+        grok 認証
+        """
+
+        # grok 定義
+        self.grokAPI = speech_bot_grok._grokAPI()
+        self.grokAPI.init(log_queue=None)
+
+        # grok 認証情報
+        api_type = grok_key.getkey('grok','grok_api_type')
+        key_id   = grok_key.getkey('grok','grok_key_id')
+        if (self.conf.grok_key_id not in ['', '< your grok key >']):
+            key_id = self.conf.grok_key_id
+
+        # grok 認証実行
+        res = self.grokAPI.authenticate('grok',
+                            api_type,
+                            grok_key.getkey('grok','grok_default_gpt'), grok_key.getkey('grok','grok_default_class'),
+                            grok_key.getkey('grok','grok_auto_continue'),
+                            grok_key.getkey('grok','grok_max_step'), grok_key.getkey('grok','grok_max_session'),
+                            grok_key.getkey('grok','grok_max_wait_sec'),
+                            key_id,
+                            grok_key.getkey('grok','grok_a_nick_name'), grok_key.getkey('grok','grok_a_model'), grok_key.getkey('grok','grok_a_token'),
+                            grok_key.getkey('grok','grok_a_use_tools'),
+                            grok_key.getkey('grok','grok_b_nick_name'), grok_key.getkey('grok','grok_b_model'), grok_key.getkey('grok','grok_b_token'),
+                            grok_key.getkey('grok','grok_b_use_tools'),
+                            grok_key.getkey('grok','grok_v_nick_name'), grok_key.getkey('grok','grok_v_model'), grok_key.getkey('grok','grok_v_token'),
+                            grok_key.getkey('grok','grok_v_use_tools'),
+                            grok_key.getkey('grok','grok_x_nick_name'), grok_key.getkey('grok','grok_x_model'), grok_key.getkey('grok','grok_x_token'),
+                            grok_key.getkey('grok','grok_x_use_tools'),
+                            )
+
+        if res == True:
+            self.grok_enable = True
+            #qLog.log('info', self.proc_id, 'grok authenticate OK!')
+        else:
+            self.grok_enable = False
+            qLog.log('error', self.proc_id, 'grok authenticate NG!')
+
+        return self.grok_enable
+
     def groq_auth(self):
         """
         groq 認証
@@ -559,42 +641,6 @@ class ChatClass:
             # 結果を結合して戻り値とする
             return (formatted_before + code_block + formatted_after).strip()
 
-    def text_replace_sub(self, text='', ):
-        if (text.strip() == ''):
-            return ''
-
-        text = text.replace('\r', '')
-
-        text = text.replace('。', '。\n')
-        text = text.replace('?', '?\n')
-        text = text.replace('？', '?\n')
-        text = text.replace('!', '!\n')
-        text = text.replace('！', '!\n')
-        text = text.replace('。\n」','。」')
-        text = text.replace('。\n"' ,'。"')
-        text = text.replace("。\n'" ,"。'")
-        text = text.replace('?\n」','?」')
-        text = text.replace('?\n"' ,'?"')
-        text = text.replace("?\n'" ,"?'")
-        text = text.replace('!\n」','!」')
-        text = text.replace('!\n"' ,'!"')
-        text = text.replace("!\n'" ,"!'")
-        text = text.replace("!\n=" ,"!=")
-        text = text.replace("!\n--" ,"!--")
-
-        text = text.replace('\n \n ' ,'\n')
-        text = text.replace('\n \n' ,'\n')
-
-        hit = True
-        while (hit == True):
-            if (text.find('\n\n')>0):
-                hit = True
-                text = text.replace('\n\n', '\n')
-            else:
-                hit = False
-
-        return text.strip()
-
     def post_request(self,  user_id: str, from_port: str, to_port: str, 
                             req_mode: str, 
                             system_text: str, request_text: str, input_text: str,
@@ -698,10 +744,12 @@ class ChatClass:
             self.claude_auth()
         if (self.openrt_enable is None):
             self.openrt_auth()
-        if (self.groq_enable is None):
-            self.groq_auth()
         if (self.perplexity_enable is None):
             self.perplexity_auth()
+        if (self.grok_enable is None):
+            self.grok_auth()
+        if (self.groq_enable is None):
+            self.groq_auth()
         if (self.ollama_enable is None):
             self.ollama_auth()
 
@@ -808,7 +856,7 @@ class ChatClass:
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'chatgpt'
+                        res_engine = 'ChatGPT'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
@@ -889,7 +937,7 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot assistant ...')
 
-                    if (self.data is not None) and (self.co is not None) :
+                    if (self.data is not None):
                         self.assistantAPI.set_models(   max_wait_sec=self.data.engine_setting['assistant']['max_wait_sec'],
                                                         a_model=self.data.engine_setting['assistant']['a_model'],
                                                         a_use_tools=self.data.engine_setting['assistant']['a_use_tools'],
@@ -906,7 +954,7 @@ class ChatClass:
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'assistant'
+                        res_engine = 'Assistant'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
@@ -997,7 +1045,7 @@ class ChatClass:
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'gemini'
+                        res_engine = 'Gemini'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
@@ -1091,7 +1139,7 @@ class ChatClass:
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'claude'
+                        res_engine = 'Claude'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
@@ -1182,7 +1230,7 @@ class ChatClass:
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'openrt'
+                        res_engine = 'OpenRouter'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
@@ -1280,7 +1328,98 @@ class ChatClass:
                                                         sysText=sysText, reqText=reqText, inpText=inpText2,
                                                         filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )                    
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'perplexity'
+                        res_engine = 'Perplexity'
+                        res_data = res_text
+                except Exception as e:
+                    qLog.log('error', self.proc_id, str(e))
+
+        # grok
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.grok_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'grok, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
+            if (engine == '[grok]'):
+                engine_text = self.grokAPI.grok_b_nick_name.lower() + ',\n'
+            else:
+                model_nick_name = 'grok'
+                a_nick_name = self.grokAPI.grok_a_nick_name.lower()
+                b_nick_name = self.grokAPI.grok_b_nick_name.lower()
+                v_nick_name = self.grokAPI.grok_v_nick_name.lower()
+                x_nick_name = self.grokAPI.grok_x_nick_name.lower()
+                if (engine != ''):
+                    if   ((len(a_nick_name) != 0) and (engine.lower() == a_nick_name)):
+                        engine_text = a_nick_name + ',\n'
+                    elif ((len(b_nick_name) != 0) and (engine.lower() == b_nick_name)):
+                        engine_text = b_nick_name + ',\n'
+                    elif ((len(v_nick_name) != 0) and (engine.lower() == v_nick_name)):
+                        engine_text = v_nick_name + ',\n'
+                    elif ((len(x_nick_name) != 0) and (engine.lower() == x_nick_name)):
+                        engine_text = x_nick_name + ',\n'
+                if (engine_text == '') and (reqText.find(',') >= 1):
+                    req_nick_name = reqText[:reqText.find(',')].lower()
+                    if   (req_nick_name == model_nick_name):
+                        engine_text = model_nick_name + ',\n'
+                        reqText = reqText[len(model_nick_name)+1:].strip()
+                    elif (len(a_nick_name) != 0) and (req_nick_name == a_nick_name):
+                        engine_text = a_nick_name + ',\n'
+                        reqText = reqText[len(a_nick_name)+1:].strip()
+                    elif (len(b_nick_name) != 0) and (req_nick_name == b_nick_name):
+                        engine_text = b_nick_name + ',\n'
+                        reqText = reqText[len(b_nick_name)+1:].strip()
+                    elif (len(v_nick_name) != 0) and (req_nick_name == v_nick_name):
+                        engine_text = v_nick_name + ',\n'
+                        reqText = reqText[len(v_nick_name)+1:].strip()
+                    elif (len(x_nick_name) != 0) and (req_nick_name == x_nick_name):
+                        engine_text = x_nick_name + ',\n'
+                        reqText = reqText[len(x_nick_name)+1:].strip()
+                if (engine_text == '') and (inpText.find(',') >= 1):
+                    inp_nick_name = inpText[:inpText.find(',')].lower()
+                    if   (inp_nick_name == model_nick_name):
+                        engine_text = model_nick_name + ',\n'
+                        inpText = inpText[len(model_nick_name)+1:].strip()
+                    elif (len(a_nick_name) != 0) and (inp_nick_name == a_nick_name):
+                        engine_text = a_nick_name + ',\n'
+                        inpText = inpText[len(a_nick_name)+1:].strip()
+                    elif (len(b_nick_name) != 0) and (inp_nick_name == b_nick_name):
+                        engine_text = b_nick_name + ',\n'
+                        inpText = inpText[len(b_nick_name)+1:].strip()
+                    elif (len(v_nick_name) != 0) and (inp_nick_name == v_nick_name):
+                        engine_text = v_nick_name + ',\n'
+                        inpText = inpText[len(v_nick_name)+1:].strip()
+                    elif (len(x_nick_name) != 0) and (inp_nick_name == x_nick_name):
+                        engine_text = x_nick_name + ',\n'
+                        inpText = inpText[len(x_nick_name)+1:].strip()
+
+            if (engine_text != ''):
+                inpText2 = engine_text + inpText
+                engine_text = ''
+
+                try:
+                    qLog.log('info', self.proc_id, 'chatBot grok ...')
+
+                    if (self.data is not None):
+                        self.grokAPI.set_models(    max_wait_sec=self.data.engine_setting['grok']['max_wait_sec'],
+                                                    a_model=self.data.engine_setting['grok']['a_model'],
+                                                    a_use_tools=self.data.engine_setting['grok']['a_use_tools'],
+                                                    b_model=self.data.engine_setting['grok']['b_model'],
+                                                    b_use_tools=self.data.engine_setting['grok']['b_use_tools'],
+                                                    v_model=self.data.engine_setting['grok']['v_model'],
+                                                    v_use_tools=self.data.engine_setting['grok']['v_use_tools'],
+                                                    x_model=self.data.engine_setting['grok']['x_model'],
+                                                    x_use_tools=self.data.engine_setting['grok']['x_use_tools'], )
+
+                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                        self.grokAPI.chatBot( chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                    history=history, function_modules=function_modules,
+                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'Grok'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
@@ -1371,7 +1510,7 @@ class ChatClass:
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'groq'
+                        res_engine = 'Groq'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
@@ -1469,7 +1608,7 @@ class ChatClass:
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'ollama'
+                        res_engine = 'Ollama'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
@@ -1580,7 +1719,7 @@ class ChatClass:
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
                                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'freeai'
+                        res_engine = 'FreeAI'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
@@ -1608,7 +1747,9 @@ class ChatClass:
                 if (en > st):
                     res_data = str('\n' + res_data)[st+1:en+4]
             else:
-                if (model_name.lower().find('sonar') >= 0):
+                if (res_data[:7].lower() == '<think>') \
+                or (model_name.lower().find('deekseek') >= 0) \
+                or (model_name.lower().find('sonar') >= 0):
                     st = str(res_data).find('<think>')
                     if (st >= 0):
                         en = str(res_data).rfind('</think>')
@@ -1768,7 +1909,8 @@ class ChatClass:
                                 filePath=filePath, jsonSchema=result_schema, inpLang='ja', outLang='ja', )
 
             output_text = ''
-            output_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
+            #output_text += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
+            output_text += f"[{ res_engine }] ({ self.self_port }:{ res_api }) \n"
             output_text += res_text
             output_data = res_data
             output_path  = res_path
@@ -2629,9 +2771,7 @@ $$$ inpBase2 $$$
                 chat_text += res_text2.rstrip() + '\n\n'
 
                 output_raw  = res_text
-                output_data = ''
-                output_data += f"[{ full_name[0] }] ({ self.self_port }:{ res_api }) \n"
-                output_data += res_text
+                output_data = res_data
                 output_path = res_path
                 output_files = res_files
 

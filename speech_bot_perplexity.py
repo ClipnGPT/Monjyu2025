@@ -560,13 +560,13 @@ class _perplexityAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             stream = True
-            #print(' stream = False, ')
+            #print(' stream=False, ')
             #stream = False
         else:
             stream = False
 
         # ツール設定
-        print(' Perplexity : functions = [], ')
+        print(' Perplexity : functions=[], ')
 
         # 実行ループ
         #try:

@@ -97,6 +97,7 @@ class _data_class:
         self.engine_models['claude'] = {}
         self.engine_models['openrt'] = {}
         self.engine_models['perplexity'] = {}
+        self.engine_models['grok'] = {}
         self.engine_models['groq'] = {}
         self.engine_models['ollama'] = {}
         self.engine_setting = {}
@@ -199,6 +200,7 @@ class _data_class:
         self.engine_models['claude'] = self.engine_setting['chatgpt']
         self.engine_models['openrt'] = self.engine_setting['chatgpt']
         self.engine_models['perplexity'] = self.engine_setting['chatgpt']
+        self.engine_models['grok'] = self.engine_setting['chatgpt']
         self.engine_models['groq'] = self.engine_setting['chatgpt']
         self.engine_models['ollama'] = self.engine_setting['chatgpt']
 

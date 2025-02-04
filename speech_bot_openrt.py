@@ -591,14 +591,14 @@ class _openrtAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             #stream = True
-            print(' OpenRT : stream = False, ')
+            print(' OpenRT : stream=False, ')
             stream = False
         else:
             stream = False
 
         # ツール設定
         tools = []
-        #print(' OpenRT : tools = [], ')
+        #print(' OpenRT : tools=[], ')
         if True:
             if (use_tools.lower().find('yes') >= 0):
                 functions = []

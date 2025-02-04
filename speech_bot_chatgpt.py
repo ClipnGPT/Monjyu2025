@@ -248,9 +248,10 @@ class _chatgptAPI:
             for model in models:
                 #print(model)
                 key = model.id
-                if (key.find('gpt-3') < 0) and (key.find('audio') < 0) and (key.find('realtime') < 0) \
-                and (key.find('dall-e') < 0) and (key.find('whisper') < 0) and (key.find('davinci') < 0) and (key.find('tts') < 0) \
-                and (key.find('embedding') < 0) and (key.find('babbage') < 0) and (key.find('omni-moderation') < 0):
+                #if (key.find('gpt-3') < 0) and (key.find('audio') < 0) and (key.find('realtime') < 0) \
+                #and (key.find('dall-e') < 0) and (key.find('whisper') < 0) and (key.find('davinci') < 0) and (key.find('tts') < 0) \
+                #and (key.find('embedding') < 0) and (key.find('babbage') < 0) and (key.find('omni-moderation') < 0):
+                if True:
                     ymd = datetime.datetime.fromtimestamp(model.created).strftime("%Y/%m/%d")
                     #print(key, ymd, )
                     self.models[key] = {"id":key, "token":"9999", "modality":"text?", "date": ymd, }
@@ -602,15 +603,15 @@ class _chatgptAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             stream = True
-            if (res_api[:1].lower() == 'o'): # o1, o3 ...
-                print(' ChatGPT : stream = False, ')
+            if (res_api[:1].lower() == 'o'): # o1, o3, ...
+                print(' ChatGPT : stream=False, ')
                 stream = False
         else:
             stream = False
 
         # ツール設定
         tools = []
-        #print(' ChatGPT : tools = [], ')
+        #print(' ChatGPT : tools=[], ')
         if True:
             if (use_tools.lower().find('yes') >= 0):
                 functions = []
@@ -650,7 +651,7 @@ class _chatgptAPI:
 
                 # ツール指定
                 elif (len(tools) != 0):
-                        # o3, o4 以外
+                        # o3, o4, ... 以外
                         if (res_api[:2].lower() not in ['o3', 'o4']):
                             response = self.client.chat.completions.create(
                                 model           = res_api,
@@ -660,8 +661,9 @@ class _chatgptAPI:
                                 timeout         = self.chatgpt_max_wait_sec,
                                 stream          = stream, 
                                 )
-                        # o3, o4
+                        # o3, o4,
                         else:
+                            print(" ChatGPT : reasoning_effort='high', ")
                             response = self.client.chat.completions.create(
                                 model           = res_api,
                                 messages        = msg,
@@ -675,7 +677,7 @@ class _chatgptAPI:
                 else:
                     # ノーマル
                     if (jsonSchema is None) or (jsonSchema == ''):                        
-                        # o3, o4 以外
+                        # o3, o4, ... 以外
                         if (res_api[:2].lower() not in ['o3', 'o4']):
                             response = self.client.chat.completions.create(
                                 model           = res_api,
@@ -684,8 +686,9 @@ class _chatgptAPI:
                                 timeout         = self.chatgpt_max_wait_sec,
                                 stream          = stream, 
                                 )
-                        # o3, o4
+                        # o3, o4,
                         else:
+                            print(" ChatGPT : reasoning_effort='high', ")
                             response = self.client.chat.completions.create(
                                 model           = res_api,
                                 messages        = msg,

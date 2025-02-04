@@ -576,13 +576,13 @@ class _groqAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             #stream = True
-            print(' Groq : stream = False, ')
+            print(' Groq : stream=False, ')
             stream = False
         else:
             stream = False
 
         # ツール設定
-        print(' Groq : functions = [], ')
+        print(' Groq : functions=[], ')
         functions = []
 
         # 実行ループ

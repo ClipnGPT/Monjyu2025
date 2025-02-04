@@ -257,9 +257,10 @@ class _assistantAPI:
             for model in models:
                 #print(model)
                 key = model.id
-                if (key.find('gpt-3') < 0) and (key.find('audio') < 0) and (key.find('realtime') < 0) \
-                and (key.find('dall-e') < 0) and (key.find('whisper') < 0) and (key.find('davinci') < 0) and (key.find('tts') < 0) \
-                and (key.find('embedding') < 0) and (key.find('babbage') < 0) and (key.find('omni-moderation') < 0):
+                #if (key.find('gpt-3') < 0) and (key.find('audio') < 0) and (key.find('realtime') < 0) \
+                #and (key.find('dall-e') < 0) and (key.find('whisper') < 0) and (key.find('davinci') < 0) and (key.find('tts') < 0) \
+                #and (key.find('embedding') < 0) and (key.find('babbage') < 0) and (key.find('omni-moderation') < 0):
+                if True:
                     ymd = datetime.datetime.fromtimestamp(model.created).strftime("%Y/%m/%d")
                     #print(key, ymd, )
                     self.models[key] = {"id":key, "token":"9999", "modality":"text?", "date": ymd, }
@@ -651,7 +652,6 @@ class _assistantAPI:
             if (model_name      != assistant.model):
                 change_flag = True
                 self.print(session_id, f" Assistant : Change model, { model_name },")
-
             if (instructions    != assistant.instructions):
                 change_flag = True
                 self.print(session_id, f" Assistant : Change instructions ...")
@@ -670,7 +670,7 @@ class _assistantAPI:
             if (change_flag != True):
                 return False
             else:
-                self.print(session_id, f" Assistant : Update assistant_name = '{ my_assistant_name }',")
+                self.print(session_id, f" Assistant : Update assistant ( name='{ my_assistant_name }', model={ model_name }, ) ")
 
                 # OPENAI
                 if (self.assistant_api_type != 'azure'):
@@ -872,84 +872,87 @@ class _assistantAPI:
         exit_status   = None
         last_status   = None
 
+        # 動作設定
+        instructions = sysText
+        if (instructions is None) or (instructions == ''):
+            instructions = 'あなたは美しい日本語を話す賢いアシスタントです。'
+
         # アシスタント確認
         my_assistant_name   = self.assistant_name + '-' + str(session_id)
         my_assistant_id     = self.assistant_id.get(str(session_id))
-        if (my_assistant_id is None):
 
-            # 動作設定
-            instructions = sysText
-            if (instructions is None) or (instructions == ''):
-                instructions = 'あなたは美しい日本語を話す賢いアシスタントです。'
+        # アシスタント検索
+        assistants = self.client.beta.assistants.list(
+            order = "desc",
+            limit = "100", )
+        for a in range(len(assistants.data)):
+            assistant = assistants.data[a]
+            if (assistant.name == my_assistant_name):
+                my_assistant_id = assistant.id
+                break
+
+        # モデルの変更時は削除
+        if (my_assistant_id is not None):
+            if (res_api != assistant.model):
+                self.print(session_id, f" Assistant : Change model, { res_api },")
+
+                for assistant in assistants.data:
+                    if (assistant.name == my_assistant_name):
+                        self.print(session_id, f" Assistant : Delete assistant ( name='{ assistant.name }', ) ")
+
+                        # アシスタント削除
+                        try:
+                            res = self.client.beta.assistants.delete(assistant_id = assistant.id, )
+                        except:
+                            pass
+                        my_assistant_id = None
+                        break
+                time.sleep(1.00)
+
+        # アシスタント生成
+        if (my_assistant_id is None):
 
             # アシスタント検索
             assistants = self.client.beta.assistants.list(
                 order = "desc",
                 limit = "100", )
-            for a in range(len(assistants.data)):
-                assistant = assistants.data[a]
-                if (assistant.name == my_assistant_name):
-                    my_assistant_id = assistant.id
-                    break
 
-            # モデルの変更時は削除
-            if (my_assistant_id is not None):
-                if (res_api != assistant.model):
-                    change_flag = True
-                    self.print(session_id, f" Assistant : Change model, { res_api },")
-
-                    for assistant in assistants.data:
-                        if (assistant.name == my_assistant_name):
-                            self.print(session_id, f" Assistant : Delete assistant_name = '{ assistant.name }',")
-
-                            # アシスタント削除
-                            res = self.client.beta.assistants.delete(assistant_id = assistant.id, )
-                            my_assistant_id == None
-
-                            # アシスタント再検索
-                            assistants = self.client.beta.assistants.list(
-                                order = "desc",
-                                limit = "100", )
-                            for a in range(len(assistants.data)):
-                                assistant = assistants.data[a]
-                                if (assistant.name == my_assistant_name):
-                                    my_assistant_id = assistant.id
-                                    break
-
-        # アシスタント生成
-        if (my_assistant_id is None):
-
-            # アシスタント削除
+            # (最大セッション以上の)アシスタント削除
             if (self.assistant_max_session > 0) and (len(assistants.data) > 0):
                 for a in range(self.assistant_max_session -1 , len(assistants.data)):
                     assistant = assistants.data[a]
-                    if (assistant.name != my_assistant_name):
-                        self.print(session_id, f" Assistant : Delete assistant_name = '{ assistant.name }',")
+                    self.print(session_id, f" Assistant : Delete assistant ( name='{ assistant.name }', ) ")
 
-                        # vector store 削除
-                        res = self.vectorStore_del( session_id     = session_id,
-                                                    assistant_id   = my_assistant_id, 
-                                                    assistant_name = my_assistant_name, )
+                    # vector store 削除
+                    res = self.vectorStore_del( session_id     = session_id,
+                                                assistant_id   = my_assistant_id, 
+                                                assistant_name = my_assistant_name, )
 
-                        # ファイル 削除
-                        res = self.threadFile_del(  session_id     = session_id,
-                                                    assistant_id   = my_assistant_id,
-                                                    assistant_name = my_assistant_name, )
+                    # ファイル 削除
+                    res = self.threadFile_del(  session_id     = session_id,
+                                                assistant_id   = my_assistant_id,
+                                                assistant_name = my_assistant_name, )
 
-                        # アシスタント削除
+                    # アシスタント削除
+                    try:
                         res = self.client.beta.assistants.delete(assistant_id = assistant.id, )
-                        my_assistant_id == None
+                    except:
+                        pass
+                time.sleep(1.00)
 
             # アシスタント生成
-            self.print(session_id, f" Assistant : Create assistant_name = '{ my_assistant_name }',")
+            self.print(session_id, f" Assistant : Create assistant ( name='{ my_assistant_name }', model={ res_api }, ) ")
             assistant = self.client.beta.assistants.create(
                     name     = my_assistant_name,
                     model    = res_api,
                     instructions = instructions,
                     tools    = [], )
-
+            time.sleep(2.00)
             my_assistant_id = assistant.id
             self.assistant_id[str(session_id)] = my_assistant_id
+
+        # アシスタント更新
+        if (my_assistant_id is not None):
 
             # vector store 作成
             vectorStore_ids = self.vectorStore_set(     session_id          = session_id,
@@ -967,9 +970,7 @@ class _assistantAPI:
             #if (len(upload_files) > 0):
             #    time.sleep(1.00 * len(upload_files))
 
-            # アシスタント更新
-            if (my_assistant_id is not None):
-                res = self.my_assistant_update(         session_id        = session_id,
+            res = self.my_assistant_update(             session_id        = session_id,
                                                         my_assistant_id   = my_assistant_id,
                                                         my_assistant_name = my_assistant_name,
                                                         model_name        = res_api, 
@@ -978,18 +979,17 @@ class _assistantAPI:
                                                         functions         = functions,
                                                         vectorStore_ids   = vectorStore_ids,
                                                         upload_ids        = upload_ids, )
-                # proc? wait
-                #if (res == True):
-                #    time.sleep(1.00)
+            time.sleep(2.00)
 
         # スレッド確認
         my_thread_id = self.thread_id.get(str(session_id))
         if (my_thread_id is None):
 
             # スレッド生成
-            self.print(session_id, f" Assistant : Create thread (assistant_name) = '{ my_assistant_name }',")
+            self.print(session_id, f" Assistant : Create thread    ( name='{ my_assistant_name }', ) ")
             thread = self.client.beta.threads.create(
                 metadata = {'assistant_name': my_assistant_name}, )
+            time.sleep(1.00)
             my_thread_id = thread.id
             self.thread_id[str(session_id)] = my_thread_id
 
@@ -1022,7 +1022,7 @@ class _assistantAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             #stream = True
-            print(' Assistant : stream = False, ')
+            print(' Assistant : stream=False, ')
             stream = False
         else:
             stream = False
@@ -1035,6 +1035,7 @@ class _assistantAPI:
             run = self.client.beta.threads.runs.create(
                 assistant_id = my_assistant_id,
                 thread_id    = my_thread_id, )
+            time.sleep(1.00)
             my_run_id = run.id
 
             # 実行ループ
@@ -1466,19 +1467,21 @@ if __name__ == '__main__':
                     if (module_dic['onoff'] == 'on'):
                         function_modules.append(module_dic)
 
+            session_id = 'admin'
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'assistant-b,おはようございます。'
+                inpText = 'おはようございます。'
+                #inpText = 'assistant-b,おはようございます。'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
                 print()
                 res_text, res_path, res_files, res_name, res_api, assistantAPI.history = \
-                    assistantAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                        session_id='admin', history=assistantAPI.history, function_modules=function_modules,
-                                        sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
-                                        inpLang='ja', outLang='ja', )
+                    assistantAPI.chatBot(   chat_class='auto', model_select='auto', 
+                                            session_id=session_id, history=assistantAPI.history, function_modules=function_modules,
+                                            sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
+                                            inpLang='ja', outLang='ja', )
                 print()
                 print(f"[{ res_name }] ({ res_api })")
                 print(str(res_text))
@@ -1487,16 +1490,17 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
+                #inpText = 'toolsで兵庫県三木市の天気を調べて'
                 inpText = 'assistant-b,toolsで兵庫県三木市の天気を調べて'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
                 print()
                 res_text, res_path, res_files, res_name, res_api, assistantAPI.history = \
-                    assistantAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                        session_id='admin', history=assistantAPI.history, function_modules=function_modules,
-                                        sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
-                                        inpLang='ja', outLang='ja', )
+                    assistantAPI.chatBot(   chat_class='auto', model_select='auto', 
+                                            session_id=session_id, history=assistantAPI.history, function_modules=function_modules,
+                                            sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
+                                            inpLang='ja', outLang='ja', )
                 print()
                 print(f"[{ res_name }] ({ res_api })")
                 print(str(res_text))
@@ -1513,10 +1517,10 @@ if __name__ == '__main__':
                 print(reqText, inpText )
                 print()
                 res_text, res_path, res_files, res_name, res_api, assistantAPI.history = \
-                    assistantAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                        session_id='admin', history=assistantAPI.history, function_modules=function_modules,
-                                        sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
-                                        inpLang='ja', outLang='ja', )
+                    assistantAPI.chatBot(   chat_class='auto', model_select='auto', 
+                                            session_id=session_id, history=assistantAPI.history, function_modules=function_modules,
+                                            sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
+                                            inpLang='ja', outLang='ja', )
                 print()
                 print('[' + res_name + '] (' + res_api + ')' )
                 print('', res_text)

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<!--Viewport settings for responsive design-->
+
+<head>
+    <meta charset="UTF-8">
+    <title>Clip&amp;GPT</title>
+    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="shortcut icon" type="image/x-icon"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column; /* 縦方向に並べる */
+            justify-content: center;
+            align-items: center;
+            background-image: url("static/__gray.png");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .header {
+            position: fixed; /* 最上部に固定 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 32px;
+            background-color: #000; /* 背景色を黒に */
+            padding: 0px;
+            z-index: 10;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-top: 0px;
+            color: white; /* 文字色を白に */
+        }
+
+        .left-buttons {
+            text-align: left;
+            margin: 20px 0;
+            position: absolute;
+            left: 20px;
+            top: 10px;
+        }
+
+        .right-buttons {
+            text-align: left;
+            margin: 20px 0;
+            position: absolute;
+            right: 20px;
+            top: 10px;
+        }
+
+        #chatbox {
+            width: 95%;
+            height: 75vh; /* 画面の高さの75%を使用 */
+            overflow-y: scroll;
+            margin-top: 40px;
+            margin-bottom: 10px; /* 下部のスペース */
+        }
+
+        #fileUploadLabel:hover {
+            cursor: crosshair; /* ホバー時にカーソルをポインターに変更 */
+        }
+
+        /* ゼブラ配色、チャット履歴、メッセージ入力欄のスタイル */
+        .chat-entry:nth-child(even) {
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+            display: inline-block;
+        }
+        .chat-entry:nth-child(odd) {
+            background-color: #e6e6e6;
+            margin: 0;
+            padding: 0;
+            display: inline-block;
+        }
+
+        .user-icon {
+            width: 64px;
+            height: 64px;
+            margin-right: 10px;
+            vertical-align: middle;
+            border-radius: 50%; /* 円形にする */
+            display: inline-block;
+        }
+
+        .gpt-icon {
+            width: 64px;
+            height: 64px;
+            margin-right: 10px;
+            vertical-align: middle;
+            border-radius: 50%; /* 円形にする */
+            display: inline-block;
+        }
+
+        .input-container {
+            width: 80%;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #uploadForm {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        #message {
+            width: 100%;
+            height: 3em; /* 2行分以上の高さに設定 */
+            display: inline-block;
+            resize: none; /* ユーザーがサイズを変更するのを防ぐ */
+        }
+    
+        .button {
+            padding: 10px 10px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        .send-button {
+            padding: 15px 25px; /* パディングを増やしてボタンを大きくします */
+            font-size: 18px; /* フォントサイズを大きくします */
+            border: 2px solid white;
+        }
+
+        #message, .send-button {
+            vertical-align: middle; /* これによりテキストエリアとボタンが同じ高さになります */
+        }
+
+        .mic-button {
+            border: none;
+            background: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .mic-button img {
+            width: 50px;
+            height: 50px;
+        }        
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;  /* ここで非表示に設定しています */
+        }
+
+        .loading-img {
+            position: absolute;  /* 絶対位置を指定 */
+            top: 50%;            /* 上から50%の位置に配置 */
+            left: 50%;           /* 左から50%の位置に配置 */
+            width: 100px; 
+            transform: translate(-50%, -50%);  /* 50%移動して中央に配置 */
+        }
+
+        .microphone {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;  /* ここで非表示に設定しています */
+        }
+
+        .microphone-img {
+            position: absolute;  /* 絶対位置を指定 */
+            top: 50%;            /* 上から50%の位置に配置 */
+            left: 50%;           /* 左から50%の位置に配置 */
+            width: 100px; 
+            transform: translate(-50%, -50%);  /* 50%移動して中央に配置 */
+        }
+
+    </style>
+
+    <!--Basic responsive design and media query-->
+    <style>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        /* Basic Responsive Design */
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        /* Media Query Example */
+        @media only screen and (max-width: 600px) {
+            body {
+                font-size: 18px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <script>
+        const mode = new URL(window.location.href).searchParams.get('mode');
+    </script>
+
+    <div class="header">
+        <h1>Clip&amp;GPT{% if sno %} ({{ sno }}){% endif %}</h1>
+        <div class="left-buttons">
+            <a class="button" href="/">メニューに戻る</a>
+        </div>
+        <div class="right-buttons">
+            <a class="button" href="/chat_setting?mode={{ mode }}">設定/リセット</a>
+        </div>
+    </div>
+
+    <div id="chatbox"></div>
+
+    <div class="input-container">
+        <table>
+            <tr>
+                <td width="80px" align="center">
+                    {% if sno == 1 %}
+                    <form action="/upload?mode={{ mode }}" enctype="multipart/form-data" id="uploadForm" method="post">
+                        <label for="fileUpload" id="fileUploadLabel" style="cursor:pointer;">　➕　</label>
+                        <label >(D&D)</label>                
+                        <input id="fileUpload" name="file" style="display:none;" type="file"/>
+                    </form>
+                    {% endif %}
+                </td>
+                <td width="80%">
+                    <textarea id="message" placeholder="Type your message..."></textarea>
+                </td>
+                <td width="160px" align="center">
+                    <button class="button send-button" id="sendButton" onclick="sendMessage()">送信</button>
+                </td>
+                <td width="80px" align="center">
+                    <button class="button send-button mic-button" id="voiceButton" onclick="startListening()" style="display:none;">
+                        <img src="static/microphone.png" alt="Start Voice Input">
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="loading">
+        <img alt="Loading..." class="loading-img" src="static/loading.gif"/>
+    </div>
+    <div class="microphone">
+        <img alt="microphone..." class="microphone-img" src="static/microphone.png"/>
+    </div>
+
+    <script>
+        let speech_enable = false;  // 音声入力無効
+        let voiceSent = false; // 音声で送信されたかどうかを示す変数
+  
+        // ブラウザのユーザーエージェントを取得
+        const userAgent = navigator.userAgent.toLowerCase();
+
+        // Chrome、Edge、または Safariであれば音声入力ボタンを表示
+        if (userAgent.indexOf('chrome') > -1 || userAgent.indexOf('edge') > -1 || userAgent.indexOf('safari') > -1) {
+
+            // ただし、SafariはwebkitSpeechRecognitionを持っていない場合があるので、それもチェック
+            if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+                document.getElementById("voiceButton").style.display = "inline";
+
+                // 音声認識の設定
+                let speech_enable = true;  // 音声入力有効
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
+                recognition.lang = 'ja-JP'; // 言語を日本語に設定
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                // 音声認識が停止した場合
+                recognition.onend = function() {
+                    $('.microphone').hide(); // オーバーレイを非表示に
+                };
+
+                // 音声認識でエラーが発生した場合
+                recognition.onerror = function(event) {
+                    console.error("Error occurred in recognition: " + event.error);
+                    $('.microphone').hide(); // オーバーレイを非表示に
+                };
+
+                // 音声認識を開始する関数
+                function startListening() {
+                    $('.microphone').show(); // オーバーレイを表示
+                    recognition.start();
+                }
+
+                // マイクのオーバーレイがクリックされたときの処理
+                $('.microphone').click(function() {
+                    recognition.stop(); // 音声認識を停止
+                });
+
+                recognition.onresult = function(event) {
+                    const speechToText = event.results[0][0].transcript; // 音声をテキストに変換
+                    // 音声入力の結果をテキストエリアに設定
+                    $('#message').val(speechToText);
+                    if (speechToText !== "") {
+                        voiceSent = true;  // 音声で送信された
+                        sendMessage(); // 音声入力が空でない場合、送信処理を実行
+                    }
+                };
+
+            }
+
+        }
+
+        // Hook drag & drop events onto the label
+	    const fileLabel = document.getElementById('fileUploadLabel');
+	    const fileInput = document.getElementById('fileUpload');
+	    // Handle file drop
+	    fileLabel.addEventListener('dragover', (e) => {
+	        e.preventDefault();
+	        fileLabel.classList.add('dragover');
+	    });
+	    fileLabel.addEventListener('dragleave', (e) => {
+	        e.preventDefault();
+	        fileLabel.classList.remove('dragover');
+	    });
+	    fileLabel.addEventListener('drop', (e) => {
+	        e.preventDefault();
+	        fileLabel.classList.remove('dragover');
+	        // Update input files with the dropped files
+	        fileInput.files = e.dataTransfer.files;
+	        // Trigger the change event manually
+	        $(fileInput).trigger('change');
+	    });
+
+        <!-- ファイル選択後、自動的にアップロードする -->
+        $('#fileUpload').change(function() {
+            var formData = new FormData($('#uploadForm')[0]);
+            //#var fileInput = $('#fileUpload')[0]; // ファイル入力要素を取得
+            //var fileName = fileInput.files[0].name; // 選択されたファイルの名前を取得
+
+            // ユーザーメッセージ追加
+            addMessageToChatbox('user', "ファイル送信");
+
+            $.ajax({
+                url: '/upload/' + mode,
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(data) {
+                    if (data.error) {
+                        // エラーが返された場合は処理を行わない
+                        alert(data.error);
+                    } else {
+                        // サーバーメッセージ追加
+                        addMessageToChatbox('gpt', data.response, data.timestamp, data.downloadLink, data.isImage);
+                    }
+                }
+            });
+        });
+
+        function addMessageToChatbox(sender, message, timestamp, downloadLink=null, isImage=false) {
+            // メッセージをHTML形式に変換
+            message = message.replace('\n', '<br>');
+
+            // メッセージ
+            if (sender == 'user') {
+                $('#chatbox').append(`<div align="right" class="chat-line"><table><tr><td><img src="static/icon_user.png" class="user-icon"></td>
+	                            <td><div class="chat-entry"><p>${message}</p></div></td></tr></table><div>`);
+            }
+            if (sender == 'gpt') {
+                if (downloadLink && isImage) {
+                    $('#chatbox').append(`<div align="left" class="chat-line"><table><tr><td><img src="static/icon_gpt.png" class="gpt-icon"></td>
+                    <td><div class="chat-entry"><p>${message}</p><a href="${downloadLink}" download><img src="${downloadLink}" alt="Image" style="width: 100px;"></a></div></td></tr></table><div>`);
+                } else if (downloadLink) {
+                    $('#chatbox').append(`<div align="left" class="chat-line"><table><tr><td><img src="static/icon_gpt.png" class="gpt-icon"></td>
+                    <td><div class="chat-entry"><p>${message}<a href="${downloadLink}" download>Download</a></p></div></td></tr></table><div>`);
+                } else {
+                    $('#chatbox').append(`<div align="left" class="chat-line"><table><tr><td><img src="static/icon_gpt.png" class="gpt-icon"></td>
+                    <td><div class="chat-entry"><p>${message}</p></div></td></tr></table><div>`);
+                }
+            }
+
+            // チャットボックスの最下部にスクロール
+            $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
+        }
+        
+        function sendMessage() {
+            // オーバーレイを表示
+            $('.loading').show();
+
+            // ユーザーメッセージ追加
+            let message = $('#message').val();
+            addMessageToChatbox('user', message);
+
+            $.post('/chat/send_message', {mode: mode, message: message}, function(data) {
+
+                // サーバーメッセージ追加
+                addMessageToChatbox('gpt', data.response, data.timestamp, data.downloadLink, data.isImage);
+
+                $('#message').val('');
+                $('.loading').hide(); // オーバーレイを非表示に
+
+                // 音声で送信した場合、戻り値を読み上げる
+                if (voiceSent) {
+                    voiceSent = false;  // 状態をリセット
+
+                    let speech_text = data.response;
+                    if (speech_text) {
+
+                        // Flask側に音声合成を依頼
+                        console.log("Generated audio start ");  // これを追加
+                        $.ajax({
+                            url: "/synthesize_speech",
+                            type: "POST",
+                            data: JSON.stringify({ "speech_text": speech_text }),
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "text",  // Base64エンコードされたテキストデータを受信するためにtextを使用
+                            success: function(speechResponse) {
+                                var audio = new Audio("data:audio/mp3;base64," + speechResponse);
+                                audio.play();
+                                audio.onended = function() {
+                                    // 音声再生が終了したら、音声入力を再開する
+                                    startListening();
+                                }
+                            }
+                        });
+
+                    } else {
+                        // 戻り値が空の場合も音声認識を再開
+                        startListening();
+                    }
+                }
+
+            });
+        }
+        
+        $(document).ready(function() {
+            $.get('/chat/get_history', {mode: mode}, function(data) {
+                for(let item of data) {
+                    addMessageToChatbox(item.sender, item.message, item.timestamp, item.downloadLink, item.isImage);
+                }
+            });
+            // チャットアイコンのクリックイベントの追加
+            $(document).on('click', '.user-icon', function() {
+                // メッセージの取得
+                let message = $(this).closest('tr').find('.chat-entry p').html();
+                // メッセージのセット
+                message = message.replace('<br>', '\n');
+                $('#message').val(message);
+            });
+            $(document).on('click', '.gpt-icon', function() {
+                // レスポンスの取得
+                let response = $(this).closest('tr').find('.chat-entry p').html();
+                // レスポンスのセット
+                response = response.replace('<br>', '\n');
+                $('#message').val(response);
+            });
+        });
+
+    </script>
+</body>
+
+</html>
