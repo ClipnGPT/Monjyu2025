@@ -746,7 +746,7 @@ class _assistantAPI:
 
         if (self.bot_auth is None):
             self.print(session_id, ' Assistant : Not Authenticate Error !')
-            return res_text, res_path, res_name, res_api, res_history
+            return res_text, res_path, res_files, res_name, res_api, res_history
 
         # モデル 設定
         res_name  = self.assistant_a_nick_name
@@ -915,7 +915,6 @@ class _assistantAPI:
                             pass
                         my_assistant_id = None
                         break
-                time.sleep(1.00)
 
         # アシスタント生成
         if (my_assistant_id is None):
@@ -946,7 +945,6 @@ class _assistantAPI:
                         res = self.client.beta.assistants.delete(assistant_id = assistant.id, )
                     except:
                         pass
-                time.sleep(1.00)
 
             # アシスタント生成
             self.print(session_id, f" Assistant : Create assistant ( name='{ my_assistant_name }', model={ res_api }, ) ")
@@ -955,7 +953,6 @@ class _assistantAPI:
                     model    = res_api,
                     instructions = instructions,
                     tools    = [], )
-            time.sleep(2.00)
             my_assistant_id = assistant.id
             self.assistant_id[str(session_id)] = my_assistant_id
 
@@ -987,7 +984,6 @@ class _assistantAPI:
                                                         functions         = functions,
                                                         vectorStore_ids   = vectorStore_ids,
                                                         upload_ids        = upload_ids, )
-            time.sleep(2.00)
 
         # スレッド確認
         my_thread_id = self.thread_id.get(str(session_id))
@@ -997,7 +993,6 @@ class _assistantAPI:
             self.print(session_id, f" Assistant : Create thread    ( name='{ my_assistant_name }', ) ")
             thread = self.client.beta.threads.create(
                 metadata = {'assistant_name': my_assistant_name}, )
-            time.sleep(1.00)
             my_thread_id = thread.id
             self.thread_id[str(session_id)] = my_thread_id
 
@@ -1022,10 +1017,15 @@ class _assistantAPI:
                         content   = msg_text, )
 
         # メッセージ生成
+        content_text = ''
+        if (reqText is not None) and (reqText.strip() != ''):
+            content_text += reqText.rstrip() + '\n'
+        if (inpText is not None) and (inpText.strip() != ''):
+            content_text += inpText.rstrip() + '\n'
         res = self.client.beta.threads.messages.create(
             thread_id = my_thread_id,
             role      = 'user',
-            content   = inpText, )
+            content   = content_text, )
 
         # ストリーム実行?
         if (session_id == 'admin'):
@@ -1043,7 +1043,6 @@ class _assistantAPI:
             run = self.client.beta.threads.runs.create(
                 assistant_id = my_assistant_id,
                 thread_id    = my_thread_id, )
-            time.sleep(1.00)
             my_run_id = run.id
 
             # 実行ループ
@@ -1380,10 +1379,13 @@ class _assistantAPI:
 
         if (sysText is None) or (sysText == ''):
             sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
+        if (inpText is None) or (inpText == ''):
+            inpText = reqText
+            reqText = None
 
         if (self.bot_auth is None):
             self.print(session_id, ' Assistant : Not Authenticate Error !')
-            return res_text, res_path, nick_name, model_name, res_history
+            return res_text, res_path, res_files, nick_name, model_name, res_history
 
         # ファイル分離
         upload_files    = []
@@ -1480,7 +1482,6 @@ if __name__ == '__main__':
                 sysText = None
                 reqText = ''
                 inpText = 'おはようございます。'
-                #inpText = 'assistant-b,おはようございます。'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
@@ -1498,7 +1499,6 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                #inpText = 'toolsで兵庫県三木市の天気を調べて'
                 inpText = 'assistant-b,toolsで兵庫県三木市の天気を調べて'
                 print()
                 print('[Request]')

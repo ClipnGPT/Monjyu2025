@@ -241,7 +241,7 @@ class _geminiAPI:
                 supported = model.supported_generation_methods
                 if ('generateContent' in supported):
                     key = model.name.replace('models/', '')
-                    if  (key.find('gemini-2') >= 0):
+                    if  (key.find('gemini-2') >= 0) or (key.find('gemini-exp') >= 0):
                     #if True:
                         token = model.input_token_limit
                         #print(key, token, )
@@ -417,7 +417,7 @@ class _geminiAPI:
 
         if (self.bot_auth is None):
             self.print(session_id, ' Gemini : Not Authenticate Error !')
-            return res_text, res_path, res_name, res_api, res_history
+            return res_text, res_path, res_files, res_name, res_api, res_history
 
         # モデル 設定
         res_name  = self.gemini_a_nick_name
@@ -602,7 +602,7 @@ class _geminiAPI:
                             time.sleep(5.00)
                         if (upload_file.state.name == "PROCESSING"):
                             self.print(session_id, ' Gemini : Upload timeout. (120s)')
-                            return res_text, res_path, res_name, res_api, res_history
+                            return res_text, res_path, res_files, res_name, res_api, res_history
 
                         # 完了
                         self.print(session_id, ' Gemini : Upload complete.')
@@ -906,10 +906,13 @@ class _geminiAPI:
 
         if (sysText is None) or (sysText == ''):
             sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
+        if (inpText is None) or (inpText == ''):
+            inpText = reqText
+            reqText = None
 
         if (self.bot_auth is None):
             self.print(session_id, ' Gemini : Not Authenticate Error !')
-            return res_text, res_path, nick_name, model_name, res_history
+            return res_text, res_path, res_files, nick_name, model_name, res_history
 
         # ファイル分離
         upload_files    = []

@@ -175,12 +175,22 @@ HTMLテンプレートを修正してください。
 
     <textarea id="req_react" name="req_react" style="display:none;">
 assistant,
-Reactで動作する以下のプログラムを生成してください。
-・オセロゲーム
-生成したコードはユーザーのSandbox環境で動作させます。
-全てのコードとpackage.jsonをZIPでまとめて出力してください。
-    </textarea>
+React(nodejs)で動作する以下のプログラムを生成してください。
+・Hallo World!
 
+フォルダ構造は、後記の形式で、application-nameを置き換えてください。
+生成したhtml,jsコードはユーザーのSandbox環境で動作させますので、
+解凍、配置、動作させるためのソース一式をZIPでまとめて出力してください。
+
+フォルダ構造
+application-name/
+├── package.json
+├── public
+│　　　└── index.html
+└── src
+　　　　├── index.js
+　　　　└── App.js
+    </textarea>
     <script>
         var js = 'development.js';
         var script = document.createElement('script');

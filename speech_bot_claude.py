@@ -410,7 +410,7 @@ class _claudeAPI:
 
         if (self.bot_auth is None):
             self.print(session_id, ' Claude : Not Authenticate Error !')
-            return res_text, res_path, res_name, res_api, res_history
+            return res_text, res_path, res_files, res_name, res_api, res_history
 
         # モデル 設定
         res_name  = self.claude_a_nick_name
@@ -823,10 +823,13 @@ class _claudeAPI:
 
         if (sysText is None) or (sysText == ''):
             sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
+        if (inpText is None) or (inpText == ''):
+            inpText = reqText
+            reqText = None
 
         if (self.bot_auth is None):
             self.print(session_id, ' Claude : Not Authenticate Error !')
-            return res_text, res_path, nick_name, model_name, res_history
+            return res_text, res_path, res_files, nick_name, model_name, res_history
 
         # ファイル分離
         upload_files    = []

@@ -839,16 +839,16 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot chatgpt ...')
 
-                    if (self.data is not None):
-                        self.chatgptAPI.set_models( max_wait_sec=self.data.engine_setting['chatgpt']['max_wait_sec'],
-                                                    a_model=self.data.engine_setting['chatgpt']['a_model'],
-                                                    a_use_tools=self.data.engine_setting['chatgpt']['a_use_tools'],
-                                                    b_model=self.data.engine_setting['chatgpt']['b_model'],
-                                                    b_use_tools=self.data.engine_setting['chatgpt']['b_use_tools'],
-                                                    v_model=self.data.engine_setting['chatgpt']['v_model'],
-                                                    v_use_tools=self.data.engine_setting['chatgpt']['v_use_tools'],
-                                                    x_model=self.data.engine_setting['chatgpt']['x_model'],
-                                                    x_use_tools=self.data.engine_setting['chatgpt']['x_use_tools'], )
+                    if (self.coreai is not None):
+                        self.chatgptAPI.set_models( max_wait_sec=self.coreai.chat_class.chatgptAPI.chatgpt_max_wait_sec,
+                                                    a_model=self.coreai.chat_class.chatgptAPI.chatgpt_a_model,
+                                                    a_use_tools=self.coreai.chat_class.chatgptAPI.chatgpt_a_use_tools,
+                                                    b_model=self.coreai.chat_class.chatgptAPI.chatgpt_b_model,
+                                                    b_use_tools=self.coreai.chat_class.chatgptAPI.chatgpt_b_use_tools,
+                                                    v_model=self.coreai.chat_class.chatgptAPI.chatgpt_v_model,
+                                                    v_use_tools=self.coreai.chat_class.chatgptAPI.chatgpt_v_use_tools,
+                                                    x_model=self.coreai.chat_class.chatgptAPI.chatgpt_x_model,
+                                                    x_use_tools=self.coreai.chat_class.chatgptAPI.chatgpt_x_use_tools, )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.chatgptAPI.chatBot(    chat_class=chat_class, model_select=model_select, session_id=session_id, 
@@ -937,22 +937,22 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot assistant ...')
 
-                    if (self.data is not None):
-                        self.assistantAPI.set_models(   max_wait_sec=self.data.engine_setting['assistant']['max_wait_sec'],
-                                                        a_model=self.data.engine_setting['assistant']['a_model'],
-                                                        a_use_tools=self.data.engine_setting['assistant']['a_use_tools'],
-                                                        b_model=self.data.engine_setting['assistant']['b_model'],
-                                                        b_use_tools=self.data.engine_setting['assistant']['b_use_tools'],
-                                                        v_model=self.data.engine_setting['assistant']['v_model'],
-                                                        v_use_tools=self.data.engine_setting['assistant']['v_use_tools'],
-                                                        x_model=self.data.engine_setting['assistant']['x_model'],
-                                                        x_use_tools=self.data.engine_setting['assistant']['x_use_tools'], )
+                    if (self.coreai is not None):
+                        self.assistantAPI.set_models(   max_wait_sec=self.coreai.chat_class.assistantAPI.assistant_max_wait_sec,
+                                                        a_model=self.coreai.chat_class.assistantAPI.assistant_a_model,
+                                                        a_use_tools=self.coreai.chat_class.assistantAPI.assistant_a_use_tools,
+                                                        b_model=self.coreai.chat_class.assistantAPI.assistant_b_model,
+                                                        b_use_tools=self.coreai.chat_class.assistantAPI.assistant_b_use_tools,
+                                                        v_model=self.coreai.chat_class.assistantAPI.assistant_v_model,
+                                                        v_use_tools=self.coreai.chat_class.assistantAPI.assistant_v_use_tools,
+                                                        x_model=self.coreai.chat_class.assistantAPI.assistant_x_model,
+                                                        x_use_tools=self.coreai.chat_class.assistantAPI.assistant_x_use_tools, )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
-                        self.assistantAPI.chatBot(  chat_class=chat_class, model_select=model_select, session_id=session_id, 
-                                                    history=history, function_modules=function_modules,
-                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
-                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                        self.assistantAPI.chatBot(      chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                        history=history, function_modules=function_modules,
+                                                        sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                        filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
                         res_engine = 'Assistant'
                         res_data = res_text
@@ -1028,16 +1028,16 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot gemini ...')
 
-                    if (self.data is not None):
-                        self.geminiAPI.set_models(  max_wait_sec=self.data.engine_setting['gemini']['max_wait_sec'],
-                                                    a_model=self.data.engine_setting['gemini']['a_model'],
-                                                    a_use_tools=self.data.engine_setting['gemini']['a_use_tools'],
-                                                    b_model=self.data.engine_setting['gemini']['b_model'],
-                                                    b_use_tools=self.data.engine_setting['gemini']['b_use_tools'],
-                                                    v_model=self.data.engine_setting['gemini']['v_model'],
-                                                    v_use_tools=self.data.engine_setting['gemini']['v_use_tools'],
-                                                    x_model=self.data.engine_setting['gemini']['x_model'],
-                                                    x_use_tools=self.data.engine_setting['gemini']['x_use_tools'], )
+                    if (self.coreai is not None):
+                        self.geminiAPI.set_models(  max_wait_sec=self.coreai.chat_class.geminiAPI.gemini_max_wait_sec,
+                                                    a_model=self.coreai.chat_class.geminiAPI.gemini_a_model,
+                                                    a_use_tools=self.coreai.chat_class.geminiAPI.gemini_a_use_tools,
+                                                    b_model=self.coreai.chat_class.geminiAPI.gemini_b_model,
+                                                    b_use_tools=self.coreai.chat_class.geminiAPI.gemini_b_use_tools,
+                                                    v_model=self.coreai.chat_class.geminiAPI.gemini_v_model,
+                                                    v_use_tools=self.coreai.chat_class.geminiAPI.gemini_v_use_tools,
+                                                    x_model=self.coreai.chat_class.geminiAPI.gemini_x_model,
+                                                    x_use_tools=self.coreai.chat_class.geminiAPI.gemini_x_use_tools, )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.geminiAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
@@ -1122,16 +1122,16 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot claude ...')
 
-                    if (self.data is not None):
-                        self.claudeAPI.set_models(  max_wait_sec=self.data.engine_setting['claude']['max_wait_sec'],
-                                                    a_model=self.data.engine_setting['claude']['a_model'],
-                                                    a_use_tools=self.data.engine_setting['claude']['a_use_tools'],
-                                                    b_model=self.data.engine_setting['claude']['b_model'],
-                                                    b_use_tools=self.data.engine_setting['claude']['b_use_tools'],
-                                                    v_model=self.data.engine_setting['claude']['v_model'],
-                                                    v_use_tools=self.data.engine_setting['claude']['v_use_tools'],
-                                                    x_model=self.data.engine_setting['claude']['x_model'],
-                                                    x_use_tools=self.data.engine_setting['claude']['x_use_tools'], )
+                    if (self.coreai is not None):
+                        self.claudeAPI.set_models(  max_wait_sec=self.coreai.chat_class.claudeAPI.claude_max_wait_sec,
+                                                    a_model=self.coreai.chat_class.claudeAPI.claude_a_model,
+                                                    a_use_tools=self.coreai.chat_class.claudeAPI.claude_a_use_tools,
+                                                    b_model=self.coreai.chat_class.claudeAPI.claude_b_model,
+                                                    b_use_tools=self.coreai.chat_class.claudeAPI.claude_b_use_tools,
+                                                    v_model=self.coreai.chat_class.claudeAPI.claude_v_model,
+                                                    v_use_tools=self.coreai.chat_class.claudeAPI.claude_v_use_tools,
+                                                    x_model=self.coreai.chat_class.claudeAPI.claude_x_model,
+                                                    x_use_tools=self.coreai.chat_class.claudeAPI.claude_x_use_tools, )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.claudeAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
@@ -1213,16 +1213,16 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot openrt ...')
 
-                    if (self.data is not None):
-                        self.openrtAPI.set_models(  max_wait_sec=self.data.engine_setting['openrt']['max_wait_sec'],
-                                                    a_model=self.data.engine_setting['openrt']['a_model'],
-                                                    a_use_tools=self.data.engine_setting['openrt']['a_use_tools'],
-                                                    b_model=self.data.engine_setting['openrt']['b_model'],
-                                                    b_use_tools=self.data.engine_setting['openrt']['b_use_tools'],
-                                                    v_model=self.data.engine_setting['openrt']['v_model'],
-                                                    v_use_tools=self.data.engine_setting['openrt']['v_use_tools'],
-                                                    x_model=self.data.engine_setting['openrt']['x_model'],
-                                                    x_use_tools=self.data.engine_setting['openrt']['x_use_tools'], )
+                    if (self.coreai is not None):
+                        self.openrtAPI.set_models(  max_wait_sec=self.coreai.chat_class.openrtAPI.openrt_max_wait_sec,
+                                                    a_model=self.coreai.chat_class.openrtAPI.openrt_a_model,
+                                                    a_use_tools=self.coreai.chat_class.openrtAPI.openrt_a_use_tools,
+                                                    b_model=self.coreai.chat_class.openrtAPI.openrt_b_model,
+                                                    b_use_tools=self.coreai.chat_class.openrtAPI.openrt_b_use_tools,
+                                                    v_model=self.coreai.chat_class.openrtAPI.openrt_v_model,
+                                                    v_use_tools=self.coreai.chat_class.openrtAPI.openrt_v_use_tools,
+                                                    x_model=self.coreai.chat_class.openrtAPI.openrt_x_model,
+                                                    x_use_tools=self.coreai.chat_class.openrtAPI.openrt_x_use_tools, )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.openrtAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
@@ -1311,16 +1311,16 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot perplexity ...')
 
-                    if (self.data is not None):
-                        self.perplexityAPI.set_models(  max_wait_sec=self.data.engine_setting['perplexity']['max_wait_sec'],
-                                                        a_model=self.data.engine_setting['perplexity']['a_model'],
-                                                        a_use_tools=self.data.engine_setting['perplexity']['a_use_tools'],
-                                                        b_model=self.data.engine_setting['perplexity']['b_model'],
-                                                        b_use_tools=self.data.engine_setting['perplexity']['b_use_tools'],
-                                                        v_model=self.data.engine_setting['perplexity']['v_model'],
-                                                        v_use_tools=self.data.engine_setting['perplexity']['v_use_tools'],
-                                                        x_model=self.data.engine_setting['perplexity']['x_model'],
-                                                        x_use_tools=self.data.engine_setting['perplexity']['x_use_tools'], )
+                    if (self.coreai is not None):
+                        self.perplexityAPI.set_models(  max_wait_sec=self.coreai.chat_class.perplexityAPI.perplexity_max_wait_sec,
+                                                        a_model=self.coreai.chat_class.perplexityAPI.perplexity_a_model,
+                                                        a_use_tools=self.coreai.chat_class.perplexityAPI.perplexity_a_use_tools,
+                                                        b_model=self.coreai.chat_class.perplexityAPI.perplexity_b_model,
+                                                        b_use_tools=self.coreai.chat_class.perplexityAPI.perplexity_b_use_tools,
+                                                        v_model=self.coreai.chat_class.perplexityAPI.perplexity_v_model,
+                                                        v_use_tools=self.coreai.chat_class.perplexityAPI.perplexity_v_use_tools,
+                                                        x_model=self.coreai.chat_class.perplexityAPI.perplexity_x_model,
+                                                        x_use_tools=self.coreai.chat_class.perplexityAPI.perplexity_x_use_tools, )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.perplexityAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
@@ -1402,22 +1402,22 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot grok ...')
 
-                    if (self.data is not None):
-                        self.grokAPI.set_models(    max_wait_sec=self.data.engine_setting['grok']['max_wait_sec'],
-                                                    a_model=self.data.engine_setting['grok']['a_model'],
-                                                    a_use_tools=self.data.engine_setting['grok']['a_use_tools'],
-                                                    b_model=self.data.engine_setting['grok']['b_model'],
-                                                    b_use_tools=self.data.engine_setting['grok']['b_use_tools'],
-                                                    v_model=self.data.engine_setting['grok']['v_model'],
-                                                    v_use_tools=self.data.engine_setting['grok']['v_use_tools'],
-                                                    x_model=self.data.engine_setting['grok']['x_model'],
-                                                    x_use_tools=self.data.engine_setting['grok']['x_use_tools'], )
+                    if (self.coreai is not None):
+                        self.grokAPI.set_models(max_wait_sec=self.coreai.chat_class.grokAPI.grok_max_wait_sec,
+                                                a_model=self.coreai.chat_class.grokAPI.grok_a_model,
+                                                a_use_tools=self.coreai.chat_class.grokAPI.grok_a_use_tools,
+                                                b_model=self.coreai.chat_class.grokAPI.grok_b_model,
+                                                b_use_tools=self.coreai.chat_class.grokAPI.grok_b_use_tools,
+                                                v_model=self.coreai.chat_class.grokAPI.grok_v_model,
+                                                v_use_tools=self.coreai.chat_class.grokAPI.grok_v_use_tools,
+                                                x_model=self.coreai.chat_class.grokAPI.grok_x_model,
+                                                x_use_tools=self.coreai.chat_class.grokAPI.grok_x_use_tools, )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
-                        self.grokAPI.chatBot( chat_class=chat_class, model_select=model_select, session_id=session_id, 
-                                                    history=history, function_modules=function_modules,
-                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
-                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                        self.grokAPI.chatBot(   chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                history=history, function_modules=function_modules,
+                                                sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
                         res_engine = 'Grok'
                         res_data = res_text
@@ -1493,22 +1493,22 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot groq ...')
 
-                    if (self.data is not None):
-                        self.groqAPI.set_models(    max_wait_sec=self.data.engine_setting['groq']['max_wait_sec'],
-                                                    a_model=self.data.engine_setting['groq']['a_model'],
-                                                    a_use_tools=self.data.engine_setting['groq']['a_use_tools'],
-                                                    b_model=self.data.engine_setting['groq']['b_model'],
-                                                    b_use_tools=self.data.engine_setting['groq']['b_use_tools'],
-                                                    v_model=self.data.engine_setting['groq']['v_model'],
-                                                    v_use_tools=self.data.engine_setting['groq']['v_use_tools'],
-                                                    x_model=self.data.engine_setting['groq']['x_model'],
-                                                    x_use_tools=self.data.engine_setting['groq']['x_use_tools'], )
+                    if (self.coreai is not None):
+                        self.groqAPI.set_models(max_wait_sec=self.coreai.chat_class.groqAPI.groq_max_wait_sec,
+                                                a_model=self.coreai.chat_class.groqAPI.groq_a_model,
+                                                a_use_tools=self.coreai.chat_class.groqAPI.groq_a_use_tools,
+                                                b_model=self.coreai.chat_class.groqAPI.groq_b_model,
+                                                b_use_tools=self.coreai.chat_class.groqAPI.groq_b_use_tools,
+                                                v_model=self.coreai.chat_class.groqAPI.groq_v_model,
+                                                v_use_tools=self.coreai.chat_class.groqAPI.groq_v_use_tools,
+                                                x_model=self.coreai.chat_class.groqAPI.groq_x_model,
+                                                x_use_tools=self.coreai.chat_class.groqAPI.groq_x_use_tools, )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
-                        self.groqAPI.chatBot( chat_class=chat_class, model_select=model_select, session_id=session_id, 
-                                                    history=history, function_modules=function_modules,
-                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
-                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                        self.groqAPI.chatBot(   chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                history=history, function_modules=function_modules,
+                                                sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
                         res_engine = 'Groq'
                         res_data = res_text
@@ -1591,16 +1591,16 @@ class ChatClass:
                 try:
                     qLog.log('info', self.proc_id, 'chatBot ollama ...')
 
-                    if (self.data is not None):
-                        self.ollamaAPI.set_models(  max_wait_sec=self.data.engine_setting['ollama']['max_wait_sec'],
-                                                    a_model=self.data.engine_setting['ollama']['a_model'],
-                                                    a_use_tools=self.data.engine_setting['ollama']['a_use_tools'],
-                                                    b_model=self.data.engine_setting['ollama']['b_model'],
-                                                    b_use_tools=self.data.engine_setting['ollama']['b_use_tools'],
-                                                    v_model=self.data.engine_setting['ollama']['v_model'],
-                                                    v_use_tools=self.data.engine_setting['ollama']['v_use_tools'],
-                                                    x_model=self.data.engine_setting['ollama']['x_model'],
-                                                    x_use_tools=self.data.engine_setting['ollama']['x_use_tools'], )
+                    if (self.coreai is not None):
+                        self.ollamaAPI.set_models(  max_wait_sec=self.coreai.chat_class.ollamaAPI.ollama_max_wait_sec,
+                                                    a_model=self.coreai.chat_class.ollamaAPI.ollama_a_model,
+                                                    a_use_tools=self.coreai.chat_class.ollamaAPI.ollama_a_use_tools,
+                                                    b_model=self.coreai.chat_class.ollamaAPI.ollama_b_model,
+                                                    b_use_tools=self.coreai.chat_class.ollamaAPI.ollama_b_use_tools,
+                                                    v_model=self.coreai.chat_class.ollamaAPI.ollama_v_model,
+                                                    v_use_tools=self.coreai.chat_class.ollamaAPI.ollama_v_use_tools,
+                                                    x_model=self.coreai.chat_class.ollamaAPI.ollama_x_model,
+                                                    x_use_tools=self.coreai.chat_class.ollamaAPI.ollama_x_use_tools, )
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
                         self.ollamaAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
@@ -1699,25 +1699,25 @@ class ChatClass:
                     if (n == 1):
                         qLog.log('info', self.proc_id, 'chatBot freeai ...')
 
-                        if (self.data is not None):
-                            self.freeaiAPI.set_models(  max_wait_sec=self.data.engine_setting['freeai']['max_wait_sec'],
-                                                        a_model=self.data.engine_setting['freeai']['a_model'],
-                                                        a_use_tools=self.data.engine_setting['freeai']['a_use_tools'],
-                                                        b_model=self.data.engine_setting['freeai']['b_model'],
-                                                        b_use_tools=self.data.engine_setting['freeai']['b_use_tools'],
-                                                        v_model=self.data.engine_setting['freeai']['v_model'],
-                                                        v_use_tools=self.data.engine_setting['freeai']['v_use_tools'],
-                                                        x_model=self.data.engine_setting['freeai']['x_model'],
-                                                        x_use_tools=self.data.engine_setting['freeai']['x_use_tools'], )
+                        if (self.coreai is not None):
+                            self.freeaiAPI.set_models(  max_wait_sec=self.coreai.chat_class.freeaiAPI.freeai_max_wait_sec,
+                                                        a_model=self.coreai.chat_class.freeaiAPI.freeai_a_model,
+                                                        a_use_tools=self.coreai.chat_class.freeaiAPI.freeai_a_use_tools,
+                                                        b_model=self.coreai.chat_class.freeaiAPI.freeai_b_model,
+                                                        b_use_tools=self.coreai.chat_class.freeaiAPI.freeai_b_use_tools,
+                                                        v_model=self.coreai.chat_class.freeaiAPI.freeai_v_model,
+                                                        v_use_tools=self.coreai.chat_class.freeaiAPI.freeai_v_use_tools,
+                                                        x_model=self.coreai.chat_class.freeaiAPI.freeai_x_model,
+                                                        x_use_tools=self.coreai.chat_class.freeaiAPI.freeai_x_use_tools, )
 
                     else:
                         qLog.log('warning', self.proc_id, f'freeai retry = { n }/{ n_max },')
 
                     res_text, res_path, res_files, nick_name, model_name, res_history = \
-                        self.freeaiAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
-                                                    history=history, function_modules=function_modules,
-                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
-                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                            self.freeaiAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                        history=history, function_modules=function_modules,
+                                                        sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                        filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
                         res_engine = 'FreeAI'
                         res_data = res_text

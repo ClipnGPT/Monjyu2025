@@ -173,15 +173,15 @@ class CoreAiClass:
         qLog.log('info', self.proc_id, 'init')
 
         # 設定
-        self.main      = main
-        self.conf      = conf
-        self.data      = data
-        self.addin     = addin
-        self.botFunc   = botFunc
-        self.core_port = core_port
-        self.sub_base  = sub_base
+        self.main       = main
+        self.conf       = conf
+        self.data       = data
+        self.addin      = addin
+        self.botFunc    = botFunc
+        self.core_port  = core_port
+        self.sub_base   = sub_base
         self.num_subais = int(num_subais)
-        self.self_port = self_port
+        self.self_port  = self_port
         self.local_endpoint = f'http://localhost:{ self.core_port }'
         self.core_endpoint = self.local_endpoint.replace('localhost', qHOSTNAME)
         self.webui_endpoint = self.core_endpoint.replace( f':{ self.core_port }', f':{ int(self.core_port) + 8 }' )
@@ -189,6 +189,7 @@ class CoreAiClass:
         # 自己bot設定
         self.chat_class = RiKi_Monjyu__subbot.ChatClass(runMode=runMode, qLog_fn=qLog_fn, 
                                                         main=main, conf=conf, data=data, addin=addin, botFunc=botFunc,
+                                                        coreai=None,
                                                         core_port=core_port, self_port=self_port)
         self.history    = []
 
