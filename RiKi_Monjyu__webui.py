@@ -113,7 +113,8 @@ class postEngineSettingDataModel(BaseModel):
 # Live設定データモデル
 class postLiveDataModel(BaseModel):
     engine: str
-    voice: str
+    live_model: str
+    live_voice: str
     shot_interval_sec: str
     clip_interval_sec: str
 
@@ -236,6 +237,7 @@ class WebUiClass:
         self.app.post("/post_engine_setting")(self.post_engine_setting)
         self.app.get("/get_addins_setting")(self.get_addins_setting)
         self.app.post("/post_addins_setting")(self.post_addins_setting)
+        self.app.get("/get_live_models")(self.get_live_models)
         self.app.get("/get_live_voices")(self.get_live_voices)
         self.app.get("/get_live_setting")(self.get_live_setting)
         self.app.post("/post_live_setting")(self.post_live_setting)
@@ -739,6 +741,14 @@ class WebUiClass:
                                         "image_yolo_execute": image_yolo_execute, }
         return JSONResponse(content={'message': 'post_addins_setting successfully'})
 
+    async def get_live_models(self, engine: str) -> Dict[str, str]:
+        # 設定情報を返す
+        if (self.data is not None):
+            result = self.data.live_models[engine]
+        else:
+            result = {}
+        return JSONResponse(content=result)
+
     async def get_live_voices(self, engine: str) -> Dict[str, str]:
         # 設定情報を返す
         if (self.data is not None):
@@ -758,11 +768,13 @@ class WebUiClass:
     async def post_live_setting(self, data: postLiveDataModel):
         # 設定情報を更新する
         engine = str(data.engine) if data.engine else ""
-        voice = str(data.voice) if data.voice else ""
+        live_model = str(data.live_model) if data.live_model else ""
+        live_voice = str(data.live_voice) if data.live_voice else ""
         shot_interval_sec = str(data.shot_interval_sec) if data.shot_interval_sec else ""
         clip_interval_sec = str(data.clip_interval_sec) if data.clip_interval_sec else ""
         if (self.data is not None):
-            self.data.live_setting[engine] = {  "voice": voice,
+            self.data.live_setting[engine] = {  "live_model": live_model,
+                                                "live_voice": live_voice,
                                                 "shot_interval_sec": shot_interval_sec,
                                                 "clip_interval_sec": clip_interval_sec, }
         return JSONResponse(content={'message': 'post_live_setting successfully'})

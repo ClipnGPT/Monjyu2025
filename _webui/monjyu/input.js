@@ -252,7 +252,7 @@ $(document).ready(function() {
     // ページ遷移時にlocalStorageから復元
     const storedData = JSON.parse(localStorage.getItem('input_formData'));
     if (storedData) {
-        $('#req_mode').val(storedData.req_mode || 'assistant'); // リクエストモードを設定
+        $('#req_mode').val(storedData.req_mode || 'chat'); // リクエストモードを設定
         $('#to_port').val(storedData.to_port || ''); // ポートを設定
         $('#system_text').val(storedData.system_text || 'あなたは美しい日本語を話す賢いアシスタントです。'); // 初期システムテキストを設定
         $('#request_text').val(storedData.request_text || ''); // リクエストテキストを設定

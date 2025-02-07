@@ -102,6 +102,7 @@ class _data_class:
         self.engine_models['ollama'] = {}
         self.engine_setting = {}
         self.addins_setting = {}
+        self.live_models = {}
         self.live_voices = {}
         self.live_setting = {}
         self.webAgent_useBrowser = ""
@@ -216,24 +217,18 @@ class _data_class:
             "image_yolo_execute": ""
         }
 
-        # liveの設定
-        self.live_voices[ 'freeai'] = { "Puck": "Puck", 
-                                        "Charon": "Charon", 
-                                        "Kore": "Kore", 
-                                        "Fenrir": "Fenrir", 
-                                        "Aoede": "Aoede" }
-        self.live_setting['freeai'] = { "voice": "Aoede", 
+        # liveの設定 freeai
+        self.live_models[ 'freeai'] = {}
+        self.live_voices[ 'freeai'] = {}
+        self.live_setting['freeai'] = { "live_model": "",
+                                        "live_voice": "", 
                                         "shot_interval_sec":"",
                                         "clip_interval_sec":"", }
-        self.live_voices[ 'openai'] = { "alloy": "Alloy", 
-                                        "ash": "Ash",
-                                        "ballad": "Ballad",
-                                        "coral": "Coral", 
-                                        "echo": "Echo", 
-                                        "sage": "Sage", 
-                                        "shimmer": "Shimmer",
-                                        "verse": "Verse" }
-        self.live_setting['openai'] = { "voice": "alloy",
+        # liveの設定 openai
+        self.live_models[ 'openai'] = {}
+        self.live_voices[ 'openai'] = {}
+        self.live_setting['openai'] = { "live_model": "",
+                                        "live_voice": "alloy",
                                         "shot_interval_sec":"",
                                         "clip_interval_sec":"", }
 

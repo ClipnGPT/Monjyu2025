@@ -60,10 +60,18 @@ config_file2 = 'RiKi_ClipnGPT_key.json'
 qIO_py2live  = 'temp/browser操作Agent_py2live.txt'
 
 # モデル設定 (openai)
-#MODEL = "gpt-4o-realtime-preview-2024-12-17"
-MODEL = "gpt-4o-mini-realtime-preview-2024-12-17"
-VOICE = "alloy"
-VOICE_LEVEL = 2500
+LIVE_MODELS = { "gpt-4o-mini-realtime-preview-2024-12-17": "gpt-4o-mini-realtime-preview-2024-12-17",
+                "gpt-4o-realtime-preview-2024-12-17": "gpt-4o-realtime-preview-2024-12-17", }
+LIVE_VOICES = { "alloy": "Alloy", 
+                "ash": "Ash",
+                "ballad": "Ballad",
+                "coral": "Coral", 
+                "echo": "Echo", 
+                "sage": "Sage", 
+                "shimmer": "Shimmer",
+                "verse": "Verse", }
+LIVE_MODEL = "gpt-4o-mini-realtime-preview-2024-12-17"
+LIVE_VOICE = "alloy"
 
 # 音声ストリーム 設定
 INPUT_CHUNK = 2048
@@ -277,20 +285,22 @@ class _live_api_openai:
         self.mixer_enable = False
 
         # 実行パラメータ
-        self.MODEL = MODEL
-        self.VOICE = VOICE
-        self.VOICE_LEVEL = VOICE_LEVEL
+        self.live_models = LIVE_MODELS
+        self.live_voices = LIVE_VOICES
+        self.live_model  = LIVE_MODEL
+        self.live_voice  = LIVE_VOICE
+        self.live_voice_level = 2500
         sec60 = int( (INPUT_RATE/INPUT_CHUNK) * 60) # 60sec
-        self.VOICE_BASE = [0 for _ in range(sec60)]
+        self.voice_base = [0 for _ in range(sec60)]
 
         # イメージ送信タイミング
-        self.SHOT_INTERVAL_SEC = 2      # 送信間隔
-        self.CLIP_INTERVAL_SEC = 30     # クリップボード送信後のアイドル秒数
-        self.shot_last_time = time.time() - self.SHOT_INTERVAL_SEC
-        self.clip_last_time = time.time() - self.CLIP_INTERVAL_SEC
+        self.shot_interval_sec = 2      # 送信間隔
+        self.clip_interval_sec = 30     # クリップボード送信後のアイドル秒数
+        self.shot_last_time = time.time() - self.shot_interval_sec
+        self.clip_last_time = time.time() - self.clip_interval_sec
 
         # API情報
-        #self.WS_URL = f"wss://api.openai.com/v1/realtime?model={ self.MODEL }"
+        #self.WS_URL = f"wss://api.openai.com/v1/realtime?model={ self.live_model }"
         self.HEADERS = {"Authorization": "Bearer " + api_key,
                         "OpenAI-Beta": "realtime=v1"}
 
@@ -363,10 +373,10 @@ class _live_api_openai:
                 if audio_data is not None:
                     input_data = np.abs(np.frombuffer(audio_data, dtype=np.int16))
                     data_max = np.max(input_data)
-                    del self.VOICE_BASE[0]
-                    self.VOICE_BASE.append(data_max)
-                    base_avg = np.average(self.VOICE_BASE)
-                    if data_max > (base_avg + self.VOICE_LEVEL):
+                    del self.voice_base[0]
+                    self.voice_base.append(data_max)
+                    base_avg = np.average(self.voice_base)
+                    if data_max > (base_avg + self.live_voice_level):
                         self.audio_send_queue.put(audio_data)
                         self.graph_input_queue.put(audio_data)
                         if (self.audio_input_time == None):
@@ -475,8 +485,8 @@ class _live_api_openai:
                 if (self.image_input_number is not None):
                     if self.image_send_queue.empty():
 
-                        if  ((time.time() - self.clip_last_time) > self.CLIP_INTERVAL_SEC) \
-                        and ((time.time() - self.shot_last_time) > self.SHOT_INTERVAL_SEC):
+                        if  ((time.time() - self.clip_last_time) > self.clip_interval_sec) \
+                        and ((time.time() - self.shot_last_time) > self.shot_interval_sec):
 
                             try:
                                 if (self.image_input_number == 0):
@@ -659,7 +669,7 @@ class _live_api_openai:
                             self.monjyu.last_outText = transcript
                             self.monjyu.last_outData = transcript
                             #try:
-                            #    outText = f"[Live] ({ self.MODEL })\n" + transcript
+                            #    outText = f"[Live] ({ self.live_model })\n" + transcript
                             #    #self.monjyu.post_output_log(outText=outText, outData=outText)
                             #    thread = threading.Thread(
                             #        target=self.monjyu.post_output_log,args=(outText, outText),
@@ -744,9 +754,9 @@ class _live_api_openai:
                                     #self.monjyu.live_audio_output(
                                     # time_stamp=self.audio_output_time,
                                     # audio_buffer=self.audio_output_buffer.copy()
-                                    # outMODEL=self.MODEL)
+                                    # out_model=self.live_model)
                                     output_thread = threading.Thread(
-                                        target=self.monjyu.live_audio_output,args=(self.audio_output_time, self.audio_output_buffer.copy(), self.MODEL),
+                                        target=self.monjyu.live_audio_output,args=(self.audio_output_time, self.audio_output_buffer.copy(), self.live_model),
                                         daemon=True
                                     )
                                     output_thread.start()
@@ -793,7 +803,21 @@ class _live_api_openai:
         self.last_send_time = time.time()
         self.image_input_number = None
         dummy = io_text_read(qIO_py2live)
-        print(f" Live(openai) : [START] ({ self.MODEL }) ")
+        # UI設定
+        if self.data is not None:
+            live_model = self.data.live_setting['openai'].get('live_model', '')
+            live_voice = self.data.live_setting['openai'].get('live_voice', '')
+            shot_interval_sec = self.data.live_setting['openai'].get('shot_interval_sec', str(self.shot_interval_sec))
+            clip_interval_sec = self.data.live_setting['openai'].get('clip_interval_sec', str(self.clip_interval_sec))
+            if live_model != '':
+                self.live_model = live_model
+            if live_voice != '':
+                self.live_voice = live_voice
+            if (shot_interval_sec != ''):
+                self.shot_interval_sec = int(shot_interval_sec)
+            if (clip_interval_sec != ''):
+                self.clip_interval_sec = int(clip_interval_sec)
+        print(f" Live(openai) : [START] ({ self.live_model }) ")
         # Monjyu 確認
         if (self.monjyu_once_flag == False):
             self.monjyu_once_flag = True
@@ -873,21 +897,9 @@ class _live_api_openai:
             # 起動
             if (self.session is None):
 
-                # UI設定
-                if self.data is not None:
-                    voice = self.data.live_setting['openai'].get('voice', '')
-                    shot_interval_sec = self.data.live_setting['openai'].get('shot_interval_sec', str(self.SHOT_INTERVAL_SEC))
-                    clip_interval_sec = self.data.live_setting['openai'].get('clip_interval_sec', str(self.CLIP_INTERVAL_SEC))
-                    if voice != '':
-                        self.VOICE = voice
-                    if (shot_interval_sec != ''):
-                        self.SHOT_INTERVAL_SEC = int(shot_interval_sec)
-                    if (clip_interval_sec != ''):
-                        self.CLIP_INTERVAL_SEC = int(clip_interval_sec)
-
                 # voice 設定
-                voice = self.VOICE
-                print(f" Live(openai) : [VOICE] { voice } ")
+                live_voice = self.live_voice
+                print(f" Live(openai) : [VOICE] { live_voice } ")
 
                 instructions = \
 """
@@ -932,7 +944,7 @@ Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) が�
                                 tools.append( tool )
 
                 # Live 実行
-                WS_URL = f"wss://api.openai.com/v1/realtime?model={ self.MODEL }"
+                WS_URL = f"wss://api.openai.com/v1/realtime?model={ self.live_model }"
                 self.session = websocket.create_connection(WS_URL, header=self.HEADERS)
                 if self.session is not None:
                     # 開始音
@@ -944,7 +956,7 @@ Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) が�
                         "session": {
                             "modalities": ["audio", "text"],
                             "instructions": instructions,
-                            "voice": voice,
+                            "voice": self.live_voice,
                             "turn_detection": {
                                 "type": "server_vad",
                                 "threshold": 0.5,
@@ -1422,7 +1434,7 @@ class _monjyu_class:
 
         return True
 
-    def live_audio_output(self, time_stamp=None, audio_buffer=[], outMODEL=None, ):
+    def live_audio_output(self, time_stamp=None, audio_buffer=[], out_model=None, ):
         if (len(audio_buffer) == 0):
             return False
         if (time_stamp is None):
@@ -1454,8 +1466,8 @@ class _monjyu_class:
 
         outText = self.last_outText.strip()
         print(f" Live(openai) : { outText } ")
-        if (outMODEL is not None):
-            outText = f"[Live] ({ outMODEL })\n" + outText
+        if (out_model is not None):
+            outText = f"[Live] ({ out_model })\n" + outText
         else:
             outText = f"[Live]\n" + outText
         res = self.post_output_log(outText=outText, outData=outText)
@@ -1574,9 +1586,12 @@ class _class:
             self.sub_proc.liveAPI.botFunc = botFunc
         if data is not None:
             self.sub_proc.liveAPI.data = data
-            self.sub_proc.liveAPI.data.live_setting['openai'] = {   "voice": self.sub_proc.liveAPI.VOICE, 
-                                                                    "shot_interval_sec": str(self.sub_proc.liveAPI.SHOT_INTERVAL_SEC),
-                                                                    "clip_interval_sec": str(self.sub_proc.liveAPI.CLIP_INTERVAL_SEC), }
+            self.sub_proc.liveAPI.data.live_models['openai']  = self.sub_proc.liveAPI.live_models
+            self.sub_proc.liveAPI.data.live_voices['openai']  = self.sub_proc.liveAPI.live_voices
+            self.sub_proc.liveAPI.data.live_setting['openai'] = {   "live_model": self.sub_proc.liveAPI.live_model,
+                                                                    "live_voice": self.sub_proc.liveAPI.live_voice,
+                                                                    "shot_interval_sec": str(self.sub_proc.liveAPI.shot_interval_sec),
+                                                                    "clip_interval_sec": str(self.sub_proc.liveAPI.clip_interval_sec), }
         return True
 
     def func_proc(self, json_kwargs=None, ):

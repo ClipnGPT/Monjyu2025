@@ -851,18 +851,22 @@ class CoreAiClass:
         output_text = ''
         output_text += f"[{ res_engine }] ({ self.self_port }:{ res_api }) \n"
         output_text += res_text
-        output_data = res_data
+        output_data = ''
+        if (req_mode == 'clip'):
+            output_data += f"[{ res_engine }] ({ self.self_port }:{ res_api }) \n"
+        output_data += res_data
         output_path = res_path
         output_files = res_files
 
         # 終了
+        status = 'READY'
         self._post_complete(    user_id=user_id, from_port=from_port, to_port=to_port,
                                 req_mode=req_mode,
                                 system_text=system_text, request_text=request_text, input_text=input_text,
                                 result_savepath=result_savepath, result_schema=result_schema,
                                 output_text=output_text, output_data=output_data,
                                 output_path=output_path, output_files=output_files,
-                                status='', )
+                                status=status, )
 
         return True
 
@@ -927,9 +931,10 @@ class CoreAiClass:
         """
         サブAIにリクエストを送信する内部処理。
         """
-        with self.thread_lock:
-            if self.data.subai_info[to_port]['status'] not in ['READY', 'SESSION']:
-                raise HTTPException(status_code=503, detail=f'subai on port {to_port} is not available')
+        if (to_port in self.data.subai_info.keys()):
+            with self.thread_lock:
+                if self.data.subai_info[to_port]['status'] not in ['READY', 'SESSION']:
+                    raise HTTPException(status_code=503, detail=f'subai on port {to_port} is not available')
         try:
             if (self.data.subai_reset[to_port]['reset'] == 'yes,'):
                 self.data.subai_reset[to_port]['reset'] = ''
@@ -951,13 +956,16 @@ class CoreAiClass:
                 timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT)
             )
             if response.status_code == 200:
+                if (to_port in self.data.subai_info.keys()):
+                    with self.thread_lock:
+                        if (to_port in self.data.subai_reset.keys()):
+                            self.data.subai_reset[to_port]['reset'] = ''
+                        if (req_mode not in ['serial', 'parallel', 'session']):
+                            self.data.subai_info[to_port]['status'] = 'CHAT'
+                        else:
+                            self.data.subai_info[to_port]['status'] = req_mode.upper()
+                        self.data.subai_info[to_port]['upd_time'] = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
                 with self.thread_lock:
-                    self.data.subai_reset[to_port]['reset'] = ''
-                    if (req_mode not in ['serial', 'parallel', 'session']):
-                        self.data.subai_info[to_port]['status'] = 'CHAT'
-                    else:
-                        self.data.subai_info[to_port]['status'] = req_mode.upper()
-                    self.data.subai_info[to_port]['upd_time'] = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
                     key_val = f"{user_id}:{from_port}:{to_port}"
                     now_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
                     if (begin_bye_flag != True):
@@ -993,23 +1001,25 @@ class CoreAiClass:
                 raise HTTPException(status_code=response.status_code, detail=response.text)
         except Exception as e:
             qLog.log('error', self.proc_id, f"Error communicating ({ to_port }/post_request) : {e}")
-            with self.thread_lock:
-                self.data.subai_info[to_port]['status'] = 'NONE'
+            if (to_port in self.data.subai_info.keys()):
+                with self.thread_lock:
+                    self.data.subai_info[to_port]['status'] = 'NONE'
             raise HTTPException(status_code=503, detail=f'Error communicating with subai on port {to_port}')
 
     def _get_available_port(self):
         """
         空いているサブAIのポートを返す。
         """
-        if (self.data is None):
-            return None
+        if (self.data is not None):
         
-        with self.thread_lock:
-            for _ in range(self.num_subais):
-                port = self.random_order[self.current_order_index]
-                self.current_order_index = (self.current_order_index + 1) % self.num_subais
-                if self.data.subai_info[port]['status'] == 'READY':
-                    return port
+            with self.thread_lock:
+                for _ in range(self.num_subais):
+                    port = self.random_order[self.current_order_index]
+                    self.current_order_index = (self.current_order_index + 1) % self.num_subais
+                    if (port in self.data.subai_info.keys()):
+                        if self.data.subai_info[port]['status'] == 'READY':
+                            return port
+
         return None
     
     def _web_search(self, request_text: str, input_text: str, ):
@@ -1074,9 +1084,10 @@ class CoreAiClass:
             begin_bye_flag = True
         now_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
         if (status != ''):
-            with self.thread_lock:
-                self.data.subai_info[to_port]['status'] = status
-                self.data.subai_info[to_port]['upd_time'] = now_time
+            if (to_port in self.data.subai_info.keys()):
+                with self.thread_lock:
+                    self.data.subai_info[to_port]['status'] = status
+                    self.data.subai_info[to_port]['upd_time'] = now_time
         key_val = f"{user_id}:{from_port}:{to_port}"
         with self.thread_lock:
             if (begin_bye_flag != True):
@@ -1237,8 +1248,9 @@ class CoreAiClass:
         output_data = postData.output_data
         status = postData.status
         now_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-        with self.thread_lock:
-            self.data.subai_info[to_port]['upd_time'] = now_time
+        if (to_port in self.data.subai_info.keys()):
+            with self.thread_lock:
+                self.data.subai_info[to_port]['upd_time'] = now_time
         key_val = f"{user_id}:{from_port}:{to_port}"
         with self.thread_lock:
             self.data.subai_debug_log_key += 1

@@ -61,9 +61,17 @@ config_file2 = 'RiKi_ClipnGPT_key.json'
 qIO_py2live  = 'temp/browser操作Agent_py2live.txt'
 
 # モデル設定 (freeai)
-MODEL = "gemini-2.0-flash-exp"
-VOICE = "Aoede"
-VOICE_LEVEL = 2500
+LIVE_MODELS = { "gemini-2.0-flash-lite-preview-02-05": "gemini-2.0-flash-lite-preview-02-05",
+                "gemini-2.0-pro-exp-02-05": "gemini-2.0-pro-exp-02-05",
+                "gemini-2.0-flash-exp": "gemini-2.0-flash-exp",
+                "gemini-2.0-flash-001": "gemini-2.0-flash-001", }
+LIVE_VOICES = { "Puck": "Puck",
+                "Charon": "Charon", 
+                "Kore": "Kore", 
+                "Fenrir": "Fenrir", 
+                "Aoede": "Aoede", }
+LIVE_MODEL = "gemini-2.0-flash-exp"
+LIVE_VOICE = "Aoede"
 
 # 音声ストリーム 設定
 INPUT_CHUNK = 2048
@@ -277,17 +285,19 @@ class _live_api_freeai:
         self.mixer_enable = False
 
         # 実行パラメータ
-        self.MODEL = MODEL
-        self.VOICE = VOICE
-        self.VOICE_LEVEL = VOICE_LEVEL
+        self.live_models = LIVE_MODELS
+        self.live_voices = LIVE_VOICES
+        self.live_model = LIVE_MODEL
+        self.live_voice = LIVE_VOICE
+        self.live_voice_level = 2500
         sec60 = int( (INPUT_RATE/INPUT_CHUNK) * 60) # 60sec
-        self.VOICE_BASE = [0 for _ in range(sec60)]
+        self.voice_base = [0 for _ in range(sec60)]
 
         # イメージ送信タイミング
-        self.SHOT_INTERVAL_SEC = 2      # 送信間隔
-        self.CLIP_INTERVAL_SEC = 30     # クリップボード送信後のアイドル秒数
-        self.shot_last_time = time.time() - self.SHOT_INTERVAL_SEC
-        self.clip_last_time = time.time() - self.CLIP_INTERVAL_SEC
+        self.shot_interval_sec = 2      # 送信間隔
+        self.clip_interval_sec = 30     # クリップボード送信後のアイドル秒数
+        self.shot_last_time = time.time() - self.shot_interval_sec
+        self.clip_last_time = time.time() - self.clip_interval_sec
 
         # API情報
         self.client = genai.Client(
@@ -380,10 +390,10 @@ class _live_api_freeai:
                 if audio_data is not None:
                     input_data = np.abs(np.frombuffer(audio_data, dtype=np.int16))
                     data_max = np.max(input_data)
-                    del self.VOICE_BASE[0]
-                    self.VOICE_BASE.append(data_max)
-                    base_avg = np.average(self.VOICE_BASE)
-                    if data_max > (base_avg + self.VOICE_LEVEL):
+                    del self.voice_base[0]
+                    self.voice_base.append(data_max)
+                    base_avg = np.average(self.voice_base)
+                    if data_max > (base_avg + self.live_voice_level):
                         await self.audio_send_queue.put(audio_data)
                         await self.graph_input_queue.put(audio_data)
                         if (self.audio_input_time == None):
@@ -492,8 +502,8 @@ class _live_api_freeai:
                 if (self.image_input_number is not None):
                     if self.image_send_queue.empty():
 
-                        if  ((time.time() - self.clip_last_time) > self.CLIP_INTERVAL_SEC) \
-                        and ((time.time() - self.shot_last_time) > self.SHOT_INTERVAL_SEC):
+                        if  ((time.time() - self.clip_last_time) > self.clip_interval_sec) \
+                        and ((time.time() - self.shot_last_time) > self.shot_interval_sec):
 
                             try:
                                 if (self.image_input_number == 0):
@@ -715,9 +725,9 @@ class _live_api_freeai:
                         #self.monjyu.live_audio_output(
                         # time_stamp=self.audio_output_time,
                         # audio_buffer=self.audio_output_buffer.copy()
-                        # outMODEL=self.MODEL)
+                        # out_model=self.live_model)
                         output_thread = threading.Thread(
-                            target=self.monjyu.live_audio_output,args=(self.audio_output_time, self.audio_output_buffer.copy(), self.MODEL),
+                            target=self.monjyu.live_audio_output,args=(self.audio_output_time, self.audio_output_buffer.copy(), self.live_model),
                             daemon=True
                         )
                         output_thread.start()
@@ -812,7 +822,21 @@ class _live_api_freeai:
         self.last_send_time = time.time()
         self.image_input_number = None
         dummy = io_text_read(qIO_py2live)
-        print(f" Live(freeai) : [START] ({ self.MODEL }) ")
+        # UI設定
+        if self.data is not None:
+            live_model = self.data.live_setting['freeai'].get('live_model', '')
+            live_voice = self.data.live_setting['freeai'].get('live_voice', '')
+            shot_interval_sec = self.data.live_setting['freeai'].get('shot_interval_sec', str(self.shot_interval_sec))
+            clip_interval_sec = self.data.live_setting['freeai'].get('clip_interval_sec', str(self.clip_interval_sec))
+            if live_model != '':
+                self.live_model = live_model
+            if live_voice != '':
+                self.live_voice = live_voice
+            if (shot_interval_sec != ''):
+                self.shot_interval_sec = int(shot_interval_sec)
+            if (clip_interval_sec != ''):
+                self.clip_interval_sec = int(clip_interval_sec)
+        print(f" Live(freeai) : [START] ({ self.live_model }) ")
         # Monjyu 確認
         if (self.monjyu_once_flag == False):
             self.monjyu_once_flag = True
@@ -902,21 +926,9 @@ class _live_api_freeai:
             # 起動
             if (self.session is None):
 
-                # UI設定
-                if self.data is not None:
-                    voice = self.data.live_setting['freeai'].get('voice', '')
-                    shot_interval_sec = self.data.live_setting['freeai'].get('shot_interval_sec', str(self.SHOT_INTERVAL_SEC))
-                    clip_interval_sec = self.data.live_setting['freeai'].get('clip_interval_sec', str(self.CLIP_INTERVAL_SEC))
-                    if voice != '':
-                        self.VOICE = voice
-                    if (shot_interval_sec != ''):
-                        self.SHOT_INTERVAL_SEC = int(shot_interval_sec)
-                    if (clip_interval_sec != ''):
-                        self.CLIP_INTERVAL_SEC = int(clip_interval_sec)
-
                 # voice 設定
-                voice = self.VOICE
-                print(f" Live(freeai) : [VOICE] { voice } ")
+                live_voice = self.live_voice
+                print(f" Live(freeai) : [VOICE] { live_voice } ")
 
                 instructions = \
 """
@@ -970,7 +982,7 @@ Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) が�
                     tools.append({"function_declarations": function_declarations })
 
                 # config 設定
-                speech_config = {"voice_config": {"prebuilt_voice_config": {"voice_name": voice }}}
+                speech_config = {"voice_config": {"prebuilt_voice_config": {"voice_name": self.live_voice }}}
                 config =    {"generation_config": {
                                 "response_modalities": ["AUDIO"],
                                 "speech_config": speech_config,
@@ -980,10 +992,10 @@ Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) が�
                             }
 
                 # Live 実行
-                #session = await self.client.aio.live.connect(model=self.MODEL, config=config)
+                #session = await self.client.aio.live.connect(model=self.live_model, config=config)
                 #tg = asyncio.TaskGroup()
                 async with (
-                    self.client.aio.live.connect(model='models/' + self.MODEL, config=config) as session,
+                    self.client.aio.live.connect(model=self.live_model, config=config) as session,
                     asyncio.TaskGroup() as tg,
                 ):
                     # 開始音
@@ -1434,7 +1446,7 @@ class _monjyu_class:
         print(f" Live(freeai) : (user) { recognize_text } ")
         return self.post_input_log(reqText=recognize_text, inpText='')
 
-    def live_audio_output(self, time_stamp=None, audio_buffer=[], outMODEL=None, ):
+    def live_audio_output(self, time_stamp=None, audio_buffer=[], out_model=None, ):
         if (len(audio_buffer) == 0):
             return False
         if (time_stamp is None):
@@ -1472,8 +1484,8 @@ class _monjyu_class:
 
         recognize_text = recognize_text.strip()
         print(f" Live(freeai) : { recognize_text } ")
-        if (outMODEL is not None):
-            outText = f"[Live] ({ outMODEL })\n" + recognize_text
+        if (out_model is not None):
+            outText = f"[Live] ({ out_model })\n" + recognize_text
         else:
             outText = f"[Live]\n" + recognize_text
         res = self.post_output_log(outText=outText, outData=outText)
@@ -1592,9 +1604,12 @@ class _class:
             self.sub_proc.liveAPI.botFunc = botFunc
         if data is not None:
             self.sub_proc.liveAPI.data = data
-            self.sub_proc.liveAPI.data.live_setting['freeai'] = {   "voice": self.sub_proc.liveAPI.VOICE, 
-                                                                    "shot_interval_sec": str(self.sub_proc.liveAPI.SHOT_INTERVAL_SEC),
-                                                                    "clip_interval_sec": str(self.sub_proc.liveAPI.CLIP_INTERVAL_SEC), }
+            self.sub_proc.liveAPI.data.live_models['freeai']  = self.sub_proc.liveAPI.live_models
+            self.sub_proc.liveAPI.data.live_voices['freeai']  = self.sub_proc.liveAPI.live_voices
+            self.sub_proc.liveAPI.data.live_setting['freeai'] = {   "live_model": self.sub_proc.liveAPI.live_model,
+                                                                    "live_voice": self.sub_proc.liveAPI.live_voice,
+                                                                    "shot_interval_sec": str(self.sub_proc.liveAPI.shot_interval_sec),
+                                                                    "clip_interval_sec": str(self.sub_proc.liveAPI.clip_interval_sec), }
         return True
 
     def func_proc(self, json_kwargs=None, ):

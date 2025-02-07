@@ -711,6 +711,7 @@ class ChatClass:
                         history=[], function_modules=[],
                         sysText='', reqText='', inpText='',
                         filePath=[], jsonSchema=None, inpLang='ja', outLang='ja'):
+        qLog.log('info', self.proc_id, 'chatBot start')
 
         # debug
         if (DEBUG_FLAG == True):
@@ -837,7 +838,7 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, 'chatBot chatgpt ...')
+                    qLog.log('info', self.proc_id, '### ChatGPT ###')
 
                     if (self.coreai is not None):
                         self.chatgptAPI.set_models( max_wait_sec=self.coreai.chat_class.chatgptAPI.chatgpt_max_wait_sec,
@@ -935,7 +936,7 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, 'chatBot assistant ...')
+                    qLog.log('info', self.proc_id, '### Assistant ###')
 
                     if (self.coreai is not None):
                         self.assistantAPI.set_models(   max_wait_sec=self.coreai.chat_class.assistantAPI.assistant_max_wait_sec,
@@ -1026,7 +1027,7 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, 'chatBot gemini ...')
+                    qLog.log('info', self.proc_id, '### Gemini ###')
 
                     if (self.coreai is not None):
                         self.geminiAPI.set_models(  max_wait_sec=self.coreai.chat_class.geminiAPI.gemini_max_wait_sec,
@@ -1120,7 +1121,7 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, 'chatBot claude ...')
+                    qLog.log('info', self.proc_id, '### Claude ###')
 
                     if (self.coreai is not None):
                         self.claudeAPI.set_models(  max_wait_sec=self.coreai.chat_class.claudeAPI.claude_max_wait_sec,
@@ -1211,7 +1212,7 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, 'chatBot openrt ...')
+                    qLog.log('info', self.proc_id, '### OpenRouter ###')
 
                     if (self.coreai is not None):
                         self.openrtAPI.set_models(  max_wait_sec=self.coreai.chat_class.openrtAPI.openrt_max_wait_sec,
@@ -1309,7 +1310,7 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, 'chatBot perplexity ...')
+                    qLog.log('info', self.proc_id, '### Perplexity ###')
 
                     if (self.coreai is not None):
                         self.perplexityAPI.set_models(  max_wait_sec=self.coreai.chat_class.perplexityAPI.perplexity_max_wait_sec,
@@ -1400,7 +1401,7 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, 'chatBot grok ...')
+                    qLog.log('info', self.proc_id, '### Grok ###')
 
                     if (self.coreai is not None):
                         self.grokAPI.set_models(max_wait_sec=self.coreai.chat_class.grokAPI.grok_max_wait_sec,
@@ -1491,7 +1492,7 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, 'chatBot groq ...')
+                    qLog.log('info', self.proc_id, '### Groq ###')
 
                     if (self.coreai is not None):
                         self.groqAPI.set_models(max_wait_sec=self.coreai.chat_class.groqAPI.groq_max_wait_sec,
@@ -1589,7 +1590,7 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, 'chatBot ollama ...')
+                    qLog.log('info', self.proc_id, '### Ollama ###')
 
                     if (self.coreai is not None):
                         self.ollamaAPI.set_models(  max_wait_sec=self.coreai.chat_class.ollamaAPI.ollama_max_wait_sec,
@@ -1697,7 +1698,7 @@ class ChatClass:
                 n += 1
                 try:
                     if (n == 1):
-                        qLog.log('info', self.proc_id, 'chatBot freeai ...')
+                        qLog.log('info', self.proc_id, '### FreeAI ###')
 
                         if (self.coreai is not None):
                             self.freeaiAPI.set_models(  max_wait_sec=self.coreai.chat_class.freeaiAPI.freeai_max_wait_sec,
@@ -1769,6 +1770,10 @@ class ChatClass:
             print('DEBUG', 'subbot.chatBot:res_text', )
             print('DEBUG', res_text, )
 
+        if (res_text != '') and (res_text != '!'):
+            qLog.log('info', self.proc_id, 'chatBot complite!')
+        else:
+            qLog.log('info', self.proc_id, 'chatBot error!')
         return res_text, res_data, res_path, res_files, res_engine, nick_name, model_name, res_history
 
 

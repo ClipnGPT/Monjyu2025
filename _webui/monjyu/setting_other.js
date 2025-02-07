@@ -68,7 +68,42 @@ function post_addins_setting() {
     });
 }
 
-// Voiceの情報を取得してコンボボックスを設定する関数
+// Liveのmodel情報を取得してコンボボックスを設定する関数
+function get_live_models(engine) {
+    $.ajax({
+        url: '/get_live_models',
+        method: 'GET',
+        data: { engine: engine },
+        dataType: 'json',
+        async: false, // 同期処理
+        success: function(data) {
+
+            // freeai
+            if (engine === 'freeai') {
+                // 取得した選択肢を設定
+                for (var [key, value] of Object.entries(data)) {
+                    $('#freeai_live_model').append(`<option value="${key}">${value}</option>`);
+                }
+                last_live_models.freeai = JSON.stringify(data);
+            }
+
+            // openai
+            if (engine === 'openai') {
+                // 取得した選択肢を設定
+                for (var [key, value] of Object.entries(data)) {
+                    $('#openai_live_model').append(`<option value="${key}">${value}</option>`);
+                }
+                last_live_models.openai = JSON.stringify(data);
+            }
+
+        },
+        error: function(xhr, status, error) {
+            console.error('get_live_models error:', error);
+        }
+    });
+}
+
+// Liveのvoice情報を取得してコンボボックスを設定する関数
 function get_live_voices(engine) {
     $.ajax({
         url: '/get_live_voices',
@@ -82,7 +117,7 @@ function get_live_voices(engine) {
             if (engine === 'freeai') {
                 // 取得した選択肢を設定
                 for (var [key, value] of Object.entries(data)) {
-                    $('#freeai_voice').append(`<option value="${key}">${value}</option>`);
+                    $('#freeai_live_voice').append(`<option value="${key}">${value}</option>`);
                 }
             }
 
@@ -90,7 +125,7 @@ function get_live_voices(engine) {
             if (engine === 'openai') {
                 // 取得した選択肢を設定
                 for (var [key, value] of Object.entries(data)) {
-                    $('#openai_voice').append(`<option value="${key}">${value}</option>`);
+                    $('#openai_live_voice').append(`<option value="${key}">${value}</option>`);
                 }
             }
 
@@ -118,7 +153,8 @@ function get_live_setting(engine) {
             // freeai
             if (engine === 'freeai') {
                 if (JSON.stringify(data) !== last_live_setting.freeai) {
-                    $('#freeai_voice').val(data.voice || '');
+                    $('#freeai_live_model').val(data.live_model || '');
+                    $('#freeai_live_voice').val(data.live_voice || '');
                     $('#freeai_shot_interval_sec').val(data.shot_interval_sec || '');
                     $('#freeai_clip_interval_sec').val(data.clip_interval_sec || '');
                     last_live_setting.freeai = JSON.stringify(data);
@@ -128,7 +164,8 @@ function get_live_setting(engine) {
             // openai
             if (engine === 'openai') {
                 if (JSON.stringify(data) !== last_live_setting.openai) {
-                    $('#openai_voice').val(data.voice || '');
+                    $('#openai_live_model').val(data.live_model || '');
+                    $('#openai_live_voice').val(data.live_voice || '');
                     $('#openai_shot_interval_sec').val(data.shot_interval_sec || '');
                     $('#openai_clip_interval_sec').val(data.clip_interval_sec || '');
                     last_live_setting.openai = JSON.stringify(data);
@@ -150,7 +187,8 @@ function post_live_setting(engine) {
     if (engine === 'freeai') {
         formData = {
             engine: engine,
-            voice: $('#freeai_voice').val(),
+            live_model: $('#freeai_live_model').val(),
+            live_voice: $('#freeai_live_voice').val(),
             shot_interval_sec: $('#freeai_shot_interval_sec').val(),
             clip_interval_sec: $('#freeai_clip_interval_sec').val(),
         };
@@ -160,7 +198,8 @@ function post_live_setting(engine) {
     if (engine === 'openai') {
         formData = {
             engine: engine,
-            voice: $('#openai_voice').val(),
+            live_model: $('#openai_live_model').val(),
+            live_voice: $('#openai_live_voice').val(),
             shot_interval_sec: $('#openai_shot_interval_sec').val(),
             clip_interval_sec: $('#openai_clip_interval_sec').val(),
         };
@@ -339,6 +378,10 @@ $(document).ready(function() {
         localStorage.setItem('setting_other_formData', JSON.stringify(formData)); // localStorageに保存
     };
 
+    // Liveのmodels設定を取得
+    get_live_models('freeai');
+    get_live_models('openai');
+
     // Liveのvoices設定を取得
     get_live_voices('freeai');
     get_live_voices('openai');
@@ -351,10 +394,10 @@ $(document).ready(function() {
     $('#result_text_save, #speech_stt_engine, #speech_tts_engine, #text_clip_input, #text_url_execute, #text_pdf_execute, #image_ocr_execute, #image_yolo_execute').change(function() {
         post_addins_setting();
     });
-    $('#freeai_voice, #freeai_shot_interval_sec, #freeai_clip_interval_sec').change(function() {
+    $('#freeai_live_model, #freeai_live_voice, #freeai_shot_interval_sec, #freeai_clip_interval_sec').change(function() {
         post_live_setting('freeai');
     });
-    $('#openai_voice, #openai_shot_interval_sec, #openai_clip_interval_sec').change(function() {
+    $('#openai_live_model, #openai_live_voice, #openai_shot_interval_sec, #openai_clip_interval_sec').change(function() {
         post_live_setting('openai');
     });
     $('#webAgent_useBrowser, #webAgent_modelAPI').change(function() {
