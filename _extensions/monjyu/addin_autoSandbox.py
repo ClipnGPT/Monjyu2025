@@ -39,7 +39,6 @@ except:
 
 
 # インターフェース
-
 qPath_output  = 'temp/output/'
 qPath_sandbox = 'temp/sandbox/'
 qSandBox_name = 'react_sandbox'

@@ -16,14 +16,19 @@ import time
 import datetime
 import codecs
 
+import shutil
 import subprocess
 
 # インターフェース
-qText_ready       = 'Web-Agent function ready!'
-qText_start       = 'Web-Agent function start!'
-qText_complete    = 'Web-Agent function complete!'
-qIO_func2py       = 'temp/browser操作Agent_func2py.txt'
-qIO_py2func       = 'temp/browser操作Agent_py2func.txt'
+qText_ready       = 'Research-Agent function ready!'
+qText_start       = 'Research-Agent function start!'
+qText_complete    = 'Research-Agent function complete!'
+qIO_func2py       = 'temp/research操作Agent_func2py.txt'
+qIO_py2func       = 'temp/research操作Agent_py2func.txt'
+
+qPath_sandbox     = 'temp/sandbox/'
+qWebUI_name       = 'web-ui-main'
+qWebUI_zip        = '_datas/reacts/web-ui-main.zip'
 
 
 
@@ -88,44 +93,59 @@ if __name__ == '__main__':
     # インストール確認
     try:
         import_flag = False
-        import langchain_openai
-        import langchain_anthropic
-        import langchain_google_genai
-
-        import browser_use
-
+        import gradio
+        import json_repair
     except:
         import_flag = True
+    pip_install('browser-use', '0.1.29')
 
     # 動的インストール
-    if (import_flag == True):
+    if (import_flag == True) \
+    or (not os.path.isdir(qPath_sandbox + qWebUI_name)):
+        os.makedirs(qPath_sandbox + qWebUI_name)
+
         print('install start...')
 
+        # 解凍
+        if (os.path.isfile(qWebUI_zip)):
+            shutil.rmtree(qPath_sandbox + qWebUI_name, ignore_errors=True, )
+            shutil.unpack_archive(filename=qWebUI_zip, extract_dir=qPath_sandbox, )
+
+        # インストール
         print('pip install ...')
         pip_install('pip')
         pip_install('wheel')
         pip_install('setuptools')
 
-        pip_install('pygame')
-        pip_install('playwright')
+        requirement_file = qPath_sandbox + qWebUI_name + '/requirements.txt'
+        if (not os.path.isfile(requirement_file)):
 
-        pip_install('langchain-openai')
-        pip_install('langchain-anthropic')
-        pip_install('langchain-google-genai')
-        #pip_install('browser-use')
-        pip_install('browser-use', '0.1.29')
+            pip_install('pygame')
+            pip_install('playwright')
 
-        # web-ui
-        pip_install('pyperclip')
-        pip_install('gradio')
-        pip_install('json-repair')
-        pip_install('langchain-mistralai')
+            # web-ui
+            #pip_install('browser-use')
+            pip_install('browser-use', '0.1.29')
+            pip_install('pyperclip')
+            pip_install('gradio')
+            pip_install('json-repair')
+            #pip_install('langchain-openai')
+            #pip_install('langchain-google-genai')
+            #pip_install('langchain-anthropic')
+            pip_install('langchain-mistralai')
 
         print('playwright install ...')
         if (os.name == 'nt'):
-            install_proc = subprocess.Popen(['cmd', '/c', 'start playwright install'], shell=True, )
+            install_proc1 = subprocess.Popen(['cmd', '/c', 'start /min playwright install'], shell=True, )
         else:
-            install_proc = subprocess.Popen(['playwright install'])
+            install_proc1 = subprocess.Popen(['playwright install'])
+
+        if (os.path.isfile(requirement_file)):
+            print('requirements install ...')
+            if (os.name == 'nt'):
+                install_proc2 = subprocess.call(['cmd', '/c', f"pip install -r { requirement_file }"], shell=True, )
+            else:
+                install_proc2 = subprocess.call([f"pip install -r { requirement_file }"])
 
         print('install complete! ')
 

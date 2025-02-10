@@ -87,7 +87,8 @@
                     <button data-target="input">Input</button>
                     <button data-target="statuses">Statuses</button>
                     <button data-target="urlSpeech">urlSpeech</button>
-                    <button data-target="etc1">etc</button>
+                    <button data-target="webui">WebuUI(browser-use)</button>
+                    <button data-target="etc-left">etc</button>
                 </div>
 
                 <div class="tab-content" id="input">
@@ -105,7 +106,12 @@
                     <iframe id="iframe-urlSpeech" src="/urlSpeech.html"></iframe>
                 </div>
 
-                <div class="tab-content" id="etc1">
+                <div class="tab-content" id="webui">
+                    <!-- WebUIのiframe -->
+                    <iframe id="iframe-webui" src="/webui.html"></iframe>
+                </div>
+
+                <div class="tab-content" id="etc-left">
                     <!-- その他の表示 -->
                     Hallo World !
                 </div>
@@ -118,11 +124,11 @@
                 <div class="tab-header">
                     <button data-target="output">Output</button>
                     <button data-target="histories">Histories</button>
-                    <button data-target="debug_live">Debug(Live)</button>
+                    <button data-target="debug_step">Debug(Step)</button>
                     <button data-target="react">React(Sandbox)</button>
                     <button data-target="writing">Writing</button>
                     <button data-target="development">Development</button>
-                    <button data-target="etc2">etc</button>
+                    <button data-target="etc-right">etc</button>
                 </div>
 
                 <div class="tab-content" id="output">
@@ -135,9 +141,9 @@
                     <iframe id="iframe-histories" src="/histories.html"></iframe>
                 </div>
 
-                <div class="tab-content" id="debug_live">
+                <div class="tab-content" id="debug_step">
                     <!-- デバッグ出力用のiframe -->
-                    <iframe id="iframe-debug_live" src="/debug_live.html"></iframe>
+                    <iframe id="iframe-debug_step" src="/debug_step.html"></iframe>
                 </div>
 
                 <div class="tab-content" id="react">
@@ -155,7 +161,7 @@
                     <iframe id="iframe-development" src="/development.html"></iframe>
                 </div>
 
-                <div class="tab-content" id="etc2">
+                <div class="tab-content" id="etc-right">
                     <!-- その他の表示 -->
                     Hallo World !
                 </div>

@@ -24,6 +24,16 @@ function add_event_listener() {
             }
         } 
 
+        // 出力データ設定
+        else if (event.data.action === 'setOutputData') {
+            if (event.data.method !== 'add') {
+                window.iframeOutput.document.getElementById('output_data').value = event.data.data;
+            } else {
+                var currentText = window.iframeOutput.document.getElementById('output_data').value;
+                window.iframeOutput.document.getElementById('output_data').value = currentText + '\n' + event.data.data;
+            }
+        }
+
         // リクエスト実行
         else if (event.data.action === 'requestRun') {
             var reqMode = event.data.method;

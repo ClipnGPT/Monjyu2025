@@ -195,9 +195,9 @@ class _openrtAPI:
             self.openrt_v_use_tools     = openrt_v_use_tools
             if (openrt_v_model not in self.models):
                 self.models[openrt_v_model] = {"id": openrt_v_model, "token": str(openrt_v_token), "modality": "text+image?", "date": ymd, }
-            else:
-                #self.models[openrt_v_model]['date'] = ymd
-                self.models[openrt_v_model]['modality'] = "text+image?"
+            #else:
+            #    self.models[openrt_v_model]['date'] = ymd
+            #    self.models[openrt_v_model]['modality'] = "text+image?"
 
         if (openrt_x_nick_name != ''):
             self.openrt_x_enable        = False

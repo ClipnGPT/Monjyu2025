@@ -16,17 +16,14 @@ import time
 import codecs
 import subprocess
 
-import queue
-import threading
-
 # インターフェース
-ext_python_init   = '認証済_browser操作Agent_pyinit.py'
-ext_python_script = '認証済_browser操作Agent_python.py'
-qText_ready       = 'Web-Agent function ready!'
-qText_start       = 'Web-Agent function start!'
-qText_complete    = 'Web-Agent function complete!'
-qIO_func2py       = 'temp/browser操作Agent_func2py.txt'
-qIO_py2func       = 'temp/browser操作Agent_py2func.txt'
+ext_python_init   = '認証済_research操作Agent_pyinit.py'
+ext_python_script = '認証済_research操作Agent_python.py'
+qText_ready       = 'Research-Agent function ready!'
+qText_start       = 'Research-Agent function start!'
+qText_complete    = 'Research-Agent function complete!'
+qIO_func2py       = 'temp/research操作Agent_func2py.txt'
+qIO_py2func       = 'temp/research操作Agent_py2func.txt'
 qIO_agent2live    = 'temp/monjyu_io_agent2live.txt'
 
 qTimeout_reset    = 30
@@ -138,18 +135,17 @@ class _class:
 
     def __init__(self, ):
         self.version   = "v0"
-        self.func_name = "webBrowser_operation_agent"
-        self.func_ver  = "v0.20250101"
-        self.func_auth = "q7XSIOztUs4Myv42b+Rz0oYZ/GFELtbT0zVaVJtO8YLj7H98jl/ODv5Y931OHvTg"
+        self.func_name = "research_operation_agent"
+        self.func_ver  = "v0.20250211"
+        self.func_auth = "0JErtybH+GPcjeIP/+mSfeMrbFX+tOtB97YYaZjvbfbStirVejXy2UKJ+JAGJ3RH"
 
         self.function  = {
             "name": self.func_name,
             "description": \
 """
-この機能は、ユーザーからブラウザ操作の指示があった場合に実行する。
-この機能から、自律的にブラウザ操作が可能なAIエージェント Web-Agent(ウェブエージェント) が実行される。
-この機能で、AIエージェント Web-Agent(ウェブエージェント) によりWebブラウザを自立操作を実行し、その結果を取得することができる。
-社内システム(Web)の操作は、文殊/Monjyu(もんじゅ:execute_monjyu_request) 経由で'operation_internal_web_systems'から、この機能を使います。
+この機能は、ユーザーからリサーチ操作の指示があった場合に実行する。
+この機能から、自律的にリサーチを実行するAIエージェント Research-Agent(リサーチエージェント) が実行される。
+この機能で、AIエージェント Research-Agent(リサーチエージェント) により自律的な情報検索を実行し、その結果を取得することができる。
 """,
             "parameters": {
                 "type": "object",
@@ -160,7 +156,7 @@ class _class:
                     },
                     "request_text": {
                         "type": "string",
-                        "description": "依頼文字列 例) Google検索のページ(https://google.co.jp/)を表示して停止。"
+                        "description": "依頼文字列 例) 最新のAIに関するニュースを取得し、要点を整理して報告してください。"
                     },
                 },
                 "required": ["request_text"]
@@ -178,7 +174,7 @@ class _class:
         self.agent_models   = AGENT_MODELS
         self.agent_engine   = AGENT_ENGINE
         self.agent_model    = AGENT_MODEL
-        self.agent_max_step = '10'
+        self.agent_max_step = '5'
         self.agent_browser  = 'chromium' # chromium, chrome,
 
     def __del__(self, ):
@@ -298,16 +294,16 @@ class _class:
 
             try:
                 if self.data is not None:
-                    self.agent_engine = self.data.researchAgent_engine
+                    self.agent_engine = self.data.webAgent_engine
                     if (self.agent_engine == ''):
                         self.agent_engine = 'freeai'
-                    self.agent_model = self.data.researchAgent_setting[self.agent_engine]['agent_model']
+                    self.agent_model = self.data.webAgent_setting[self.agent_engine]['agent_model']
                     if (self.agent_model == ''):
                         self.agent_model = self.agent_models[self.agent_engine].keys()[0]
-                    self.agent_max_step = self.data.researchAgent_setting[self.agent_engine]['agent_max_step']
+                    self.agent_max_step = self.data.webAgent_setting[self.agent_engine]['agent_max_step']
                     if (self.agent_max_step == ''):
-                        self.agent_max_step = '10'
-                    self.agent_browser = self.data.researchAgent_browser
+                        self.agent_max_step = '5'
+                    self.agent_browser = self.data.webAgent_browser
                     if (self.agent_browser == ''):
                         self.agent_browser = 'chromium'
                     #print(self.agent_engine, self.agent_model, self.agent_max_step)
@@ -389,14 +385,9 @@ if __name__ == '__main__':
 
     ext = _class()
 
-    json_kwargs= '{ "request_text" : "兵庫県三木市の天気を調べてください。" }'
+    json_kwargs= '{ "request_text" : "最新のAIに関するニュースを取得し、要点を整理して日本語で報告してください。" }'
     print(ext.func_proc(json_kwargs))
 
-    time.sleep(90)
-
-    json_kwargs= '{ "request_text": "表示中のページを要約してください。" }'    
-    print(ext.func_proc(json_kwargs))
-
-    time.sleep(180)
+    time.sleep(1200)
 
 

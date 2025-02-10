@@ -1,4 +1,4 @@
-// debug_live.js
+// debug_step.js
 
 // デバッグログを取得し、デバッグテキストエリアを更新する関数
 let lastDebugData = {};
@@ -46,7 +46,7 @@ function get_debug_log_user() {
 $(document).ready(function() {
 
     // ローカルストレージからデータ復元
-    const storedData = JSON.parse(localStorage.getItem('debug_live_formData'));
+    const storedData = JSON.parse(localStorage.getItem('debug_step_formData'));
 
     // データが存在する場合
     if (storedData) {
@@ -63,7 +63,7 @@ $(document).ready(function() {
             debug_data: $('#debug_data').val(),
         };
         // ローカルストレージに保存
-        localStorage.setItem('debug_live_formData', JSON.stringify(formData));
+        localStorage.setItem('debug_step_formData', JSON.stringify(formData));
     };
 
 

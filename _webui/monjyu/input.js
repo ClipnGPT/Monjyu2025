@@ -1,5 +1,10 @@
 // input.js
 
+// 親ウィンドウにメッセージを送信する関数
+function sendMessageToParent(action, method, data) {
+    window.parent.postMessage({ action: action, method: method, data: data }, '*');
+}
+
 // 入力ファイルのリストを保持する配列
 let currentInputFiles = []; 
 
@@ -413,6 +418,12 @@ $(document).ready(function() {
     $('#set-request-button').click(function() {
         $('#request_text').val( $('#request_text').val() + '\n' + $('#input_text').val() );
         $('#input_text').val('');
+    });
+
+    // 出力データ置換ボタンのクリックイベント
+    $('#set-outData-button').click(function() {
+        // 出力データを親ウィンドウに送信
+        sendMessageToParent('setOutputData', 'set', $('#input_text').val() );
     });
 
     // 音声入力ボタンのクリックイベント

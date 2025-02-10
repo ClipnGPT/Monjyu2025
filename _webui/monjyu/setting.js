@@ -28,7 +28,7 @@ $(document).ready(function() {
             activeTab_left: $('.frame-left .tab-header button.active').data('target'),
             activeTab_right: $('.frame-right .tab-header button.active').data('target')
         };
-        localStorage.setItem('setting_formData', JSON.stringify(formData)); // localStorageに保存
+        localStorage.setItem('setting_formData', JSON.stringify(formData));
     };
 
     // タブ切り替え機能

@@ -42,7 +42,7 @@ class _class:
             "description": \
 """
 この機能は、NotebookLM (ノートブックLM) を操作する機能です。
-この機能から、自律的にブラウザ操作が可能なAIエージェント WebAgent(ウェブエージェント: webBrowser_operation_agent ) に操作指示して実行します。
+この機能から、自律的にブラウザ操作が可能なAIエージェント Web-Agent(ウェブエージェント: webBrowser_operation_agent ) に操作指示して実行します。
 """,
             "parameters": {
                 "type": "object",
@@ -89,7 +89,7 @@ class _class:
             res = io_text_write(filename=qIO_func2py, text=req_dump, )
             if (res == True):
                 res_okng = 'ok'
-                res_msg  = "AIエージェント WebAgent(ウェブエージェント) に、NotebookLMの操作を依頼しました。\n" 
+                res_msg  = "AIエージェント Web-Agent(ウェブエージェント) に、NotebookLMの操作を依頼しました。\n" 
                 res_msg += "しばらくお待ちください。\n"
 
         # JSON化

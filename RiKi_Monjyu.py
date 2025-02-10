@@ -202,6 +202,22 @@ if __name__ == '__main__':
         conf = RiKi_Monjyu__conf._conf_class()
         conf.init(runMode=runMode, qLog_fn=qLog_fn)
 
+        # 環境変数設定
+        if  (conf.openai_organization[:1] != '<'):
+            os.environ['OPENAI_ORGANIZATION'] = conf.openai_organization
+        if  (conf.openai_key_id[:1] != '<'):
+            os.environ['OPENAI_API_KEY'] = conf.openai_key_id
+        if  (conf.freeai_key_id[:1] != '<'):
+            os.environ['FREEAI_API_KEY'] = conf.freeai_key_id
+            os.environ['GOOGLE_API_KEY'] = conf.freeai_key_id
+            os.environ['REACT_APP_GEMINI_API_KEY'] = conf.freeai_key_id
+        if  (conf.freeai_key_id[:1] == '<') \
+        and (conf.gemini_key_id[:1] != '<'):
+            os.environ['GOOGLE_API_KEY'] = conf.gemini_key_id
+            os.environ['REACT_APP_GEMINI_API_KEY'] = conf.gemini_key_id
+        if  (conf.claude_key_id[:1] != '<'):
+            os.environ['ANTHROPIC_API_KEY'] = conf.claude_key_id
+
         # data 初期化
         data = RiKi_Monjyu__data._data_class(   runMode=runMode, qLog_fn=qLog_fn,
                                                 main=main, conf=conf,
@@ -275,13 +291,38 @@ if __name__ == '__main__':
             if (module_dic['func_name'] == 'webBrowser_operation_agent'):
                 try:
                     if (module_dic['onoff'] == 'on'):
-                        data.webAgent_modelNames['freeai'] = module_dic['class'].ModelNames['freeai']
-                        data.webAgent_modelNames['openai'] = module_dic['class'].ModelNames['openai']
-                        data.webAgent_modelNames['claude'] = module_dic['class'].ModelNames['claude']
+                        data.webAgent_models['freeai'] = module_dic['class'].agent_models['freeai']
+                        data.webAgent_models['openai'] = module_dic['class'].agent_models['openai']
+                        data.webAgent_models['claude'] = module_dic['class'].agent_models['claude']
+                        data.webAgent_setting = {   'engine':   module_dic['class'].agent_engine,
+                                                    'model':    module_dic['class'].agent_model,
+                                                    'max_step': module_dic['class'].agent_max_step,
+                                                    'browser':  module_dic['class'].agent_browser, }
                         func_reset = module_dic['func_reset']
                         res  = func_reset(data=data, )
                         print('reset', 'webBrowser_operation_agent')
                         webAgent_enable = True
+                except Exception as e:
+                    print(e)
+                break
+
+        # research操作Agent
+        researchAgent_enable = False
+        for module_dic in botFunc.function_modules:
+            if (module_dic['func_name'] == 'research_operation_agent'):
+                try:
+                    if (module_dic['onoff'] == 'on'):
+                        data.researchAgent_models['freeai'] = module_dic['class'].agent_models['freeai']
+                        data.researchAgent_models['openai'] = module_dic['class'].agent_models['openai']
+                        data.researchAgent_models['claude'] = module_dic['class'].agent_models['claude']
+                        data.researchAgent_setting = {  'engine':   module_dic['class'].agent_engine,
+                                                        'model':    module_dic['class'].agent_model,
+                                                        'max_step': module_dic['class'].agent_max_step,
+                                                        'browser':  module_dic['class'].agent_browser, }
+                        func_reset = module_dic['func_reset']
+                        res  = func_reset(data=data, )
+                        print('reset', 'research_operation_agent')
+                        researchAgent_enable = True
                 except Exception as e:
                     print(e)
                 break
@@ -333,7 +374,9 @@ if __name__ == '__main__':
     if (liveai_enable == True):
         qLog.log('info', main_id, " To use [ Live AI 力/RiKi(りき) ], Press ctrl-l or ctrl-r three times.")
     if (webAgent_enable == True):
-        qLog.log('info', main_id, " To use [ Agentic AI WebAgent(ウェブエージェント) ], Specify use at the prompt.")
+        qLog.log('info', main_id, " To use [ Agentic AI Web-Agent(ウェブエージェント) ], Specify use at the prompt.")
+    if (researchAgent_enable == True):
+        qLog.log('info', main_id, " To use [ Agentic AI Research-Agent(リサーチエージェント) ], Specify use at the prompt.")
     qLog.log('info', main_id, "================================================================================================")
     print()
     main.main_all_ready = True

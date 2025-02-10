@@ -105,10 +105,10 @@ class _data_class:
         self.live_models = {}
         self.live_voices = {}
         self.live_setting = {}
-        self.webAgent_useBrowser = ""
-        self.webAgent_modelAPI = ""
-        self.webAgent_modelNames = {}
+        self.webAgent_models = {}
         self.webAgent_setting = {}
+        self.researchAgent_models = {}
+        self.researchAgent_setting = {}
         self._reset()
 
         # スレッドロック
@@ -233,17 +233,20 @@ class _data_class:
                                         "clip_interval_sec":"", }
 
         # Agentの設定
-        self.webAgent_useBrowser =  ""
-        self.webAgent_modelAPI =  ""
-        self.webAgent_modelNames[ 'freeai'] = {}
-        self.webAgent_setting[    'freeai'] = { "modelName": "", 
-                                                "maxSteps": "", }
-        self.webAgent_modelNames[ 'openai'] = {}
-        self.webAgent_setting[    'openai'] = { "modelName": "", 
-                                                "maxSteps": "", }
-        self.webAgent_modelNames[ 'claude'] = {}
-        self.webAgent_setting[    'claude'] = { "modelName": "", 
-                                                "maxSteps": "", }
+        self.webAgent_models['freeai'] = {}
+        self.webAgent_models['openai'] = {}
+        self.webAgent_models['claude'] = {}
+        self.webAgent_setting = {       "engine": "",
+                                        "model": "", 
+                                        "max_step": "", 
+                                        "browser": "", }
+        self.researchAgent_models['freeai'] = {}
+        self.researchAgent_models['openai'] = {}
+        self.researchAgent_models['claude'] = {}
+        self.researchAgent_setting = {  "engine": "",
+                                        "model": "", 
+                                        "max_step": "", 
+                                        "browser": "", }
 
     def update_subai_status(self, port: str):
         """

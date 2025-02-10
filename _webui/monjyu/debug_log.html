@@ -10,11 +10,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         /* 表示エリアのスタイル */
-        .debug_log-container {
+        .debug-log-container {
             background-color: #f0f0f0; 
             width: calc(100% - 15px); 
         }
-        .debug_log-container h2 {
+        .debug-log-container h2 {
             background-color: #e0e0e0;
             margin: 0 0 5px 0;
             font-size: medium;
@@ -116,7 +116,7 @@
     <!-- サーバーエンドポイントとユーザーID -->
     <input type="hidden" id="core_endpoint" name="core_endpoint" value="http://localhost:8000">
     <input type="hidden" id="user_id" name="user_id" value="admin">
-    <div class="debug_log-container">
+    <div class="debug-log-container">
         <!-- セッション一覧 -->
         <h2>【 Debug log (履歴) 】</h2>
         <div class="table-container">

@@ -18,13 +18,6 @@ import datetime
 import codecs
 import glob
 
-qPath_input  = 'temp/input/'
-qPath_output = 'temp/output/'
-
-config_path  = '_config/'
-config_file1 = 'RiKi_Monjyu_key.json'
-config_file2 = 'RiKi_ClipnGPT_key.json'
-
 import pygame
 
 import threading
@@ -39,21 +32,26 @@ import langchain_google_genai
 os.environ['ANONYMIZED_TELEMETRY'] = 'false'
 #os.environ['BROWSER_USE_LOGGING_LEVEL'] = 'debug'
 os.environ['BROWSER_USE_LOGGING_LEVEL'] = 'info'
-#os.environ['CHROME_PATH']='C:/Program Files/Google/Chrome/Application/chrome.exe'
-#os.environ['CHROME_PATH']='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-#os.environ['CHROME_USER_DATA']='C:/Users/admin/AppData/Local/Google/Chrome/User Data'
-#os.environ['CHROME_USER_DATA']='/Users/<YourUsername>/Library/Application Support/Google/Chrome/<profile name>'
+#if (os.name == 'nt'):
+#    os.environ['CHROME_PATH']='C:/Program Files/Google/Chrome/Application/chrome.exe'
+#    os.environ['CHROME_USER_DATA']='C:/Users/admin/AppData/Local/Google/Chrome/User Data'
+#else:
+#    os.environ['CHROME_PATH']='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+#    os.environ['CHROME_USER_DATA']='/Users/<YourUsername>/Library/Application Support/Google/Chrome/<profile name>'
 
 from browser_use import Agent, Controller
 from browser_use.browser.browser import Browser, BrowserConfig, BrowserContextConfig
 
 # インターフェース
-qText_ready       = 'Browser-use Agent function ready!'
-qText_start       = 'Browser-use Agent function start!'
-qText_complete    = 'Browser-use Agent function complete!'
+qPath_input       = 'temp/input/'
+qPath_output      = 'temp/output/'
+
+qText_ready       = 'Web-Agent function ready!'
+qText_start       = 'Web-Agent function start!'
+qText_complete    = 'Web-Agent function complete!'
 qIO_func2py       = 'temp/browser操作Agent_func2py.txt'
 qIO_py2func       = 'temp/browser操作Agent_py2func.txt'
-qIO_py2live       = 'temp/browser操作Agent_py2live.txt'
+qIO_agent2live    = 'temp/monjyu_io_agent2live.txt'
 
 # Monjyu連携
 import requests
@@ -91,54 +89,36 @@ def io_text_read(filename=''):
         pass
     return text
 
-def io_text_write(filename='', text='', ):
+def io_text_write(filename='', text='', encoding='utf-8', mode='w', ):
     try:
-        w = codecs.open(filename, 'w', 'utf-8')
+        w = codecs.open(filename, mode, encoding)
         w.write(text)
         w.close()
         w = None
         return True
-    except:
-        pass
+    except Exception as e:
+        print(e)
+    w = None
     return False
 
 
 
-class _agent_web_class:
+class _webAgent_class:
     def __init__(self, ):
         self.mixer_enable = False
-        self.monjyu = _monjyu_class(runMode='ajent', )
+        self.monjyu = _monjyu_class(runMode='agent', )
 
         # APIキーを取得
-        if   (os.path.isfile(config_path + config_file1)):
-            with codecs.open(config_path + config_file1, 'r', 'utf-8') as f:
-                self.config_dic = json.load(f)
-        elif (os.path.isfile(config_path + config_file2)):
-            with codecs.open(config_path + config_file2, 'r', 'utf-8') as f:
-                self.config_dic = json.load(f)
-        elif (os.path.isfile('../../' + config_path + config_file1)):
-            with codecs.open('../../' + config_path + config_file1, 'r', 'utf-8') as f:
-                self.config_dic = json.load(f)
-        elif (os.path.isfile('../../' + config_path + config_file2)):
-            with codecs.open('../../' + config_path + config_file2, 'r', 'utf-8') as f:
-                self.config_dic = json.load(f)
-        self.openai_organization = self.config_dic['openai_organization']
-        self.openai_key_id       = self.config_dic['openai_key_id']
-        self.claude_key_id       = self.config_dic['claude_key_id']
-        self.freeai_key_id       = self.config_dic['freeai_key_id']
-        #if (self.openai_organization == '') \
-        #or (self.openai_organization == '< your openai organization >') \
-        #or (self.openai_key_id == '') \
-        #or (self.openai_key_id == '< your openai key >'):
-        #    raise ValueError("Please set your openai organization and key !")
+        self.openai_organization = os.environ.get('OPENAI_ORGANIZATION', '< ? >')
+        self.openai_key_id = os.environ.get('OPENAI_API_KEY', '< ? >')
+        self.freeai_key_id = os.environ.get('FREEAI_API_KEY', '< ? >')
+        self.claude_key_id = os.environ.get('ANTHROPIC_API_KEY', '< ? >')
 
-        # ModelAPI他
-        self.useBrowser = "chromium" # chromium, chrome,
-        self.ModelAPI   = "freeai" # freeai, openai, claude,
-        self.ModelName  = "gemini-2.0-flash-exp"
-        #self.ModelName = 'gpt-4o-mini'
-        #self.ModelName = 'claude-3-5-sonnet-20241022'
-        self.MaxSteps  = "20"
+        # engine,model他
+        self.agent_engine   = "freeai" # freeai, openai, claude,
+        self.agent_model    = "gemini-2.0-flash-exp"
+        self.agent_max_step = "20"
+        self.agent_browser  = "chromium" # chromium, chrome,
 
         # 設定
         self.request_queue = None
@@ -198,7 +178,7 @@ class _agent_web_class:
                 self.break_flag = True
 
         def main_thread():
-            print(f" Browser-use : [START] { self.ModelAPI } / { self.ModelName } ")
+            print(f" Browser-use : [START] { self.agent_engine } / { self.agent_model } ")
             try:
                 asyncio.run( self._main() )
             except Exception as e:
@@ -254,23 +234,22 @@ class _agent_web_class:
                 else:
                     [request_text, result_text] = await self.result_queue.get()
 
-                    print('')
-                    print('result')
+                    print('Web-Agent : (result)')
                     print(result_text)
 
                     # Live 連携
                     text = ''
-                    text += f"[RESULT] AIエージェント WebAgent(ウェブエージェント: browser-use/{ self.ModelAPI }/{ self.ModelName }) \n"
+                    text += f"[RESULT] AIエージェント Web-Agent(ウェブエージェント: browser-use/{ self.agent_engine }/{ self.agent_model }) \n"
                     text += request_text.rstrip() + '\n'
                     text += "について、以下が結果報告です。要約して日本語で報告してください。\n"
                     text += result_text.rstrip() + '\n\n'
-                    res = io_text_write(qIO_py2live, text)
+                    res = io_text_write(qIO_agent2live, text)
 
                     # Monjyu 連携
                     reqText = request_text
                     inpText = ''
-                    outText = f"[Browser-use] ({ self.ModelAPI }/{ self.ModelName })\n" + result_text
-                    outData = outText
+                    outText = f"[Web-Agent] ({ self.agent_engine }/{ self.agent_model })\n" + result_text
+                    outData = result_text
 
                     # (output_log)
                     try:
@@ -338,22 +317,12 @@ class _agent_web_class:
                                 maximum_wait_page_load_time=20,  # 20 on prod
                                 browser_window_size={
                                     'width': 1280,
-                                    'height': 1000,
+                                    'height': 900,
                                 },
                             ),
 
-                            # chromium
-                            if (self.useBrowser != 'chrome'):
-                                browser = Browser(
-                                    config=BrowserConfig(
-                                        headless=False,  # UIを表示
-                                        disable_security=True,
-                                        new_context_config=new_context_config,
-                                    )
-                                )
-
                             # chrome
-                            else:
+                            if (self.agent_browser == 'chrome'):
                                 if (os.name == 'nt'):
                                     chrome_instance_path='C:/Program Files/Google/Chrome/Application/chrome.exe'
                                 else:
@@ -367,22 +336,31 @@ class _agent_web_class:
                                     )
                                 )
 
+                            # chromium
+                            else:
+                                browser = Browser(
+                                    config=BrowserConfig(
+                                        headless=False,  # UIを表示
+                                        disable_security=True,
+                                        new_context_config=new_context_config,
+                                    )
+                                )
+
                             browser_context = await browser.new_context()
 
-                        #print('')
-                        #print('request')
+                        #print('Web-Agent : (request)')
                         #print(request_text)
 
                         # 開始音
                         self.play(outFile='_sounds/_sound_accept.mp3')
 
                         # モデル設定
-                        if   (self.ModelAPI == 'openai'):
-                            llm = langchain_openai.ChatOpenAI(model=self.ModelName, api_key=self.openai_key_id, )
-                        elif (self.ModelAPI == 'claude'):
-                            llm = langchain_anthropic.ChatAnthropic(model=self.ModelName, api_key=self.claude_key_id)
+                        if   (self.agent_engine == 'openai'):
+                            llm = langchain_openai.ChatOpenAI(model=self.agent_model, api_key=self.openai_key_id, )
+                        elif (self.agent_engine == 'claude'):
+                            llm = langchain_anthropic.ChatAnthropic(model=self.agent_model, api_key=self.claude_key_id)
                         else:
-                            llm = langchain_google_genai.ChatGoogleGenerativeAI(model=self.ModelName, api_key=self.freeai_key_id)
+                            llm = langchain_google_genai.ChatGoogleGenerativeAI(model=self.agent_model, api_key=self.freeai_key_id)
                         controller = Controller()
 
                         # agent実行
@@ -392,7 +370,7 @@ class _agent_web_class:
                             controller=controller,
                             browser_context=browser_context,
                         )
-                        results = await agent.run(max_steps=int(self.MaxSteps), )
+                        results = await agent.run(max_steps=int(self.agent_max_step), )
 
                         # 結果
                         result_text = '!'
@@ -474,11 +452,11 @@ class _monjyu_class:
 if __name__ == '__main__':
 
     # 初期設定
-    agent_web = _agent_web_class()
+    webAgent = _webAgent_class()
 
     # 指示受信クリア
     dummy = io_text_read(qIO_func2py)
-    dummy = io_text_read(qIO_py2live)
+    dummy = io_text_read(qIO_agent2live)
 
     # 出力フォルダ用意
     try:
@@ -517,26 +495,26 @@ if __name__ == '__main__':
 
             # (念のため)指示受信クリア
             dummy = io_text_read(qIO_func2py)
-            dummy = io_text_read(qIO_py2live)
+            dummy = io_text_read(qIO_agent2live)
 
             # 1秒待機
             time.sleep(1.00)
 
             # 引数
-            runMode  = None
-            request_text = ''
-            ModelAPI  = ''
-            ModelName = ''
-            MaxSteps  = ''
+            runMode      = None
+            request_text = None
+            engine       = None
+            model        = None
+            max_step     = None
+            browser      = None
             if (json_kwargs is not None):
                 args_dic = json.loads(json_kwargs)
                 runMode      = args_dic.get('runMode', 'agent')
-                show_or_hide = args_dic.get('show_or_hide', 'show')
-                useBrowser   = args_dic.get('useBrowser', 'chromium')
                 request_text = args_dic.get('request_text', '')
-                ModelAPI     = args_dic.get('ModelAPI', '')
-                ModelName    = args_dic.get('ModelName', '')
-                MaxSteps     = args_dic.get('MaxSteps', '')
+                engine       = args_dic.get('engine', '')
+                model        = args_dic.get('model', '')
+                max_step     = args_dic.get('max_step', '')
+                browser      = args_dic.get('browser', '')
 
             # パラメータ不明
             if (request_text == ''):
@@ -549,16 +527,16 @@ if __name__ == '__main__':
             else:
 
                 # agent 実行
-                if (useBrowser != ''):
-                    agent_web.useBrowser = useBrowser
-                if (ModelAPI != '') and (ModelName != '') and (MaxSteps != ''):
-                    agent_web.ModelAPI   = ModelAPI
-                    agent_web.ModelName  = ModelName
-                    agent_web.MaxSteps   = MaxSteps
-                agent_web.request(request_text=request_text)
+                if (engine != '') and (model != '') and (max_step != ''):
+                    webAgent.agent_engine   = engine
+                    webAgent.agent_model    = model
+                    webAgent.agent_max_step = max_step
+                if (browser != ''):
+                    webAgent.agent_browser = browser
+                webAgent.request(request_text=request_text)
 
                 # 結果
-                res_text  = 'AIエージェント WebAgent(ウェブエージェント) が非同期実行で開始されました。\n'
+                res_text  = 'AIエージェント Web-Agent(ウェブエージェント) が非同期実行で開始されました。\n'
                 res_text += 'しばらくお待ちください。\n'
 
                 # 戻り

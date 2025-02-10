@@ -44,9 +44,6 @@ use_openai_list   = ['kondou-latitude', 'kondou-main11', 'kondou-sub64', 'repair
 qPath_work   = 'temp/_work/'
 qPath_play   = 'temp/s6_7play/'
 
-config_path  = '_config/'
-config_file1 = 'RiKi_Monjyu_key.json'
-config_file2 = 'RiKi_ClipnGPT_key.json'
 openai_model = 'tts-1'
 
 
@@ -106,24 +103,12 @@ class tts_class:
         self.openai_enable = False
         try:
             # APIキーを取得
-            if   (os.path.isfile(config_path + config_file1)):
-                with codecs.open(config_path + config_file1, 'r', 'utf-8') as f:
-                    self.config_dic = json.load(f)
-            elif (os.path.isfile(config_path + config_file2)):
-                with codecs.open(config_path + config_file2, 'r', 'utf-8') as f:
-                    self.config_dic = json.load(f)
-            elif (os.path.isfile('../../' + config_path + config_file1)):
-                with codecs.open('../../' + config_path + config_file1, 'r', 'utf-8') as f:
-                    self.config_dic = json.load(f)
-            elif (os.path.isfile('../../' + config_path + config_file2)):
-                with codecs.open('../../' + config_path + config_file2, 'r', 'utf-8') as f:
-                    self.config_dic = json.load(f)
-            self.openai_organization = self.config_dic['openai_organization']
-            self.openai_key_id       = self.config_dic['openai_key_id']
+            self.openai_organization = os.environ.get('OPENAI_ORGANIZATION', '< ? >')
+            self.openai_key_id = os.environ.get('OPENAI_API_KEY', '< ? >')
             if (self.openai_organization == '') \
-            or (self.openai_organization == '< your openai organization >') \
+            or (self.openai_organization[:1] == '<') \
             or (self.openai_key_id == '') \
-            or (self.openai_key_id == '< your openai key >'):
+            or (self.openai_key_id[:1] == '<'):
                 raise ValueError("Please set your openai organization and key !")
 
             # APIキーを設定

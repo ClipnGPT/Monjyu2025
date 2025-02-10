@@ -86,7 +86,9 @@
                 <div class="tab-header">
                     <button data-target="engine">Engine</button>
                     <button data-target="model">Model</button>
-                    <button data-target="etc1">etc</button>
+                    <button data-target="live">Live</button>
+                    <button data-target="agent">Agent</button>
+                    <button data-target="etc-left">etc</button>
                 </div>
 
                 <div class="tab-content" id="engine">
@@ -99,7 +101,17 @@
                     <iframe id="iframe-model" src="/setting_model.html"></iframe>
                 </div>
 
-                <div class="tab-content" id="etc1">
+                <div class="tab-content" id="live">
+                    <!-- 設定用のiframe -->
+                    <iframe id="iframe-live" src="/setting_live.html"></iframe>
+                </div>
+
+                <div class="tab-content" id="agent">
+                    <!-- 設定用のiframe -->
+                    <iframe id="iframe-agent" src="/setting_agent.html"></iframe>
+                </div>
+
+                <div class="tab-content" id="etc-left">
                     <!-- その他の表示 -->
                     Hallo World !
                 </div>
@@ -113,7 +125,7 @@
                     <button data-target="other">Other</button>
                     <button data-target="input">Input</button>
                     <button data-target="output">Output</button>
-                    <button data-target="etc2">etc</button>
+                    <button data-target="etc-right">etc</button>
                 </div>
 
                 <div class="tab-content" id="other">
@@ -131,7 +143,7 @@
                     <iframe id="iframe-other" src="/output.html"></iframe>
                 </div>
 
-                <div class="tab-content" id="etc2">
+                <div class="tab-content" id="etc-right">
                     <!-- その他の表示 -->
                     Hallo World !
                 </div>

@@ -145,8 +145,8 @@ ECHO;
 IF EXIST "build"        RD "build"        /s /q
 IF EXIST "dist"         RD "dist"         /s /q
 IF EXIST "__pycache__"  RD "__pycache__"  /s /q
-IF EXIST "temp"                                RD "temp"                                /s /q
-IF EXIST "_cache"                              RD "_cache"                              /s /q
+rem IF EXIST "temp"                                RD "temp"                                /s /q
+rem IF EXIST "_cache"                              RD "_cache"                              /s /q
 IF EXIST "C:\RiKi_assistant\temp"              RD "C:\RiKi_assistant\temp"              /s /q
 IF EXIST "C:\RiKi_assistant\_cache"            RD "C:\RiKi_assistant\_cache"            /s /q
 IF EXIST "C:\_‹¤—L\Worker\temp"                RD "C:\_‹¤—L\Worker\temp"                /s /q

@@ -55,14 +55,10 @@ matplotlib.use('TkAgg')
 
 
 # インターフェース
-config_path  = '_config/'
-config_file1 = 'RiKi_Monjyu_key.json'
-config_file2 = 'RiKi_ClipnGPT_key.json'
-qIO_py2live  = 'temp/browser操作Agent_py2live.txt'
+qIO_agent2live = 'temp/monjyu_io_agent2live.txt'
 
 # モデル設定 (freeai)
-LIVE_MODELS = { "gemini-2.0-flash-lite-preview-02-05": "gemini-2.0-flash-lite-preview-02-05",
-                "gemini-2.0-pro-exp-02-05": "gemini-2.0-pro-exp-02-05",
+LIVE_MODELS = { "gemini-2.0-pro-exp-02-05": "gemini-2.0-pro-exp-02-05",
                 "gemini-2.0-flash-exp": "gemini-2.0-flash-exp",
                 "gemini-2.0-flash-001": "gemini-2.0-flash-001", }
 LIVE_VOICES = { "Puck": "Puck",
@@ -133,19 +129,7 @@ class _key2Action:
         self.runMode = runMode
 
         # APIキーを取得
-        if (os.path.isfile(config_path + config_file1)):
-            with codecs.open(config_path + config_file1, 'r', 'utf-8') as f:
-                self.config_dic = json.load(f)
-        if (os.path.isfile(config_path + config_file2)):
-            with codecs.open(config_path + config_file2, 'r', 'utf-8') as f:
-                self.config_dic = json.load(f)
-        elif (os.path.isfile('../../' + config_path + config_file1)):
-            with codecs.open('../../' + config_path + config_file1, 'r', 'utf-8') as f:
-                self.config_dic = json.load(f)
-        elif (os.path.isfile('../../' + config_path + config_file2)):
-            with codecs.open('../../' + config_path + config_file2, 'r', 'utf-8') as f:
-                self.config_dic = json.load(f)
-        self.freeai_key_id = self.config_dic['freeai_key_id']
+        self.freeai_key_id = os.environ.get('FREEAI_API_KEY', '< ? >')
 
         # liveAPI クラス
         self.liveAPI = _live_api_freeai(api_key=self.freeai_key_id, )
@@ -233,6 +217,7 @@ class _key2Action:
 
                     # live API クラス
                     if self.liveAPI.session is None:
+                        dummy = io_text_read(qIO_agent2live)
                         #self.liveAPI.start()
                         self.liveAPI.break_flag = False
                         self.liveAPI.error_flag = False
@@ -317,7 +302,8 @@ class _live_api_freeai:
         self.monjyu_once_flag = False
         self.monjyu_enable = False
         self.monjyu_funcinfo = ''
-        self.surfer_enable = False
+        self.webAgent_enable = False
+        self.researchAgent_enable = False
         self.image_input_number = None
 
         # バッファ
@@ -603,7 +589,7 @@ class _live_api_freeai:
         try:
             # Live実行確認
             while (self.session is not None) and (not self.break_flag):
-                text = io_text_read(qIO_py2live)
+                text = io_text_read(qIO_agent2live)
                 if (text != ''):
                     #request_text = "''' AIエージェントからの実行報告\n"
                     #request_text += text.rstrip() + "\n"
@@ -821,7 +807,6 @@ class _live_api_freeai:
         self.error_flag = False
         self.last_send_time = time.time()
         self.image_input_number = None
-        dummy = io_text_read(qIO_py2live)
         # UI設定
         if self.data is not None:
             live_model = self.data.live_setting['freeai'].get('live_model', '')
@@ -842,7 +827,8 @@ class _live_api_freeai:
             self.monjyu_once_flag = True
             self.monjyu_enable = False
             self.monjyu_funcinfo = ''
-            self.surfer_enable = False
+            self.webAgent_enable = False
+            self.researchAgent_enable = False
             # 有効確認
             if self.botFunc is not None:
                 for module_dic in self.botFunc.function_modules:
@@ -868,9 +854,12 @@ class _live_api_freeai:
                         except Exception as e:
                             print(e)
                     if (module_dic['func_name'] == 'webBrowser_operation_agent'):
-                        self.surfer_enable = True
+                        self.webAgent_enable = True
+                    if (module_dic['func_name'] == 'research_operation_agent'):
+                        self.researchAgent_enable = True
                     if  (self.monjyu_enable == True) \
-                    and (self.surfer_enable == True):
+                    and (self.webAgent_enable == True) \
+                    and (self.researchAgent_enable == True):
                         break
         # 初期化
         self.image_send_queue = asyncio.Queue()
@@ -938,13 +927,22 @@ class _live_api_freeai:
 複数人で会話をしていますので、会話の流れを把握するようにして、口出しは最小限にお願いします。
 あなたへの指示でない場合、相槌も必要ありません。できるだけ静かにお願いします。
 """
-                # surfer 有効
-                if (self.surfer_enable == True):
-                    print(" Live(freeai) : [READY] Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) ")
+                # researchAjent 有効
+                if (self.researchAgent_enable == True):
+                    print(" Live(freeai) : [READY] Agentic AI Research-Agent(リサーチエージェント:research_operation_agent) ")
                     instructions += \
 """
-Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) が利用可能です。
-社内システム操作以外のウェブ操作を依頼して、その結果を報告してしてください。
+Agentic AI Research-Agent(リサーチエージェント:research_operation_agent) が利用可能です。
+調査依頼は非同期で実行されます。このエージェントの実行報告は要約して報告するようにしてしてください。
+"""
+                # webAgent 有効
+                if (self.webAgent_enable == True):
+                    print(" Live(freeai) : [READY] Agentic AI Web-Agent(ウェブエージェント:webBrowser_operation_agent) ")
+                    instructions += \
+"""
+Agentic AI Web-Agent(ウェブエージェント:webBrowser_operation_agent) が利用可能です。
+社内システム操作以外のウェブ操作を依頼でき、依頼は非同期で実行されます。
+このエージェントの実行結果は音声で報告するようにしてしてください。
 """
                 # Monjyu 有効
                 if (self.monjyu_enable == True):
@@ -972,9 +970,11 @@ Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) が�
                         #func_str = func_str.replace('"string"', '"STRING"')
                         #func     = json.loads(func_str)
                         if (self.monjyu_enable == True) \
-                        or (self.surfer_enable == True):
+                        or (self.webAgent_enable == True) \
+                        or (self.researchAgent_enable == True):
                             if (module_dic['func_name'] == 'execute_monjyu_request') \
-                            or (module_dic['func_name'] == 'webBrowser_operation_agent'):
+                            or (module_dic['func_name'] == 'webBrowser_operation_agent') \
+                            or (module_dic['func_name'] == 'research_operation_agent'):
                                 function_declarations.append(func_dic)
                         else:
                                 function_declarations.append(func_dic)
@@ -1004,7 +1004,6 @@ Agentic AI WebAgent(ウェブエージェント:webBrowser_operation_agent) が�
                     self.session = session
                     self.tg = tg
 
-                    dummy = io_text_read(qIO_py2live)
                     def cleanup(task):
                         self.break_flag = True
                         try:

@@ -42,18 +42,18 @@ import socket
 qHOSTNAME = socket.gethostname().lower()
 
 # 各種ディレクトリパスの設定
-qPath_temp   = 'temp/'
-qPath_log    = 'temp/_log/'
-qPath_input  = 'temp/input/'
-qPath_output = 'temp/output/'
-qPath_tts    = 'temp/s6_5tts_txt/'
-qPath_reacts = '_datas/reacts/'
+qPath_temp      = 'temp/'
+qPath_log       = 'temp/_log/'
+qPath_input     = 'temp/input/'
+qPath_output    = 'temp/output/'
+qPath_tts       = 'temp/s6_5tts_txt/'
+qPath_reacts    = '_datas/reacts/'
 qPath_templates = '_webui/monjyu'
 qPath_static    = '_webui/monjyu/static'
 DEFAULT_ICON    = qPath_static + '/' + "icon_monjyu.png"
 
 # インターフェース
-qIO_py2live       = 'temp/browser操作Agent_py2live.txt'
+qIO_agent2live  = 'temp/monjyu_io_agent2live.txt'
 
 # 共通ルーチンのインポートと初期化
 import _v6__qLog
@@ -118,16 +118,18 @@ class postLiveDataModel(BaseModel):
     shot_interval_sec: str
     clip_interval_sec: str
 
-# webAgent engine設定データモデル
-class postWebAgentEngine(BaseModel):
-    useBrowser: str
-    modelAPI: str
+# Agent engine設定データモデル
+class postAgentEngine(BaseModel):
+    agent: str
+    engine: str
 
-# webAgent setting設定データモデル
-class postWebAgentSetting(BaseModel):
-    modelAPI: str
-    modelName: str
-    maxSteps: str
+# Agent setting設定データモデル
+class postAgentSetting(BaseModel):
+    agent: str
+    engine: str
+    model: str
+    max_step: str
+    browser: str
 
 # 音声入力項目モデル
 class sttFieldModel(BaseModel):
@@ -141,6 +143,10 @@ class ttsTextModel(BaseModel):
 class liveRequestModel(BaseModel):
     live_req: str
     live_text: str
+
+# Agent送信文字列モデル
+class agentRequestModel(BaseModel):
+    request_text: str
 
 # speech json 文字列モデル
 class speechJsonModel(BaseModel):
@@ -241,10 +247,10 @@ class WebUiClass:
         self.app.get("/get_live_voices")(self.get_live_voices)
         self.app.get("/get_live_setting")(self.get_live_setting)
         self.app.post("/post_live_setting")(self.post_live_setting)
-        self.app.get("/get_webAgent_engine")(self.get_webAgent_engine)
-        self.app.get("/get_webAgent_setting")(self.get_webAgent_setting)
-        self.app.post("/post_webAgent_engine")(self.post_webAgent_engine)
-        self.app.post("/post_webAgent_setting")(self.post_webAgent_setting)
+        self.app.get("/get_agent_engine")(self.get_agent_engine)
+        self.app.get("/get_agent_setting")(self.get_agent_setting)
+        self.app.post("/post_agent_engine")(self.post_agent_engine)
+        self.app.post("/post_agent_setting")(self.post_agent_setting)
         self.app.get("/get_default_image")(self.get_default_image)
         self.app.get("/get_image_info")(self.get_image_info)
         self.app.post("/post_text_files")(self.post_text_files)
@@ -255,6 +261,8 @@ class WebUiClass:
         self.app.get("/get_source")(self.get_source)
         self.app.post("/post_tts_text")(self.post_tts_text)
         self.app.post("/post_live_request")(self.post_live_request)
+        self.app.post("/post_webAgent_request")(self.post_webAgent_request)
+        self.app.post("/post_researchAgent_request")(self.post_researchAgent_request)
         self.app.post("/post_tts_csv")(self.post_tts_csv)
         self.app.get("/get_stt")(self.get_stt)
         self.app.get("/get_url_to_text")(self.get_url_to_text)
@@ -779,48 +787,90 @@ class WebUiClass:
                                                 "clip_interval_sec": clip_interval_sec, }
         return JSONResponse(content={'message': 'post_live_setting successfully'})
 
-    async def get_webAgent_engine(self):
-        # 設定情報を返す
-        useBrowser = self.data.webAgent_useBrowser
-        modelAPI = self.data.webAgent_modelAPI
-        modelNames = {}
-        if (modelAPI != ''):
-            modelNames = self.data.webAgent_modelNames[modelAPI]
+    async def get_agent_engine(self, agent: str):
+        result = {}
         if (self.data is not None):
-            result = { "useBrowser": useBrowser,
-                       "modelAPI": modelAPI,
-                       "modelNames": modelNames, }
-        else:
-            result = {}
+
+            # webAgent設定情報を返す
+            if   (agent == 'webAgent'):
+                engine = self.data.webAgent_setting['engine']
+                models = {}
+                if (engine != ''):
+                    models = self.data.webAgent_models[engine]
+                result = {  "engine": engine,
+                            "models": models, }
+
+            # researchAgent設定情報を返す
+            elif (agent == 'researchAgent'):
+                engine = self.data.researchAgent_setting['engine']
+                models = {}
+                if (engine != ''):
+                    models = self.data.researchAgent_models[engine]
+                result = {  "engine": engine,
+                            "models": models, }
+
         return JSONResponse(content=result)
 
-    async def get_webAgent_setting(self, modelAPI: str):
-        # 設定情報を返す
-        modelAPI = str(modelAPI) if modelAPI else "freeai"
+    async def get_agent_setting(self, agent: str):
+        result = {}
         if (self.data is not None):
-            result = self.data.webAgent_setting[modelAPI]
-        else:
-            result = {}
+
+            # webAgent設定情報を返す
+            if   (agent == 'webAgent'):
+                result = self.data.webAgent_setting
+
+            # researchAgent設定情報を返す
+            elif (agent == 'researchAgent'):
+                result = self.data.researchAgent_setting
+
         return JSONResponse(content=result)
 
-    async def post_webAgent_engine(self, data: postWebAgentEngine):
-        # 設定情報を更新する
-        useBrowser = str(data.useBrowser) if data.useBrowser else ""
-        modelAPI = str(data.modelAPI) if data.modelAPI else ""
+    async def post_agent_engine(self, data: postAgentEngine):
+        agent = str(data.agent) if data.agent else ""
+        engine = str(data.engine) if data.engine else ""
         if (self.data is not None):
-            self.data.webAgent_useBrowser = useBrowser
-            self.data.webAgent_modelAPI = modelAPI
-        return JSONResponse(content={'message': 'post_webAgent_engine successfully'})
 
-    async def post_webAgent_setting(self, data: postWebAgentSetting):
-        # 設定情報を更新する
-        modelAPI  = str(data.modelAPI)  if data.modelAPI  else "freeai"
-        modelName = str(data.modelName) if data.modelName else ""
-        maxSteps  = str(data.maxSteps ) if data.maxSteps  else ""
+            # webAgent設定
+            if   (agent == 'webAgent'):
+                self.data.webAgent_setting['engine'] = engine
+                if (engine != ''):
+                    self.data.webAgent_setting['model'] = list( self.data.webAgent_models[engine].keys() )[0]
+                else:
+                    self.data.webAgent_setting['model'] = ''
+
+            # researchAgent設定
+            elif (agent == 'researchAgent'):
+                self.data.researchAgent_setting['engine'] = engine
+                if (engine != ''):
+                    self.data.researchAgent_setting['model'] = list( self.data.researchAgent_models[engine].keys() )[0]
+                else:
+                    self.data.researchAgent_setting['model'] = ''
+
+        return JSONResponse(content={'message': 'post_agent_engine successfully'})
+
+    async def post_agent_setting(self, data: postAgentSetting):
+        agent = str(data.agent) if data.agent else ""
+        engine = str(data.engine) if data.engine else ""
+        model = str(data.model) if data.model else ""
+        max_step = str(data.max_step) if data.max_step else ""
+        browser = str(data.browser) if data.browser else ""
         if (self.data is not None):
-            self.data.webAgent_setting[modelAPI] = {"modelName": modelName,
-                                                    "maxSteps":  maxSteps,  }
-        return JSONResponse(content={'message': 'post_webAgent_setting successfully'})
+
+            # webAgent設定
+            if   (agent == 'webAgent'):
+                self.data.webAgent_setting = {  "engine": engine,
+                                                "model": model,
+                                                "max_step": max_step,
+                                                "browser": browser, }
+
+            # researchAgent設定
+            elif (agent == 'researchAgent'):
+                self.data.researchAgent_setting = { "engine": engine,
+                                                    "model": model,
+                                                    "max_step": max_step,
+                                                    "browser": browser, }
+
+        return JSONResponse(content={'message': 'post_agent_setting successfully'})
 
     async def get_default_image(self):
         # デフォルト画像データの取得
@@ -994,7 +1044,7 @@ class WebUiClass:
         live_text = str(data.live_text) if data.live_text else ""
 
         # live送信
-        filename = qIO_py2live
+        filename = qIO_agent2live
         text = ''
         if (live_req != ''):
             text += live_req.rstrip() + '\n'
@@ -1011,6 +1061,54 @@ class WebUiClass:
             raise HTTPException(status_code=500, detail='post_live_request error:' + e)
 
         return JSONResponse({'message': 'post_live_request successfully'})
+
+    async def post_webAgent_request(self, data: agentRequestModel):
+        request_text  = str(data.request_text) if data.request_text else ""
+        try:
+            # Agent
+            ext_module = None
+            for module_dic in self.botFunc.function_modules:
+                if (module_dic['script'] == '認証済_browser操作Agent'):
+                    ext_module = module_dic
+                    break
+            if (ext_module is not None):
+                dic = {}
+                dic['runMode']  = self.runMode
+                dic['request_text'] = request_text
+                json_dump = json.dumps(dic, ensure_ascii=False, )
+                ext_func_proc  = ext_module['func_proc']
+                res_json = ext_func_proc( json_dump )
+                args_dic = json.loads(res_json)
+                result_text = args_dic.get('result_text')
+                #return JSONResponse(content={"result_text": result_text})
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail='post_webAgent_request error:' + e)
+        return JSONResponse({'message': 'post_webAgent_request successfully'})
+
+    async def post_researchAgent_request(self, data: agentRequestModel):
+        request_text  = str(data.request_text) if data.request_text else ""
+        try:
+            # Agent
+            ext_module = None
+            for module_dic in self.botFunc.function_modules:
+                if (module_dic['script'] == '認証済_research操作Agent'):
+                    ext_module = module_dic
+                    break
+            if (ext_module is not None):
+                dic = {}
+                dic['runMode']  = self.runMode
+                dic['request_text'] = request_text
+                json_dump = json.dumps(dic, ensure_ascii=False, )
+                ext_func_proc  = ext_module['func_proc']
+                res_json = ext_func_proc( json_dump )
+                args_dic = json.loads(res_json)
+                result_text = args_dic.get('result_text')
+                #return JSONResponse(content={"result_text": result_text})
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail='post_researchAgent_request error:' + e)
+        return JSONResponse({'message': 'post_researchAgent_request successfully'})
 
     async def post_tts_csv(self, data: ttsTextModel):
         speech_text = str(data.speech_text) if data.speech_text else ""

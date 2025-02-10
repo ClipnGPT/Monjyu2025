@@ -1048,10 +1048,10 @@ class CoreAiClass:
         if (self.data is None):
             raise HTTPException(status_code=503, detail='Service Unavailable')
 
-        user_id = str(postData.user_id) if postData.user_id is not None else "debug"
-        from_port = str(postData.from_port) if postData.from_port is not None else ""
-        to_port = str(postData.to_port) if postData.to_port is not None else ""
-        req_mode = str(postData.req_mode) if postData.req_mode is not None else "chat"
+        user_id = str(postData.user_id) if postData.user_id else "debug"
+        from_port = str(postData.from_port) if postData.from_port else "?"
+        to_port = str(postData.to_port) if postData.to_port else "?"
+        req_mode = str(postData.req_mode) if postData.req_mode else "?"
         system_text = postData.system_text
         request_text = postData.request_text
         input_text  = postData.input_text
@@ -1235,10 +1235,10 @@ class CoreAiClass:
         if (self.data is None):
             raise HTTPException(status_code=503, detail='Service Unavailable')
 
-        user_id = str(postData.user_id) if postData.user_id is not None else "debug"
-        from_port = str(postData.from_port) if postData.from_port is not None else ""
-        to_port = str(postData.to_port) if postData.to_port is not None else ""
-        req_mode = str(postData.req_mode) if postData.req_mode is not None else "chat"
+        user_id = str(postData.user_id) if postData.user_id else "debug"
+        from_port = str(postData.from_port) if postData.from_port else "?"
+        to_port = str(postData.to_port) if postData.to_port else "?"
+        req_mode = str(postData.req_mode) if postData.req_mode else "?"
         system_text = postData.system_text
         request_text = postData.request_text
         input_text  = postData.input_text
@@ -1368,10 +1368,10 @@ class CoreAiClass:
         if (self.data is None):
             raise HTTPException(status_code=503, detail='Service Unavailable')
 
-        user_id = str(postData.user_id) if postData.user_id is not None else "debug"
-        from_port = str(postData.from_port) if postData.from_port is not None else "live"
-        to_port = str(postData.to_port) if postData.to_port is not None else "live"
-        req_mode = str(postData.req_mode) if postData.req_mode is not None else "live"
+        user_id = str(postData.user_id) if postData.user_id else "debug"
+        from_port = str(postData.from_port) if postData.from_port else "?"
+        to_port = str(postData.to_port) if postData.to_port else "?"
+        req_mode = str(postData.req_mode) if postData.req_mode else "?"
         system_text = postData.system_text
         request_text = postData.request_text
         input_text  = postData.input_text
