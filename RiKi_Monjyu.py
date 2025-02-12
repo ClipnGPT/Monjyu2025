@@ -285,23 +285,23 @@ if __name__ == '__main__':
             except Exception as e:
                 print(e)
 
-        # browser操作Agent
-        webAgent_enable = False
+        # web操作Agent
+        webOperator_enable = False
         for module_dic in botFunc.function_modules:
-            if (module_dic['func_name'] == 'webBrowser_operation_agent'):
+            if (module_dic['func_name'] == 'web_operation_agent'):
                 try:
                     if (module_dic['onoff'] == 'on'):
-                        data.webAgent_models['freeai'] = module_dic['class'].agent_models['freeai']
-                        data.webAgent_models['openai'] = module_dic['class'].agent_models['openai']
-                        data.webAgent_models['claude'] = module_dic['class'].agent_models['claude']
-                        data.webAgent_setting = {   'engine':   module_dic['class'].agent_engine,
-                                                    'model':    module_dic['class'].agent_model,
-                                                    'max_step': module_dic['class'].agent_max_step,
-                                                    'browser':  module_dic['class'].agent_browser, }
+                        data.webOperator_models['freeai'] = module_dic['class'].agent_models['freeai']
+                        data.webOperator_models['openai'] = module_dic['class'].agent_models['openai']
+                        data.webOperator_models['claude'] = module_dic['class'].agent_models['claude']
+                        data.webOperator_setting = {    'engine':   module_dic['class'].agent_engine,
+                                                        'model':    module_dic['class'].agent_model,
+                                                        'max_step': module_dic['class'].agent_max_step,
+                                                        'browser':  module_dic['class'].agent_browser, }
                         func_reset = module_dic['func_reset']
                         res  = func_reset(data=data, )
-                        print('reset', 'webBrowser_operation_agent')
-                        webAgent_enable = True
+                        print('reset', 'web_operation_agent')
+                        webOperator_enable = True
                 except Exception as e:
                     print(e)
                 break
@@ -373,8 +373,8 @@ if __name__ == '__main__':
     qLog.log('info', main_id, " To use [ Assistant AI 文殊/Monjyu(もんじゅ) ], Access 'http://localhost:8008/' in your browser.")
     if (liveai_enable == True):
         qLog.log('info', main_id, " To use [ Live AI 力/RiKi(りき) ], Press ctrl-l or ctrl-r three times.")
-    if (webAgent_enable == True):
-        qLog.log('info', main_id, " To use [ Agentic AI Web-Agent(ウェブエージェント) ], Specify use at the prompt.")
+    if (webOperator_enable == True):
+        qLog.log('info', main_id, " To use [ Agentic AI Web-Operator(ウェブオペレーター) ], Specify use at the prompt.")
     if (researchAgent_enable == True):
         qLog.log('info', main_id, " To use [ Agentic AI Research-Agent(リサーチエージェント) ], Specify use at the prompt.")
     qLog.log('info', main_id, "================================================================================================")

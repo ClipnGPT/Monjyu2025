@@ -302,7 +302,7 @@ class _live_api_freeai:
         self.monjyu_once_flag = False
         self.monjyu_enable = False
         self.monjyu_funcinfo = ''
-        self.webAgent_enable = False
+        self.webOperator_enable = False
         self.researchAgent_enable = False
         self.image_input_number = None
 
@@ -827,7 +827,7 @@ class _live_api_freeai:
             self.monjyu_once_flag = True
             self.monjyu_enable = False
             self.monjyu_funcinfo = ''
-            self.webAgent_enable = False
+            self.webOperator_enable = False
             self.researchAgent_enable = False
             # 有効確認
             if self.botFunc is not None:
@@ -853,12 +853,12 @@ class _live_api_freeai:
                             self.monjyu_funcinfo = res_text
                         except Exception as e:
                             print(e)
-                    if (module_dic['func_name'] == 'webBrowser_operation_agent'):
-                        self.webAgent_enable = True
+                    if (module_dic['func_name'] == 'web_operation_agent'):
+                        self.webOperator_enable = True
                     if (module_dic['func_name'] == 'research_operation_agent'):
                         self.researchAgent_enable = True
                     if  (self.monjyu_enable == True) \
-                    and (self.webAgent_enable == True) \
+                    and (self.webOperator_enable == True) \
                     and (self.researchAgent_enable == True):
                         break
         # 初期化
@@ -935,12 +935,12 @@ class _live_api_freeai:
 Agentic AI Research-Agent(リサーチエージェント:research_operation_agent) が利用可能です。
 調査依頼は非同期で実行されます。このエージェントの実行報告は要約して報告するようにしてしてください。
 """
-                # webAgent 有効
-                if (self.webAgent_enable == True):
-                    print(" Live(freeai) : [READY] Agentic AI Web-Agent(ウェブエージェント:webBrowser_operation_agent) ")
+                # webOperator 有効
+                if (self.webOperator_enable == True):
+                    print(" Live(freeai) : [READY] Agentic AI Web-Operator(ウェブオペレーター:web_operation_agent) ")
                     instructions += \
 """
-Agentic AI Web-Agent(ウェブエージェント:webBrowser_operation_agent) が利用可能です。
+Agentic AI Web-Operator(ウェブオペレーター:web_operation_agent) が利用可能です。
 社内システム操作以外のウェブ操作を依頼でき、依頼は非同期で実行されます。
 このエージェントの実行結果は音声で報告するようにしてしてください。
 """
@@ -970,10 +970,10 @@ Agentic AI Web-Agent(ウェブエージェント:webBrowser_operation_agent) が
                         #func_str = func_str.replace('"string"', '"STRING"')
                         #func     = json.loads(func_str)
                         if (self.monjyu_enable == True) \
-                        or (self.webAgent_enable == True) \
+                        or (self.webOperator_enable == True) \
                         or (self.researchAgent_enable == True):
                             if (module_dic['func_name'] == 'execute_monjyu_request') \
-                            or (module_dic['func_name'] == 'webBrowser_operation_agent') \
+                            or (module_dic['func_name'] == 'web_operation_agent') \
                             or (module_dic['func_name'] == 'research_operation_agent'):
                                 function_declarations.append(func_dic)
                         else:

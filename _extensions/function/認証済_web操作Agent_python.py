@@ -46,11 +46,11 @@ from browser_use.browser.browser import Browser, BrowserConfig, BrowserContextCo
 qPath_input       = 'temp/input/'
 qPath_output      = 'temp/output/'
 
-qText_ready       = 'Web-Agent function ready!'
-qText_start       = 'Web-Agent function start!'
-qText_complete    = 'Web-Agent function complete!'
-qIO_func2py       = 'temp/browser操作Agent_func2py.txt'
-qIO_py2func       = 'temp/browser操作Agent_py2func.txt'
+qText_ready       = 'Web-Operator function ready!'
+qText_start       = 'Web-Operator function start!'
+qText_complete    = 'Web-Operator function complete!'
+qIO_func2py       = 'temp/web操作Agent_func2py.txt'
+qIO_py2func       = 'temp/web操作Agent_py2func.txt'
 qIO_agent2live    = 'temp/monjyu_io_agent2live.txt'
 
 # Monjyu連携
@@ -103,7 +103,7 @@ def io_text_write(filename='', text='', encoding='utf-8', mode='w', ):
 
 
 
-class _webAgent_class:
+class _webOperator_class:
     def __init__(self, ):
         self.mixer_enable = False
         self.monjyu = _monjyu_class(runMode='agent', )
@@ -234,12 +234,12 @@ class _webAgent_class:
                 else:
                     [request_text, result_text] = await self.result_queue.get()
 
-                    print('Web-Agent : (result)')
+                    print('Web-Operator : (result)')
                     print(result_text)
 
                     # Live 連携
                     text = ''
-                    text += f"[RESULT] AIエージェント Web-Agent(ウェブエージェント: browser-use/{ self.agent_engine }/{ self.agent_model }) \n"
+                    text += f"[RESULT] AIエージェント Web-Operator(ウェブオペレーター: browser-use/{ self.agent_engine }/{ self.agent_model }) \n"
                     text += request_text.rstrip() + '\n'
                     text += "について、以下が結果報告です。要約して日本語で報告してください。\n"
                     text += result_text.rstrip() + '\n\n'
@@ -248,7 +248,7 @@ class _webAgent_class:
                     # Monjyu 連携
                     reqText = request_text
                     inpText = ''
-                    outText = f"[Web-Agent] ({ self.agent_engine }/{ self.agent_model })\n" + result_text
+                    outText = f"[Web-Operator] ({ self.agent_engine }/{ self.agent_model })\n" + result_text
                     outData = result_text
 
                     # (output_log)
@@ -348,7 +348,7 @@ class _webAgent_class:
 
                             browser_context = await browser.new_context()
 
-                        #print('Web-Agent : (request)')
+                        #print('Web-Operator : (request)')
                         #print(request_text)
 
                         # 開始音
@@ -452,7 +452,7 @@ class _monjyu_class:
 if __name__ == '__main__':
 
     # 初期設定
-    webAgent = _webAgent_class()
+    webOperator = _webOperator_class()
 
     # 指示受信クリア
     dummy = io_text_read(qIO_func2py)
@@ -528,15 +528,15 @@ if __name__ == '__main__':
 
                 # agent 実行
                 if (engine != '') and (model != '') and (max_step != ''):
-                    webAgent.agent_engine   = engine
-                    webAgent.agent_model    = model
-                    webAgent.agent_max_step = max_step
+                    webOperator.agent_engine   = engine
+                    webOperator.agent_model    = model
+                    webOperator.agent_max_step = max_step
                 if (browser != ''):
-                    webAgent.agent_browser = browser
-                webAgent.request(request_text=request_text)
+                    webOperator.agent_browser = browser
+                webOperator.request(request_text=request_text)
 
                 # 結果
-                res_text  = 'AIエージェント Web-Agent(ウェブエージェント) が非同期実行で開始されました。\n'
+                res_text  = 'AIエージェント Web-Operator(ウェブオペレーター) が非同期実行で開始されました。\n'
                 res_text += 'しばらくお待ちください。\n'
 
                 # 戻り

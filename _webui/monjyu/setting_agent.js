@@ -2,18 +2,18 @@
 
 // 最後の設定値を保持するオブジェクト
 let last_agent_engine = {
-    webAgent: null,
+    webOperator: null,
     researchAgent: null,
 }
 let last_agent_setting = {
-    webAgent: null,
+    webOperator: null,
     researchAgent: null,
 }
 
 // サーバーからAgent設定を取得する関数
 function get_agent_setting_all() {
-    get_agent_engine( 'webAgent');
-    get_agent_setting('webAgent');
+    get_agent_engine( 'webOperator');
+    get_agent_setting('webOperator');
     get_agent_engine( 'researchAgent');
     get_agent_setting('researchAgent');
 }
@@ -28,16 +28,16 @@ function get_agent_engine(agent) {
         dataType: 'json',
         success: function(data) {
 
-            // webAgent
-            if (agent === 'webAgent') {
-                if (JSON.stringify(data) !== last_agent_engine.webAgent) {
-                    $('#webAgent_engine').val(data.engine || '');
-                    $('#webAgent_model').empty();
-                    $('#webAgent_model').append(`<option value="">Auto (自動)</option>`);
+            // webOperator
+            if (agent === 'webOperator') {
+                if (JSON.stringify(data) !== last_agent_engine.webOperator) {
+                    $('#webOperator_engine').val(data.engine || '');
+                    $('#webOperator_model').empty();
+                    $('#webOperator_model').append(`<option value="">Auto (自動)</option>`);
                     for (var [key, value] of Object.entries(data.models)) {
-                        $('#webAgent_model').append(`<option value="${key}">${value}</option>`);
+                        $('#webOperator_model').append(`<option value="${key}">${value}</option>`);
                     }
-                    last_agent_engine.webAgent = JSON.stringify(data);
+                    last_agent_engine.webOperator = JSON.stringify(data);
                 }
             }
 
@@ -71,13 +71,13 @@ function get_agent_setting(agent) {
         dataType: 'json',
         success: function(data) {
 
-            // webAgent
-            if (agent === 'webAgent') {
-                if (JSON.stringify(data) !== last_agent_setting.webAgent) {
-                    $('#webAgent_model').val(data.model || '');
-                    $('#webAgent_max_step').val(data.max_step || '');
-                    $('#webAgent_browser').val(data.browser || '');
-                    last_agent_setting.webAgent = JSON.stringify(data);
+            // webOperator
+            if (agent === 'webOperator') {
+                if (JSON.stringify(data) !== last_agent_setting.webOperator) {
+                    $('#webOperator_model').val(data.model || '');
+                    $('#webOperator_max_step').val(data.max_step || '');
+                    $('#webOperator_browser').val(data.browser || '');
+                    last_agent_setting.webOperator = JSON.stringify(data);
                 }
             }
 
@@ -102,11 +102,11 @@ function get_agent_setting(agent) {
 function post_agent_engine(agent) {
     var formData = {};
 
-    // webAgent
-    if (agent === 'webAgent') {
+    // webOperator
+    if (agent === 'webOperator') {
         formData = {
             agent: agent,
-            engine: $('#webAgent_engine').val(),
+            engine: $('#webOperator_engine').val(),
         };
     }
 
@@ -137,18 +137,18 @@ function post_agent_engine(agent) {
 function post_agent_setting(agent) {
     var formData = {};
 
-    // webAgent
-    if (agent === 'webAgent') {
+    // webOperator
+    if (agent === 'webOperator') {
         formData = {
             agent: agent,
-            engine: $('#webAgent_engine').val(),
-            model: $('#webAgent_model').val(),
-            max_step:  $('#webAgent_max_step').val(),
-            browser:  $('#webAgent_browser').val(),
+            engine: $('#webOperator_engine').val(),
+            model: $('#webOperator_model').val(),
+            max_step:  $('#webOperator_max_step').val(),
+            browser:  $('#webOperator_browser').val(),
         };
     }
 
-    // webAgent
+    // webOperator
     if (agent === 'researchAgent') {
         formData = {
             agent: agent,
@@ -159,7 +159,7 @@ function post_agent_setting(agent) {
         };
     }
 
-    // webAgent設定をサーバーに送信
+    // webOperator設定をサーバーに送信
     $.ajax({
         url: '/post_agent_setting',
         method: 'POST',
@@ -175,17 +175,17 @@ function post_agent_setting(agent) {
 }
 
 // Agent出力(text)
-function post_webAgent_request(request_text) {
+function post_webOperator_request(request_text) {
     $.ajax({
-        url: $('#core_endpoint').val() + '/post_webAgent_request',
+        url: $('#core_endpoint').val() + '/post_webOperator_request',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ request_text: request_text }),
         success: function(response) {
-            console.log('post_webAgent_request:', response); // レスポンスをログに表示
+            console.log('post_webOperator_request:', response); // レスポンスをログに表示
         },
         error: function(xhr, status, error) {
-            console.error('post_webAgent_request error:', error); // エラーログを出力
+            console.error('post_webOperator_request error:', error); // エラーログを出力
         }
     });
 }
@@ -217,7 +217,7 @@ $(document).ready(function() {
         $('#' + activeTab).addClass('active');
         $('.tab-header button[data-target="' + activeTab + '"]').addClass('active');
         // 入力欄
-        $('#webAgent_request').val(storedData.webAgent_request || '');
+        $('#webOperator_request').val(storedData.webOperator_request || '');
         $('#researchAgent_request').val(storedData.researchAgent_request || '');
     }
 
@@ -227,7 +227,7 @@ $(document).ready(function() {
             // ページ遷移時にlocalStorageに保存
             activeTab: $('.tab-header button.active').data('target'),
             // 入力欄
-            webAgent_request: $('#webAgent_request').val(),
+            webOperator_request: $('#webOperator_request').val(),
             researchAgent_request: $('#researchAgent_request').val(),
         };
         localStorage.setItem('setting_agent_formData', JSON.stringify(formData));
@@ -236,11 +236,11 @@ $(document).ready(function() {
     // 定期的に設定値を取得する処理
     setInterval(get_agent_setting_all, 3000);
 
-    $('#webAgent_engine').change(function() {
-        post_agent_engine('webAgent');
+    $('#webOperator_engine').change(function() {
+        post_agent_engine('webOperator');
     });
-    $('#webAgent_model, #webAgent_max_step, #webAgent_browser').change(function() {
-        post_agent_setting('webAgent');
+    $('#webOperator_model, #webOperator_max_step, #webOperator_browser').change(function() {
+        post_agent_setting('webOperator');
     });
     
     $('#researchAgent_engine').change(function() {
@@ -250,12 +250,12 @@ $(document).ready(function() {
         post_agent_setting('researchAgent');
     });
 
-    $('#webAgent-button').click(function() {
-        post_webAgent_request( $('#webAgent_request').val() );
+    $('#webOperator-button').click(function() {
+        post_webOperator_request( $('#webOperator_request').val() );
         // アニメーション(2秒)
-        $('#webAgent_request').addClass('blink-border');
+        $('#webOperator_request').addClass('blink-border');
         setTimeout(() => {
-            $('#webAgent_request').removeClass('blink-border');
+            $('#webOperator_request').removeClass('blink-border');
         }, 2000);
     });
     $('#researchAgent-button').click(function() {

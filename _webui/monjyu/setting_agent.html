@@ -111,7 +111,7 @@
             <!-- タブのヘッダー -->
             <div class="tab-header">
                 <button data-target="reset">Reset</button>
-                <button data-target="webAgent">Web-Agent</button>
+                <button data-target="webOperator">Web-Operator</button>
                 <button data-target="researchAgent">Research-Agent</button>
             </div>
 
@@ -131,18 +131,18 @@
                 </table>
             </div>
 
-            <!-- Web-Agentタブ -->
-            <div class="tab-content" id="webAgent" style="justify-content: center;">
+            <!-- Web-Operatorタブ -->
+            <div class="tab-content" id="webOperator" style="justify-content: center;">
                 <table>
                     <tr><td align="right">　</td><td>　</td></tr>
                     <tr>
-                        <td align="right">【Web-Agent】</td>
-                        <td>(ウェブエージェント)</td>
+                        <td align="right">【Web-Operator】</td>
+                        <td>(ウェブオペレーター)</td>
                     </tr>
                     <tr>
                         <td align="right">Engine :</td>
                         <td>
-                            <select id="webAgent_engine" name="webAgent_engine">
+                            <select id="webOperator_engine" name="webOperator_engine">
                                 <option value="">Auto (自動)</option>
                                 <option value="freeai">FreeAI (gemini)</option>
                                 <option value="openai">OpenAI</option>
@@ -153,7 +153,7 @@
                     <tr>
                         <td align="right">Model :</td>
                         <td>
-                            <select id="webAgent_model" name="webAgent_model">
+                            <select id="webOperator_model" name="webOperator_model">
                                 <option value="">Auto (自動)</option>
                             </select>
                         </td>
@@ -161,7 +161,7 @@
                     <tr>
                         <td align="right">Max Step :</td>
                         <td>
-                            <select id="webAgent_max_step" name="webAgent_max_step">
+                            <select id="webOperator_max_step" name="webOperator_max_step">
                                 <option value="">Auto (自動)</option>
                                 <option value="5"> 5</option>
                                 <option value="10">10</option>
@@ -174,7 +174,7 @@
                     <tr>
                         <td align="right">Browser:</td>
                         <td>
-                            <select id="webAgent_browser" name="webAgent_browser">
+                            <select id="webOperator_browser" name="webOperator_browser">
                                 <option value="">Auto (自動)</option>
                                 <option value="chromium">Chromium</option>
                                 <option value="chrome">Chrome</option>
@@ -189,17 +189,17 @@
                     <tr>
                         <td width="15%" align="right" valign="top">
                             Req:<br>
-                            (Agent)
+                            (Operator)
                         </td>
                         <td width="70%">
-                            <textarea id="webAgent_request" name="webAgent_request" placeholder="要求内容を入力してください" required style="height: 10vh;" data-drop-target="webAgent_request"></textarea>
+                            <textarea id="webOperator_request" name="webOperator_request" placeholder="要求内容を入力してください" required style="height: 10vh;" data-drop-target="webOperator_request"></textarea>
                         </td>
                         <td width="15%">　</td>
                     </tr>
                     <tr>
                         <td width="15%">　</td>
                         <td width="65%">
-                            <button type="button" id="webAgent-button">Req→Agent</button>
+                            <button type="button" id="webOperator-button">Req→Operator</button>
                         </td>
                         <td width="15%">　</td>
                     </tr>

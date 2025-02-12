@@ -776,12 +776,12 @@ class WebUiClass:
         result = {}
         if (self.data is not None):
 
-            # webAgent設定情報を返す
-            if   (agent == 'webAgent'):
-                engine = self.data.webAgent_setting['engine']
+            # webOperator設定情報を返す
+            if   (agent == 'webOperator'):
+                engine = self.data.webOperator_setting['engine']
                 models = {}
                 if (engine != ''):
-                    models = self.data.webAgent_models[engine]
+                    models = self.data.webOperator_models[engine]
                 result = {  "engine": engine,
                             "models": models, }
 
@@ -800,9 +800,9 @@ class WebUiClass:
         result = {}
         if (self.data is not None):
 
-            # webAgent設定情報を返す
-            if   (agent == 'webAgent'):
-                result = self.data.webAgent_setting
+            # webOperator設定情報を返す
+            if   (agent == 'webOperator'):
+                result = self.data.webOperator_setting
 
             # researchAgent設定情報を返す
             elif (agent == 'researchAgent'):
@@ -815,13 +815,13 @@ class WebUiClass:
         engine = str(data.engine) if data.engine else ""
         if (self.data is not None):
 
-            # webAgent設定
-            if   (agent == 'webAgent'):
-                self.data.webAgent_setting['engine'] = engine
+            # webOperator設定
+            if   (agent == 'webOperator'):
+                self.data.webOperator_setting['engine'] = engine
                 if (engine != ''):
-                    self.data.webAgent_setting['model'] = list( self.data.webAgent_models[engine].keys() )[0]
+                    self.data.webOperator_setting['model'] = list( self.data.webOperator_models[engine].keys() )[0]
                 else:
-                    self.data.webAgent_setting['model'] = ''
+                    self.data.webOperator_setting['model'] = ''
 
             # researchAgent設定
             elif (agent == 'researchAgent'):
@@ -841,12 +841,12 @@ class WebUiClass:
         browser = str(data.browser) if data.browser else ""
         if (self.data is not None):
 
-            # webAgent設定
-            if   (agent == 'webAgent'):
-                self.data.webAgent_setting = {  "engine": engine,
-                                                "model": model,
-                                                "max_step": max_step,
-                                                "browser": browser, }
+            # webOperator設定
+            if   (agent == 'webOperator'):
+                self.data.webOperator_setting = {   "engine": engine,
+                                                    "model": model,
+                                                    "max_step": max_step,
+                                                    "browser": browser, }
 
             # researchAgent設定
             elif (agent == 'researchAgent'):
@@ -1188,8 +1188,9 @@ class WebUiClass:
                 name = speech['who']
                 if (name in speaker.keys()):
                     name = speaker[ name ]
-                text = speech['text'].replace('\n',' ')
-                text = speech['text'].replace('。','. ')
+                text = speech['text']
+                text = text.replace('\n',' ')
+                text = text.replace('。','. ')
                 tts_text = f'{ name },"{ text }"\n'
                 speech_text += tts_text
 

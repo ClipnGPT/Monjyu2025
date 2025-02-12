@@ -105,8 +105,8 @@ class _data_class:
         self.live_models = {}
         self.live_voices = {}
         self.live_setting = {}
-        self.webAgent_models = {}
-        self.webAgent_setting = {}
+        self.webOperator_models = {}
+        self.webOperator_setting = {}
         self.researchAgent_models = {}
         self.researchAgent_setting = {}
         self._reset()
@@ -233,10 +233,10 @@ class _data_class:
                                         "clip_interval_sec":"", }
 
         # Agentの設定
-        self.webAgent_models['freeai'] = {}
-        self.webAgent_models['openai'] = {}
-        self.webAgent_models['claude'] = {}
-        self.webAgent_setting = {       "engine": "",
+        self.webOperator_models['freeai'] = {}
+        self.webOperator_models['openai'] = {}
+        self.webOperator_models['claude'] = {}
+        self.webOperator_setting = {    "engine": "",
                                         "model": "", 
                                         "max_step": "", 
                                         "browser": "", }

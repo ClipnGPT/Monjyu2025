@@ -102,13 +102,14 @@ if __name__ == '__main__':
     # 動的インストール
     if (import_flag == True) \
     or (not os.path.isdir(qPath_sandbox + qWebUI_name)):
-        os.makedirs(qPath_sandbox + qWebUI_name)
 
         print('install start...')
 
         # 解凍
         if (os.path.isfile(qWebUI_zip)):
-            shutil.rmtree(qPath_sandbox + qWebUI_name, ignore_errors=True, )
+            if (os.path.isdir(qPath_sandbox + qWebUI_name)):
+                shutil.rmtree(qPath_sandbox + qWebUI_name, ignore_errors=True, )
+            os.makedirs(qPath_sandbox + qWebUI_name)
             shutil.unpack_archive(filename=qWebUI_zip, extract_dir=qPath_sandbox, )
 
         # インストール

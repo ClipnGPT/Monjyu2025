@@ -20,13 +20,13 @@ import queue
 import threading
 
 # インターフェース
-ext_python_init   = '認証済_browser操作Agent_pyinit.py'
-ext_python_script = '認証済_browser操作Agent_python.py'
-qText_ready       = 'Web-Agent function ready!'
-qText_start       = 'Web-Agent function start!'
-qText_complete    = 'Web-Agent function complete!'
-qIO_func2py       = 'temp/browser操作Agent_func2py.txt'
-qIO_py2func       = 'temp/browser操作Agent_py2func.txt'
+ext_python_init   = '認証済_web操作Agent_pyinit.py'
+ext_python_script = '認証済_web操作Agent_python.py'
+qText_ready       = 'Web-Operator function ready!'
+qText_start       = 'Web-Operator function start!'
+qText_complete    = 'Web-Operator function complete!'
+qIO_func2py       = 'temp/web操作Agent_func2py.txt'
+qIO_py2func       = 'temp/web操作Agent_py2func.txt'
 qIO_agent2live    = 'temp/monjyu_io_agent2live.txt'
 
 qTimeout_reset    = 30
@@ -138,17 +138,16 @@ class _class:
 
     def __init__(self, ):
         self.version   = "v0"
-        self.func_name = "webBrowser_operation_agent"
+        self.func_name = "web_operation_agent"
         self.func_ver  = "v0.20250101"
-        self.func_auth = "q7XSIOztUs4Myv42b+Rz0oYZ/GFELtbT0zVaVJtO8YLj7H98jl/ODv5Y931OHvTg"
-
+        self.func_auth = "1jXikXB9c2wa1/yxpsUghGPqyTvs61SjiN1lEiczdJo="
         self.function  = {
             "name": self.func_name,
             "description": \
 """
 この機能は、ユーザーからブラウザ操作の指示があった場合に実行する。
-この機能から、自律的にブラウザ操作が可能なAIエージェント Web-Agent(ウェブエージェント) が実行される。
-この機能で、AIエージェント Web-Agent(ウェブエージェント) によりWebブラウザを自立操作を実行し、その結果を取得することができる。
+この機能から、自律的にブラウザ操作が可能なAIエージェント Web-Operator(ウェブオペレーター) が実行される。
+この機能で、AIエージェント Web-Operator(ウェブオペレーター) によりウェブ操作を実行し、その結果を取得することができる。
 社内システム(Web)の操作は、文殊/Monjyu(もんじゅ:execute_monjyu_request) 経由で'operation_internal_web_systems'から、この機能を使います。
 """,
             "parameters": {
@@ -298,16 +297,16 @@ class _class:
 
             try:
                 if self.data is not None:
-                    self.agent_engine = self.data.researchAgent_setting['engine']
+                    self.agent_engine = self.data.webOperator_setting['engine']
                     if (self.agent_engine == ''):
                         self.agent_engine = 'freeai'
-                    self.agent_model = self.data.researchAgent_setting['model']
+                    self.agent_model = self.data.webOperator_setting['model']
                     if (self.agent_model == ''):
                         self.agent_model = list( self.agent_models[self.agent_engine].keys() )[0]
-                    self.agent_max_step = self.data.researchAgent_setting['max_step']
+                    self.agent_max_step = self.data.webOperator_setting['max_step']
                     if (self.agent_max_step == ''):
                         self.agent_max_step = '10'
-                    self.agent_browser = self.data.researchAgent_setting['browser']
+                    self.agent_browser = self.data.webOperator_setting['browser']
                     if (self.agent_browser == ''):
                         self.agent_browser = 'chromium'
                     #print(self.agent_engine, self.agent_model, self.agent_max_step)

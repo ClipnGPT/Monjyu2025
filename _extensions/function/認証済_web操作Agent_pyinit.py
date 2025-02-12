@@ -19,11 +19,11 @@ import codecs
 import subprocess
 
 # インターフェース
-qText_ready       = 'Web-Agent function ready!'
-qText_start       = 'Web-Agent function start!'
-qText_complete    = 'Web-Agent function complete!'
-qIO_func2py       = 'temp/browser操作Agent_func2py.txt'
-qIO_py2func       = 'temp/browser操作Agent_py2func.txt'
+qText_ready       = 'Web-Operator function ready!'
+qText_start       = 'Web-Operator function start!'
+qText_complete    = 'Web-Operator function complete!'
+qIO_func2py       = 'temp/web操作Agent_func2py.txt'
+qIO_py2func       = 'temp/web操作Agent_py2func.txt'
 
 
 

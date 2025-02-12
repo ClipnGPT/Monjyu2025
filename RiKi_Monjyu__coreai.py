@@ -246,7 +246,7 @@ class CoreAiClass:
         self.app.post("/post_clip_names")(self.post_clip_names)
         self.app.post("/post_clip_text")(self.post_clip_text)
         self.app.post("/post_live_request")(self.post_live_request)
-        self.app.post("/post_webAgent_request")(self.post_webAgent_request)
+        self.app.post("/post_webOperator_request")(self.post_webOperator_request)
         self.app.post("/post_researchAgent_request")(self.post_researchAgent_request)
 
     async def root(self, request: Request):
@@ -1626,13 +1626,13 @@ class CoreAiClass:
 
         return JSONResponse({'message': 'post_live_request successfully'})
 
-    async def post_webAgent_request(self, data: agentRequestModel):
+    async def post_webOperator_request(self, data: agentRequestModel):
         request_text  = str(data.request_text) if data.request_text else ""
         try:
             # Agent
             ext_module = None
             for module_dic in self.botFunc.function_modules:
-                if (module_dic['script'] == '認証済_browser操作Agent'):
+                if (module_dic['script'] == '認証済_web操作Agent'):
                     ext_module = module_dic
                     break
             if (ext_module is not None):
@@ -1672,8 +1672,8 @@ class CoreAiClass:
                             "upd_time": now_time, "dsp_time": None, }
         except Exception as e:
             print(e)
-            raise HTTPException(status_code=500, detail='post_webAgent_request error:' + e)
-        return JSONResponse({'message': 'post_webAgent_request successfully'})
+            raise HTTPException(status_code=500, detail='post_webOperator_request error:' + e)
+        return JSONResponse({'message': 'post_webOperator_request successfully'})
 
     async def post_researchAgent_request(self, data: agentRequestModel):
         request_text  = str(data.request_text) if data.request_text else ""

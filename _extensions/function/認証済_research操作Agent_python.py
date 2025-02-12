@@ -360,7 +360,7 @@ class _researchAgent_class:
             text = ''
             text += f"[RESULT] AIエージェント Research-Agent(リサーチエージェント: browser-use/web-ui/{ self.agent_engine }/{ self.agent_model }) \n"
             text += request_text.rstrip() + '\n'
-            text += "について、以下が結果報告です。要約して日本語で報告してください。\n"
+            text += "について、以下が結果報告です。要約して日本語音声で報告してください。\n"
             text += result_text.rstrip() + '\n\n'
             res = io_text_write(qIO_agent2live, text)
 

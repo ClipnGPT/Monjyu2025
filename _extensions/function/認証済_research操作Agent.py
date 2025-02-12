@@ -294,16 +294,16 @@ class _class:
 
             try:
                 if self.data is not None:
-                    self.agent_engine = self.data.webAgent_setting['engine']
+                    self.agent_engine = self.data.researchAgent_setting['engine']
                     if (self.agent_engine == ''):
                         self.agent_engine = 'freeai'
-                    self.agent_model = self.data.webAgent_setting['model']
+                    self.agent_model = self.data.researchAgent_setting['model']
                     if (self.agent_model == ''):
                         self.agent_model = list( self.agent_models[self.agent_engine].keys() )[0]
-                    self.agent_max_step = self.data.webAgent_setting['max_step']
+                    self.agent_max_step = self.data.researchAgent_setting['max_step']
                     if (self.agent_max_step == ''):
                         self.agent_max_step = '5'
-                    self.agent_browser = self.data.webAgent_setting['browser']
+                    self.agent_browser = self.data.researchAgent_setting['browser']
                     if (self.agent_browser == ''):
                         self.agent_browser = 'chromium'
                     #print(self.agent_engine, self.agent_model, self.agent_max_step)
