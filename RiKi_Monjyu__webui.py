@@ -52,9 +52,6 @@ qPath_templates = '_webui/monjyu'
 qPath_static    = '_webui/monjyu/static'
 DEFAULT_ICON    = qPath_static + '/' + "icon_monjyu.png"
 
-# インターフェース
-qIO_agent2live  = 'temp/monjyu_io_agent2live.txt'
-
 # 共通ルーチンのインポートと初期化
 import _v6__qLog
 qLog = _v6__qLog.qLog_class()
@@ -138,15 +135,6 @@ class sttFieldModel(BaseModel):
 # 音声合成文字列モデル
 class ttsTextModel(BaseModel):
     speech_text: str
-
-# Live送信文字列モデル
-class liveRequestModel(BaseModel):
-    live_req: str
-    live_text: str
-
-# Agent送信文字列モデル
-class agentRequestModel(BaseModel):
-    request_text: str
 
 # speech json 文字列モデル
 class speechJsonModel(BaseModel):
@@ -260,9 +248,6 @@ class WebUiClass:
         self.app.get("/get_output_file/{filename}")(self.get_output_file)
         self.app.get("/get_source")(self.get_source)
         self.app.post("/post_tts_text")(self.post_tts_text)
-        self.app.post("/post_live_request")(self.post_live_request)
-        self.app.post("/post_webAgent_request")(self.post_webAgent_request)
-        self.app.post("/post_researchAgent_request")(self.post_researchAgent_request)
         self.app.post("/post_tts_csv")(self.post_tts_csv)
         self.app.get("/get_stt")(self.get_stt)
         self.app.get("/get_url_to_text")(self.get_url_to_text)
@@ -1038,77 +1023,6 @@ class WebUiClass:
                 print(e)
 
         return JSONResponse({'message': 'post_tts_text successfully'})
-
-    async def post_live_request(self, data: liveRequestModel):
-        live_req  = str(data.live_req) if data.live_req else ""
-        live_text = str(data.live_text) if data.live_text else ""
-
-        # live送信
-        filename = qIO_agent2live
-        text = ''
-        if (live_req != ''):
-            text += live_req.rstrip() + '\n'
-        if (live_text != ''):
-            text += live_text.rstrip() + '\n'
-
-        try:
-            w = codecs.open(filename, 'w', 'utf-8')
-            w.write(text)
-            w.close()
-            w = None
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=500, detail='post_live_request error:' + e)
-
-        return JSONResponse({'message': 'post_live_request successfully'})
-
-    async def post_webAgent_request(self, data: agentRequestModel):
-        request_text  = str(data.request_text) if data.request_text else ""
-        try:
-            # Agent
-            ext_module = None
-            for module_dic in self.botFunc.function_modules:
-                if (module_dic['script'] == '認証済_browser操作Agent'):
-                    ext_module = module_dic
-                    break
-            if (ext_module is not None):
-                dic = {}
-                dic['runMode']  = self.runMode
-                dic['request_text'] = request_text
-                json_dump = json.dumps(dic, ensure_ascii=False, )
-                ext_func_proc  = ext_module['func_proc']
-                res_json = ext_func_proc( json_dump )
-                args_dic = json.loads(res_json)
-                result_text = args_dic.get('result_text')
-                #return JSONResponse(content={"result_text": result_text})
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=500, detail='post_webAgent_request error:' + e)
-        return JSONResponse({'message': 'post_webAgent_request successfully'})
-
-    async def post_researchAgent_request(self, data: agentRequestModel):
-        request_text  = str(data.request_text) if data.request_text else ""
-        try:
-            # Agent
-            ext_module = None
-            for module_dic in self.botFunc.function_modules:
-                if (module_dic['script'] == '認証済_research操作Agent'):
-                    ext_module = module_dic
-                    break
-            if (ext_module is not None):
-                dic = {}
-                dic['runMode']  = self.runMode
-                dic['request_text'] = request_text
-                json_dump = json.dumps(dic, ensure_ascii=False, )
-                ext_func_proc  = ext_module['func_proc']
-                res_json = ext_func_proc( json_dump )
-                args_dic = json.loads(res_json)
-                result_text = args_dic.get('result_text')
-                #return JSONResponse(content={"result_text": result_text})
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=500, detail='post_researchAgent_request error:' + e)
-        return JSONResponse({'message': 'post_researchAgent_request successfully'})
 
     async def post_tts_csv(self, data: ttsTextModel):
         speech_text = str(data.speech_text) if data.speech_text else ""

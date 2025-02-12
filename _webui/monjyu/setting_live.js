@@ -161,7 +161,7 @@ function post_live_setting(engine) {
 // Live出力(text)
 function post_live_request(live_req, live_text) {
     $.ajax({
-        url: '/post_live_request',
+        url: $('#core_endpoint').val() + '/post_live_request',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ live_req: live_req, live_text: live_text }),
@@ -223,9 +223,19 @@ $(document).ready(function() {
 
     $('#freeai-live-button').click(function() {
         post_live_request( '', $('#freeai_live_request').val() );
+        // アニメーション(2秒)
+        $('#freeai_live_request').addClass('blink-border');
+        setTimeout(() => {
+            $('#freeai_live_request').removeClass('blink-border');
+        }, 2000);
     });
     $('#openai-live-button').click(function() {
         post_live_request( '', $('#openai_live_request').val() );
+        // アニメーション(2秒)
+        $('#openai_live_request').addClass('blink-border');
+        setTimeout(() => {
+            $('#openai_live_request').removeClass('blink-border');
+        }, 2000);
     });
     
     // リセットボタンのクリックイベント

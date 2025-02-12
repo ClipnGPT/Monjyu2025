@@ -41,6 +41,9 @@ qPath_log    = 'temp/_log/'
 qPath_output = 'temp/output/'
 qPath_tts    = 'temp/s6_5tts_txt/'
 
+# インターフェース
+qIO_agent2live  = 'temp/monjyu_io_agent2live.txt'
+
 # 共通ルーチン
 import  _v6__qLog
 qLog  = _v6__qLog.qLog_class()
@@ -136,6 +139,15 @@ class postClipNamesModel(BaseModel):
 class postClipTextModel(BaseModel):
     user_id: str
     clip_text: str
+
+# Live送信文字列モデル
+class liveRequestModel(BaseModel):
+    live_req: str
+    live_text: str
+
+# Agent送信文字列モデル
+class agentRequestModel(BaseModel):
+    request_text: str
 
 class CoreAiProcess:
     def __init__(self,  runMode: str = 'debug', qLog_fn: str = '',
@@ -233,6 +245,9 @@ class CoreAiClass:
         self.app.post("/post_histories")(self.post_histories)
         self.app.post("/post_clip_names")(self.post_clip_names)
         self.app.post("/post_clip_text")(self.post_clip_text)
+        self.app.post("/post_live_request")(self.post_live_request)
+        self.app.post("/post_webAgent_request")(self.post_webAgent_request)
+        self.app.post("/post_researchAgent_request")(self.post_researchAgent_request)
 
     async def root(self, request: Request):
         # Web UI にリダイレクト
@@ -1587,6 +1602,128 @@ class CoreAiClass:
                     "inp_text": clip_text,
                     "upd_time": now_time, "dsp_time": None, }
         return True
+
+    async def post_live_request(self, data: liveRequestModel):
+        live_req  = str(data.live_req) if data.live_req else ""
+        live_text = str(data.live_text) if data.live_text else ""
+
+        # live送信
+        filename = qIO_agent2live
+        text = ''
+        if (live_req != ''):
+            text += live_req.rstrip() + '\n'
+        if (live_text != ''):
+            text += live_text.rstrip() + '\n'
+
+        try:
+            w = codecs.open(filename, 'w', 'utf-8')
+            w.write(text)
+            w.close()
+            w = None
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail='post_live_request error:' + e)
+
+        return JSONResponse({'message': 'post_live_request successfully'})
+
+    async def post_webAgent_request(self, data: agentRequestModel):
+        request_text  = str(data.request_text) if data.request_text else ""
+        try:
+            # Agent
+            ext_module = None
+            for module_dic in self.botFunc.function_modules:
+                if (module_dic['script'] == '認証済_browser操作Agent'):
+                    ext_module = module_dic
+                    break
+            if (ext_module is not None):
+                dic = {}
+                dic['runMode']  = self.runMode
+                dic['request_text'] = request_text
+                json_dump = json.dumps(dic, ensure_ascii=False, )
+                ext_func_proc  = ext_module['func_proc']
+                res_json = ext_func_proc( json_dump )
+                args_dic = json.loads(res_json)
+                result_text = args_dic.get('result_text')
+
+                #return JSONResponse(content={"result_text": result_text})
+
+                with self.thread_lock:
+                    user_id = 'admin'
+                    from_port = '8000'
+                    to_port = '8000'
+                    req_mode = 'agent'
+                    system_text = ''
+                    input_text = ''
+                    key_val = f"{user_id}:{from_port}:{to_port}"
+                    now_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                    self.data.subai_input_log_key += 1
+                    self.data.subai_input_log_all[self.data.subai_input_log_key] = {
+                            "user_id": user_id, "from_port": from_port, "to_post": to_port,
+                            "req_mode": req_mode,
+                            "inp_time": now_time, "sys_text": system_text, "req_text": request_text, "inp_text": input_text,
+                            "upd_time": now_time, "dsp_time": None, }
+                    self.data.subai_output_log_key += 1
+                    self.data.subai_output_log_all[self.data.subai_output_log_key] = {
+                            "key_val": key_val,
+                            "user_id": user_id, "from_port": from_port, "to_post": to_port,
+                            "req_mode": req_mode,
+                            "out_time": now_time, "out_text": '... Now Processing ...', "out_data": '... Now Processing ...',
+                            "status": None,
+                            "upd_time": now_time, "dsp_time": None, }
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail='post_webAgent_request error:' + e)
+        return JSONResponse({'message': 'post_webAgent_request successfully'})
+
+    async def post_researchAgent_request(self, data: agentRequestModel):
+        request_text  = str(data.request_text) if data.request_text else ""
+        try:
+            # Agent
+            ext_module = None
+            for module_dic in self.botFunc.function_modules:
+                if (module_dic['script'] == '認証済_research操作Agent'):
+                    ext_module = module_dic
+                    break
+            if (ext_module is not None):
+                dic = {}
+                dic['runMode']  = self.runMode
+                dic['request_text'] = request_text
+                json_dump = json.dumps(dic, ensure_ascii=False, )
+                ext_func_proc  = ext_module['func_proc']
+                res_json = ext_func_proc( json_dump )
+                args_dic = json.loads(res_json)
+                result_text = args_dic.get('result_text')
+
+                #return JSONResponse(content={"result_text": result_text})
+
+                with self.thread_lock:
+                    user_id = 'admin'
+                    from_port = '8000'
+                    to_port = '8000'
+                    req_mode = 'agent'
+                    system_text = ''
+                    input_text = ''
+                    key_val = f"{user_id}:{from_port}:{to_port}"
+                    now_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+                    self.data.subai_input_log_key += 1
+                    self.data.subai_input_log_all[self.data.subai_input_log_key] = {
+                            "user_id": user_id, "from_port": from_port, "to_post": to_port,
+                            "req_mode": req_mode,
+                            "inp_time": now_time, "sys_text": system_text, "req_text": request_text, "inp_text": input_text,
+                            "upd_time": now_time, "dsp_time": None, }
+                    self.data.subai_output_log_key += 1
+                    self.data.subai_output_log_all[self.data.subai_output_log_key] = {
+                            "key_val": key_val,
+                            "user_id": user_id, "from_port": from_port, "to_post": to_port,
+                            "req_mode": req_mode,
+                            "out_time": now_time, "out_text": '... Now Processing ...', "out_data": '... Now Processing ...',
+                            "status": None,
+                            "upd_time": now_time, "dsp_time": None, }
+
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail='post_researchAgent_request error:' + e)
+        return JSONResponse({'message': 'post_researchAgent_request successfully'})
 
     def run(self):
         """

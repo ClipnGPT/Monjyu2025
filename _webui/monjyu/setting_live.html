@@ -77,6 +77,17 @@
             white-space: pre;
         }
 
+        /* テキストエリアの外枠を点滅させるアニメーション */
+        .blink-border {
+            animation: blink-border 1s linear infinite;
+        }
+        /* アニメーションの定義 */
+        @keyframes blink-border {
+            0% { border: 2px solid blue; }
+            50% { border: 2px solid transparent; }
+            100% { border: 2px solid blue; }
+        }
+
         /* 設定と入力欄の区切り線 */
         .setting-separator {
             border-top: 1px solid #ccc; /* ヘアライン */

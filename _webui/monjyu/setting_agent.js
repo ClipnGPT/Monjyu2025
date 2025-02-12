@@ -177,7 +177,7 @@ function post_agent_setting(agent) {
 // Agent出力(text)
 function post_webAgent_request(request_text) {
     $.ajax({
-        url: '/post_webAgent_request',
+        url: $('#core_endpoint').val() + '/post_webAgent_request',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ request_text: request_text }),
@@ -191,7 +191,7 @@ function post_webAgent_request(request_text) {
 }
 function post_researchAgent_request(request_text) {
     $.ajax({
-        url: '/post_researchAgent_request',
+        url: $('#core_endpoint').val() + '/post_researchAgent_request',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ request_text: request_text }),
@@ -252,9 +252,19 @@ $(document).ready(function() {
 
     $('#webAgent-button').click(function() {
         post_webAgent_request( $('#webAgent_request').val() );
+        // アニメーション(2秒)
+        $('#webAgent_request').addClass('blink-border');
+        setTimeout(() => {
+            $('#webAgent_request').removeClass('blink-border');
+        }, 2000);
     });
     $('#researchAgent-button').click(function() {
         post_researchAgent_request( $('#researchAgent_request').val() );
+        // アニメーション(2秒)
+        $('#researchAgent_request').addClass('blink-border');
+        setTimeout(() => {
+            $('#researchAgent_request').removeClass('blink-border');
+        }, 2000);
     });
 
     // リセットボタンのクリックイベント
