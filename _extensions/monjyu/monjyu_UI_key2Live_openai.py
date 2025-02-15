@@ -821,7 +821,7 @@ class _live_api_openai:
                         self.play(outFile='_sounds/_sound_accept.mp3')
                         # function 実行
                         dic = {}
-                        dic['runMode'] = 'voice'
+                        dic['runMode'] = 'chat' #ここは'chat'で内部的に問い合わせる
                         dic['userId'] = 'live'
                         dic['reqText'] = '利用できるFunctions(Tools)と機能内容を要約して報告してください'
                         f_kwargs = json.dumps(dic, ensure_ascii=False, )
@@ -922,7 +922,7 @@ Agentic AI Web-Operator(ウェブオペレーター:web_operation_agent) が利�
                     instructions += \
 """
 外部AI 文殊/Monjyu(もんじゅ:execute_monjyu_request) が利用可能です。
-利用指示があった場合、文殊/Monjyu(もんじゅ) 経由で適切なFunctions(Tools)を間接的に利用して、その結果を報告してください。
+利用指示があった場合、文殊/Monjyu(もんじゅ) をRunMode='voice'で呼び出すことで、適切なFunctions(Tools)を間接的に利用して、その結果を報告してください。
 """
                     if (self.monjyu_funcinfo != ''):
                         instructions += '\n【外部AI 文殊/Monjyu(もんじゅ:execute_monjyu_request) 経由で利用可能なFunctions(Tools)の情報】\n'

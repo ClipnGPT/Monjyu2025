@@ -102,7 +102,7 @@ class _monjyu_class:
                         key_val = f"{ user_id }:{ CORE_PORT }:{ res_port }"
                         if key_val in results:
                             if results[key_val]["out_time"] is not None:
-                                res_text = str(results[key_val]["out_text"])
+                                res_text = str(results[key_val]["out_data"])
                                 break
                         else:
                             time.sleep(1.00)
@@ -128,15 +128,19 @@ class _class:
             "description": \
 """
 この機能は、LiveAPI(RealTimeAPI)セッションから呼び出して利用する。
-この機能から、画像認識などの機能が実行可能な外部AI 文殊/Monjyu(もんじゅ) が実行される。
+この機能から、画像生成などの機能が実行可能な外部AI 文殊/Monjyu(もんじゅ) が実行される。
 社内システム(WEB) 出退勤,日報,掲示板 へのログイン,出勤,退勤の操作は、'operation_internal_web_systems'機能の利用を明示して呼び出す必要がある。
+この機能の呼出し時のrunModeには、以下の値を設定してください。
+runMode='clip'  : クリップボード操作からの呼出し要求。
+runMode='voice' : LiveAPI(RealtimeAPI)や音声入力からの呼出し要求。
+runMode='chat'  : それ以外の通常の呼出し要求。
 """,
             "parameters": {
                 "type": "object",
                 "properties": {
                     "runMode": {
                         "type": "string",
-                        "description": "実行モード chat 例) chat"
+                        "description": "実行モード chat,clip,voice 例) chat"
                     },
                     "userId": {
                         "type": "string",

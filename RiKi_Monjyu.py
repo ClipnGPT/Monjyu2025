@@ -259,6 +259,17 @@ if __name__ == '__main__':
             except Exception as e:
                 print(e)
 
+        # task_worker
+        ext_module = addin.addin_modules.get('monjyu_task_worker', None)
+        if (ext_module is not None):
+            try:
+                if (ext_module['onoff'] == 'on'):
+                    func_reset = ext_module['func_reset']
+                    res  = func_reset(botFunc=botFunc, data=data, )
+                    print('reset', 'monjyu_task_worker')
+            except Exception as e:
+                print(e)
+
         # key2Live_freeai
         liveai_enable = False
         ext_module = addin.addin_modules.get('monjyu_UI_key2Live_freeai', None)

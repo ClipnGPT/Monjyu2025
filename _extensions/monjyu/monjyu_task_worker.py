@@ -1,0 +1,459 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# ------------------------------------------------
+# COPYRIGHT (C) 2014-2025 Mitsuo KONDOU.
+# This software is released under the not MIT License.
+# Permission from the right holder is required for use.
+# https://github.com/ClipnGPT
+# Thank you for keeping the rules.
+# ------------------------------------------------
+
+import sys
+import os
+import time
+import datetime
+import codecs
+import glob
+
+import json
+import threading
+
+import pygame
+import subprocess
+import requests
+
+import importlib
+
+
+
+# インターフェース
+#qPath_task    = '_config/_task/'
+qPath_task_ai = '_config/_task_ai/'
+
+YOUBIs  = ["1_mon", "2_tue", "3_wed", "4_thu", "5_fri", "6_sat", "7_sun"]
+FOLDERs = YOUBIs
+FOLDERs.append("0_all")
+FOLDERs.append("0_week")
+
+
+
+# TTSの定義
+tts = None
+try:
+    import 認証済_音声合成202405
+    tts  = 認証済_音声合成202405._class()
+except:
+    try:
+        #loader = importlib.machinery.SourceFileLoader('認証済_音声合成202405.py', '_extensions/clipngpt/認証済_音声合成202405.py')
+        loader = importlib.machinery.SourceFileLoader('認証済_音声合成202405.py', '_extensions/function/認証済_音声合成202405.py')
+        認証済_音声合成202405 = loader.load_module()
+        tts  = 認証済_音声合成202405._class()
+    except:
+        print('★"認証済_音声合成202405"は利用できません！')
+
+
+
+class _worker_class:
+
+    def __init__(self, runMode='assistant', ):
+        self.runMode = runMode
+
+        # 設定
+        self.data = None
+        self.botFunc = None
+        self.mixer_enable = False
+
+        # woker設定
+        self.worker = None
+        self._running = False
+        self.task_files = {}
+        self.file_seq = 0
+
+    def start_worker(self):
+        """ワーカースレッドを開始"""
+        if (not self._running):
+            self._running = True
+            self.worker = threading.Thread(target=self.task_worker, daemon=True, )
+            self.worker.start()
+        return True
+
+    def stop_worker(self):
+        """ワーカースレッドを停止"""
+        if (self._running):
+            self._running = False
+            if self.worker:
+                self.worker.join()
+                self.worker = None
+        return True
+
+    def task_worker(self):
+        """時刻監視を行うワーカー関数"""
+        self.last_hh   = None
+        self.last_hhmm = None
+        
+        while (self._running == True):
+            now_time = datetime.datetime.now()
+            current_yymmdd = now_time.strftime('%Y%m%d')
+            current_hh     = now_time.strftime('%H')
+            current_hhmm   = now_time.strftime('%H%M')
+            
+            # 時刻が変化した場合に表示
+            if (current_hh != self.last_hh):
+                self.last_hh = current_hh
+                print(f" TASK Worker : { current_yymmdd } ")
+                self.task_files = {}
+                #res = self.load_task_files(path_base=qPath_task)
+                res = self.load_task_files(path_base=qPath_task_ai)
+            if (current_hhmm != self.last_hhmm):
+                self.last_hhmm = current_hhmm
+                self.task = threading.Thread(target=self.task_execute, args=(current_hhmm,), daemon=True, )
+                self.task.start()
+
+            # 5秒間隔で監視
+            time.sleep(5)
+        return True
+
+    def is_running(self):
+        return self._running
+
+    def load_task_files(self, path_base='_config/_task_ai/', ):
+        now_time = datetime.datetime.now()
+        current_yymmdd  = now_time.strftime('%Y%m%d')
+        current_hh      = now_time.strftime('%H')
+        current_youbi_n = now_time.weekday() #月曜=0～日曜=6
+        current_youbi   = YOUBIs[current_youbi_n]
+
+        # 0_allフォルダ検索
+        self.load_task_add(path_base + "0_all/")
+
+        # 0_weekフォルダ検索
+        if (current_youbi_n >= 0) and (current_youbi_n <= 4):
+            self.load_task_add(path_base + "0_week/")
+
+        # 曜日フォルダ検索
+        self.load_task_add(path_base + current_youbi + '/')
+
+        # 日付フォルダ検索
+        path_dirs = glob.glob(path_base + current_yymmdd + '*')
+        if (len(path_dirs) > 0):
+            path_dirs.sort()
+            for p in path_dirs:
+                if (os.path.isdir(p)):
+                    path = p.replace('\\','/') + '/'
+                    self.load_task_add(path)
+
+        return True
+
+    def load_task_add(self, path=None,):
+        if (os.path.isdir(path)):
+            path_files = glob.glob(path + '*')
+            if (len(path_files) > 0):
+                for f in path_files:
+                    if (os.path.isfile(f)):
+                        f_name = f.replace('\\','/')
+                        f_base = os.path.basename(f_name)
+                        if (f_base[:4].isdigit()):
+                            self.task_files[f_base] = f_name
+                            print(f" - '{ f_base }' ")
+        return True
+
+    def task_execute(self, hhmm='0000',):
+        for f_base, f_name in self.task_files.items():
+            if (f_base[:4] == hhmm):
+                name, ext = os.path.splitext(f_base)
+                print(f" TASK Worker : { hhmm } - '{ f_base }' ", ext)
+
+                try:
+                    now_time  = datetime.datetime.now()
+                    now_stamp = now_time.strftime('%Y%m%d.%H%M%S')
+
+                    # file_seq カウントアップ
+                    self.file_seq += 1
+                    if (self.file_seq > 9999):
+                        self.file_seq = 1
+
+                    # .txt, .ai,
+                    if (ext.lower() in ['.txt', '.ai']):
+                        if (name[-5:].lower() != '_sjis'):
+                            txts, text = self.txtsRead(f_name, encoding='utf-8', exclusive=False, )
+                        else:
+                            txts, text = self.txtsRead(f_name, encoding='shift_jis', exclusive=False, )
+                        input_text = ''
+                        if (txts != False):
+                            input_text = text
+                            #print(input_text)
+
+                    # .txt,
+                    if   (ext.lower() == '.txt'):
+                        self.play_tts(input_text=input_text, )
+
+                    # .mp3, .wav,
+                    elif (ext.lower() in ['.mp3', '.wav']):
+                        self.play_sound(play_file=f_name)
+
+                    # .mp4,
+                    elif (ext.lower() == '.mp4'):
+                        self.play_video(play_file=f_name)
+
+                    # .bat,
+                    elif (ext.lower() == '.bat'):
+                        self.play_bat(bat_file=f_name)
+
+                    # .ai,
+                    elif (ext.lower() == '.ai'):
+                        self.play_monjyu(input_text=input_text, )
+
+                except Exception as e:
+                    print(e)
+
+    def txtsRead(self, filename, encoding='utf-8', exclusive=False, ):
+        if (not os.path.exists(filename)):
+            return False, ''
+
+        encoding2 = encoding
+        if (encoding2 == 'utf-8'):
+            encoding2 =  'utf-8-sig'
+
+        if (exclusive == False):
+            try:
+                txts = []
+                txt  = ''
+                r = codecs.open(filename, 'r', encoding2)
+                for t in r:
+                    t = t.replace('\n', '')
+                    t = t.replace('\r', '')
+                    txt  = (txt + ' ' + str(t)).strip()
+                    txts.append(t)
+                r.close
+                r = None
+                return txts, txt
+            except Exception as e:
+                r = None
+                return False, ''
+        else:
+            f2 = filename[:-4] + '.txtsRead.tmp'
+            res = self.remove(f2, )
+            if (res == False):
+                return False, ''
+            else:
+                try:
+                    os.rename(filename, f2)
+                    txts = []
+                    txt  = ''
+                    r = codecs.open(f2, 'r', encoding2)
+                    for t in r:
+                        t = t.replace('\n', '')
+                        t = t.replace('\r', '')
+                        txt = (txt + ' ' + str(t)).strip()
+                        txts.append(t)
+                    r.close
+                    r = None
+                    self.remove(f2, )
+                    return txts, txt
+                except Exception as e:
+                    r = None
+                    return False, ''
+
+    def play_tts(self, input_text='おはようございます', ):
+        if (input_text == ''):
+            return False
+        # 音声合成
+        try:
+            if (tts is not None):
+                dic = {}
+                dic['runMode']     = self.runMode
+                dic['speech_text'] = str(input_text)
+                dic['speaker']     = 'auto'
+                dic['language']    = 'auto'
+                dic['immediate']   = 'yes'
+                json_dump = json.dumps(dic, ensure_ascii=False, )
+                res_json = tts.func_proc(json_dump)
+                #args_dic = json.loads(res_json)
+                #text = args_dic.get('speech_text')
+                return True
+            else:
+                print('★音声合成は利用できません！')
+                print(str(input_text))
+        except Exception as e:
+            print(e)
+        return False
+
+    def play_sound(self, play_file='temp/_work/sound.mp3', ):
+        file = play_file
+        if (os.name == 'nt'):
+            file = play_file.replace('/','\\')
+        if (not os.path.exists(file)):
+            return False
+        # ミキサー開始、リセット
+        if (self.mixer_enable == False):
+            try:
+                pygame.mixer.init()
+                self.mixer_enable = True
+            except Exception as e:
+                print(e)
+        # ミキサー再生
+        if (self.mixer_enable == True):
+            try:
+                #print(outFile)
+                #pygame.mixer.init()
+                pygame.mixer.music.load(file)
+                pygame.mixer.music.play(1)
+                while (pygame.mixer.music.get_busy() == True):
+                    time.sleep(0.10)
+                pygame.mixer.music.unload()
+                return True
+            except Exception as e:
+                print(e)
+                self.mixer_enable = False
+        return False
+
+    def play_video(self, play_file='temp/_work/sound.mp4', ):
+        file = play_file
+        if (os.name == 'nt'):
+            file = play_file.replace('/','\\')
+        if (not os.path.exists(file)):
+            return False
+        try:
+            ffplay = subprocess.Popen(['ffplay', '-i', file, \
+                '-autoexit', \
+                #'-noborder', \
+                '-alwaysontop', \
+                '-loglevel', 'warning', \
+                ], \
+                shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, )
+            #time.sleep(1.00)
+            #qGUI.setForegroundWindow(winTitle=file, )
+            return True
+        except Exception as e:
+            print(e)
+        return False
+
+    def play_bat(self, bat_file='temp/_work/test.bat', ):
+        file = bat_file
+        if (os.name == 'nt'):
+            file = bat_file.replace('/','\\')
+        if (not os.path.exists(file)):
+            return False
+        try:
+            cmd = subprocess.Popen('"' + file + '"')
+            #shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, )
+            #time.sleep(1.00)
+            #qGUI.setForegroundWindow(winTitle=file, )
+            return True
+        except Exception as e:
+            print(e)
+        return False
+
+    def play_monjyu(self, input_text='おはようございます', ):
+        if (input_text == ''):
+            return False
+        # AI要求送信
+        try:
+            if self.botFunc is not None:
+                for module_dic in self.botFunc.function_modules:
+
+                    # Monjyu 実行
+                    if (module_dic['func_name'] == 'execute_monjyu_request'):
+                        # function 実行
+                        dic = {}
+                        dic['runMode'] = 'chat' #ここは'chat'で内部的に問い合わせる
+                        dic['userId'] = 'live'
+                        dic['reqText'] = input_text
+                        f_kwargs = json.dumps(dic, ensure_ascii=False, )
+                        try:
+                            ext_func_proc = module_dic['func_proc']
+                            res_json = ext_func_proc( f_kwargs )
+                            res_dic = json.loads(res_json)
+                            res_text = res_dic.get('result_text','')
+                            res_text = res_text.replace('`', '"')
+                            print(res_text)
+                        except Exception as e:
+                            print(e)
+                            return False
+
+                        # 音声合成
+                        return self.play_tts(input_text=res_text, )
+        except Exception as e:
+            print(e)
+        return False
+
+
+
+class _class:
+
+    def __init__(self, ):
+        self.version   = "v0"
+        self.func_name = "extension_task_worker"
+        self.func_ver  = "v0.20250216"
+        self.func_auth = "v99C7yxRC2WOljQEzLZ3uiOkas9VLpmtQ+pqE+nlolg05s3Fuzwekbu1rvZyM/2J"
+        self.function  = {
+            "name": self.func_name,
+            "description": \
+"""
+拡張機能
+設定された定時タスクを実行する。
+""",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "runMode": {
+                        "type": "string",
+                        "description": "実行モード 例) assistant"
+                    },
+                },
+                "required": ["runMode"]
+            }
+        }
+
+        # 初期設定
+        self.runMode = 'assistant'
+
+        # ワーカー
+        self.sub_worker = _worker_class(runMode=self.runMode, )
+
+        # リセット
+        self.func_reset()
+
+    def func_reset(self, botFunc=None, data=None, ):
+        if botFunc is not None:
+            self.sub_worker.botFunc = botFunc
+        if data is not None:
+            self.sub_worker.data = data
+        self.sub_worker.stop_worker()
+        self.sub_worker.start_worker()
+        return True
+
+    def func_proc(self, json_kwargs=None, ):
+        #print(json_kwargs)
+
+        # 引数
+        runMode = None
+        if (json_kwargs is not None):
+            args_dic = json.loads(json_kwargs)
+            runMode = args_dic.get('runMode')
+
+        if (runMode is None) or (runMode == ''):
+            runMode      = self.runMode
+        else:
+            self.runMode = runMode
+
+        # 処理
+
+        # 戻り
+        dic = {}
+        dic['result'] = "ok"
+        json_dump = json.dumps(dic, ensure_ascii=False, )
+        #print('  --> ', json_dump)
+        return json_dump
+
+if __name__ == '__main__':
+
+    ext = _class()
+    time.sleep(1)
+
+    print(ext.func_proc('{ "runMode" : "assistant" }'))
+
+    time.sleep(600)
+
+
