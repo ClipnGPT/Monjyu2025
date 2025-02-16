@@ -1038,15 +1038,15 @@ class CoreAiClass:
         return None
     
     def _web_search(self, request_text: str, input_text: str, ):
-        ext_module = self.addin.addin_modules.get('addin_web_search', None)
-        if (ext_module is not None):
-            if (ext_module['onoff'] == 'on'):
+        addin_module = self.addin.addin_modules.get('addin_web_search', None)
+        if (addin_module is not None):
+            if (addin_module['onoff'] == 'on'):
                 try:
                     dic = {}
                     dic['runMode']  = self.runMode
                     dic['search_text'] = request_text
                     json_dump = json.dumps(dic, ensure_ascii=False, )
-                    func_proc = ext_module['func_proc']
+                    func_proc = addin_module['func_proc']
                     res_json  = func_proc(json_dump)
                     args_dic = json.loads(res_json)
                     text = args_dic.get('result_text')
@@ -1191,9 +1191,9 @@ class CoreAiClass:
             print(e)
 
     def to_tts(self, user_id: str, output_text: str, output_data: str, ):
-        ext_module = self.addin.addin_modules.get('addin_UI_TTS', None)
-        if (ext_module is not None):
-            if (ext_module['onoff'] == 'on'):
+        addin_module = self.addin.addin_modules.get('addin_UI_TTS', None)
+        if (addin_module is not None):
+            if (addin_module['onoff'] == 'on'):
                 try:
                     text = output_text.strip()
                     if (output_data != ''):
@@ -1209,9 +1209,9 @@ class CoreAiClass:
                     print(e)
 
     def to_memo(self, user_id: str, output_text: str, output_data: str, ):
-        ext_module = self.addin.addin_modules.get('monjyu_UI_ClipnMonjyu', None)
-        if (ext_module is not None):
-            if (ext_module['onoff'] == 'on'):
+        addin_module = self.addin.addin_modules.get('monjyu_UI_ClipnMonjyu', None)
+        if (addin_module is not None):
+            if (addin_module['onoff'] == 'on'):
                 try:
                     dic = {}
                     dic['runMode']  = self.runMode
@@ -1220,7 +1220,7 @@ class CoreAiClass:
                     if (output_data != ''):
                         dic['sendText'] = output_data
                     json_dump = json.dumps(dic, ensure_ascii=False, )
-                    func_proc = ext_module['func_proc']
+                    func_proc = addin_module['func_proc']
                     res_json  = func_proc(json_dump)
                 except Exception as e:
                     print(e)
@@ -1228,16 +1228,16 @@ class CoreAiClass:
     def out_path(self, user_id: str, output_path: str, ):
         if (output_path.lower()[-4:] == '.zip'):
             # 自動サンドボックス
-            ext_module = self.addin.addin_modules.get('addin_autoSandbox', None)
-            if (ext_module is not None):
+            addin_module = self.addin.addin_modules.get('addin_autoSandbox', None)
+            if (addin_module is not None):
                 res_json = None
                 try:
-                    if (ext_module['onoff'] == 'on'):
+                    if (addin_module['onoff'] == 'on'):
                         dic = {}
                         dic['file_path'] = output_path
                         dic['browser'] = "no"
                         json_dump = json.dumps(dic, ensure_ascii=False, )
-                        func_proc = ext_module['func_proc']
+                        func_proc = addin_module['func_proc']
                         res_json  = func_proc(json_dump)
                 except Exception as e:
                     print(e)
@@ -1472,15 +1472,15 @@ class CoreAiClass:
                 if (clip_file[:7] == 'http://') or (clip_file[:8] == 'https://'):
                     if (self.data.addins_setting['text_url_execute'] != 'no,'):
 
-                        ext_module = self.addin.addin_modules.get('addin_url', None)
-                        if (ext_module is not None):
-                            if (ext_module['onoff'] == 'on'):
+                        addin_module = self.addin.addin_modules.get('addin_url', None)
+                        if (addin_module is not None):
+                            if (addin_module['onoff'] == 'on'):
                                 try:
                                     dic = {}
                                     dic['runMode']   = self.runMode
                                     dic['url_path'] = clip_file
                                     json_dump = json.dumps(dic, ensure_ascii=False, )
-                                    func_proc = ext_module['func_proc']
+                                    func_proc = addin_module['func_proc']
                                     res_json  = func_proc(json_dump)
                                     res_dic   = json.loads(res_json)
                                     res_text  = res_dic.get('result_text')
@@ -1498,15 +1498,15 @@ class CoreAiClass:
                     if  (ext.lower() in ['.pdf']) \
                     and (self.data.addins_setting['text_pdf_execute'] != 'no,'):
 
-                        ext_module = self.addin.addin_modules.get('addin_pdf', None)
-                        if (ext_module is not None):
-                            if (ext_module['onoff'] == 'on'):
+                        addin_module = self.addin.addin_modules.get('addin_pdf', None)
+                        if (addin_module is not None):
+                            if (addin_module['onoff'] == 'on'):
                                 try:
                                     dic = {}
                                     dic['runMode']   = self.runMode
                                     dic['file_path'] = clip_file
                                     json_dump = json.dumps(dic, ensure_ascii=False, )
-                                    func_proc = ext_module['func_proc']
+                                    func_proc = addin_module['func_proc']
                                     res_json  = func_proc(json_dump)
                                     res_dic   = json.loads(res_json)
                                     res_text  = res_dic.get('result_text')
@@ -1522,15 +1522,15 @@ class CoreAiClass:
                     if  (ext.lower() in ['.png', '.jpg']) \
                     and (self.data.addins_setting['image_ocr_execute'] != 'no,'):
 
-                        ext_module = self.addin.addin_modules.get('addin_ocr', None)
-                        if (ext_module is not None):
-                            if (ext_module['onoff'] == 'on'):
+                        addin_module = self.addin.addin_modules.get('addin_ocr', None)
+                        if (addin_module is not None):
+                            if (addin_module['onoff'] == 'on'):
                                 try:
                                     dic = {}
                                     dic['runMode']   = self.runMode
                                     dic['file_path'] = clip_file
                                     json_dump = json.dumps(dic, ensure_ascii=False, )
-                                    func_proc = ext_module['func_proc']
+                                    func_proc = addin_module['func_proc']
                                     res_json  = func_proc(json_dump)
                                     res_dic   = json.loads(res_json)
                                     res_text  = res_dic.get('result_text')
@@ -1546,15 +1546,15 @@ class CoreAiClass:
                     if  (ext.lower() in ['.png', '.jpg']) \
                     and (self.data.addins_setting['image_yolo_execute'] == 'yes,'):
 
-                        ext_module = self.addin.addin_modules.get('addin_yolo', None)
-                        if (ext_module is not None):
-                            if (ext_module['onoff'] == 'on'):
+                        addin_module = self.addin.addin_modules.get('addin_yolo', None)
+                        if (addin_module is not None):
+                            if (addin_module['onoff'] == 'on'):
                                 try:
                                     dic = {}
                                     dic['runMode']   = self.runMode
                                     dic['file_path'] = clip_file
                                     json_dump = json.dumps(dic, ensure_ascii=False, )
-                                    func_proc = ext_module['func_proc']
+                                    func_proc = addin_module['func_proc']
                                     res_json  = func_proc(json_dump)
                                     res_dic   = json.loads(res_json)
                                     json_str  = res_dic['result_text']
@@ -1630,18 +1630,18 @@ class CoreAiClass:
         request_text  = str(data.request_text) if data.request_text else ""
         try:
             # Agent
-            ext_module = None
+            addin_module = None
             for module_dic in self.botFunc.function_modules.values():
                 if (module_dic['script'] == '認証済_web操作Agent'):
-                    ext_module = module_dic
+                    addin_module = module_dic
                     break
-            if (ext_module is not None):
+            if (addin_module is not None):
                 dic = {}
                 dic['runMode']  = self.runMode
                 dic['request_text'] = request_text
                 json_dump = json.dumps(dic, ensure_ascii=False, )
-                ext_func_proc  = ext_module['func_proc']
-                res_json = ext_func_proc( json_dump )
+                addin_func_proc  = addin_module['func_proc']
+                res_json = addin_func_proc( json_dump )
                 args_dic = json.loads(res_json)
                 result_text = args_dic.get('result_text')
 
@@ -1679,18 +1679,18 @@ class CoreAiClass:
         request_text  = str(data.request_text) if data.request_text else ""
         try:
             # Agent
-            ext_module = None
+            addin_module = None
             for module_dic in self.botFunc.function_modules.values():
                 if (module_dic['script'] == '認証済_research操作Agent'):
-                    ext_module = module_dic
+                    addin_module = module_dic
                     break
-            if (ext_module is not None):
+            if (addin_module is not None):
                 dic = {}
                 dic['runMode']  = self.runMode
                 dic['request_text'] = request_text
                 json_dump = json.dumps(dic, ensure_ascii=False, )
-                ext_func_proc  = ext_module['func_proc']
-                res_json = ext_func_proc( json_dump )
+                addin_func_proc  = addin_module['func_proc']
+                res_json = addin_func_proc( json_dump )
                 args_dic = json.loads(res_json)
                 result_text = args_dic.get('result_text')
 

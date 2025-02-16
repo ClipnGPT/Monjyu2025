@@ -249,22 +249,22 @@ if __name__ == '__main__':
             print()
 
         # ClipnMonjyu
-        ext_module = addin.addin_modules.get('monjyu_UI_ClipnMonjyu', None)
-        if (ext_module is not None):
+        addin_module = addin.addin_modules.get('monjyu_UI_ClipnMonjyu', None)
+        if (addin_module is not None):
             try:
-                if (ext_module['onoff'] == 'on'):
-                    func_reset = ext_module['func_reset']
+                if (addin_module['onoff'] == 'on'):
+                    func_reset = addin_module['func_reset']
                     res  = func_reset(main=main, data=data, addin=addin, botFunc=botFunc, )
                     print('reset', 'monjyu_UI_ClipnMonjyu')
             except Exception as e:
                 print(e)
 
         # task_worker
-        ext_module = addin.addin_modules.get('monjyu_task_worker', None)
-        if (ext_module is not None):
+        addin_module = addin.addin_modules.get('monjyu_task_worker', None)
+        if (addin_module is not None):
             try:
-                if (ext_module['onoff'] == 'on'):
-                    func_reset = ext_module['func_reset']
+                if (addin_module['onoff'] == 'on'):
+                    func_reset = addin_module['func_reset']
                     res  = func_reset(botFunc=botFunc, data=data, )
                     print('reset', 'monjyu_task_worker')
             except Exception as e:
@@ -272,41 +272,41 @@ if __name__ == '__main__':
 
         # key2Live_freeai
         liveai_enable = False
-        ext_module = addin.addin_modules.get('monjyu_UI_key2Live_freeai', None)
-        if (ext_module is not None):
+        addin_module = addin.addin_modules.get('monjyu_UI_key2Live_freeai', None)
+        if (addin_module is not None):
             try:
-                if (ext_module['onoff'] == 'on'):
-                    func_reset = ext_module['func_reset']
+                if (addin_module['onoff'] == 'on'):
+                    func_reset = addin_module['func_reset']
                     res  = func_reset(main=main, data=data, addin=addin, botFunc=botFunc, )
                     print('reset', 'monjyu_UI_key2Live_freeai')
                     liveai_enable = True
 
-                    data.live_models['freeai']  = ext_module['class'].sub_proc.liveAPI.live_models
-                    data.live_voices['freeai']  = ext_module['class'].sub_proc.liveAPI.live_voices
-                    data.live_setting['freeai'] = { "live_model": ext_module['class'].sub_proc.liveAPI.live_model,
-                                                    "live_voice": ext_module['class'].sub_proc.liveAPI.live_voice,
-                                                    "shot_interval_sec": str(ext_module['class'].sub_proc.liveAPI.shot_interval_sec),
-                                                    "clip_interval_sec": str(ext_module['class'].sub_proc.liveAPI.clip_interval_sec), }
+                    data.live_models['freeai']  = addin_module['class'].sub_proc.liveAPI.live_models
+                    data.live_voices['freeai']  = addin_module['class'].sub_proc.liveAPI.live_voices
+                    data.live_setting['freeai'] = { "live_model": addin_module['class'].sub_proc.liveAPI.live_model,
+                                                    "live_voice": addin_module['class'].sub_proc.liveAPI.live_voice,
+                                                    "shot_interval_sec": str(addin_module['class'].sub_proc.liveAPI.shot_interval_sec),
+                                                    "clip_interval_sec": str(addin_module['class'].sub_proc.liveAPI.clip_interval_sec), }
             except Exception as e:
                 print(e)
 
         # key2Live_openai
         #liveai_enable = False
-        ext_module = addin.addin_modules.get('monjyu_UI_key2Live_openai', None)
-        if (ext_module is not None):
+        addin_module = addin.addin_modules.get('monjyu_UI_key2Live_openai', None)
+        if (addin_module is not None):
             try:
-                if (ext_module['onoff'] == 'on'):
-                    func_reset = ext_module['func_reset']
+                if (addin_module['onoff'] == 'on'):
+                    func_reset = addin_module['func_reset']
                     res  = func_reset(main=main, data=data, addin=addin, botFunc=botFunc, )
                     print('reset', 'monjyu_UI_key2Live_openai')
                     liveai_enable = True
 
-                    data.live_models['openai']  = ext_module['class'].sub_proc.liveAPI.live_models
-                    data.live_voices['openai']  = ext_module['class'].sub_proc.liveAPI.live_voices
-                    data.live_setting['openai'] = { "live_model": ext_module['class'].sub_proc.liveAPI.live_model,
-                                                    "live_voice": ext_module['class'].sub_proc.liveAPI.live_voice,
-                                                    "shot_interval_sec": str(ext_module['class'].sub_proc.liveAPI.shot_interval_sec),
-                                                    "clip_interval_sec": str(ext_module['class'].sub_proc.liveAPI.clip_interval_sec), }
+                    data.live_models['openai']  = addin_module['class'].sub_proc.liveAPI.live_models
+                    data.live_voices['openai']  = addin_module['class'].sub_proc.liveAPI.live_voices
+                    data.live_setting['openai'] = { "live_model": addin_module['class'].sub_proc.liveAPI.live_model,
+                                                    "live_voice": addin_module['class'].sub_proc.liveAPI.live_voice,
+                                                    "shot_interval_sec": str(addin_module['class'].sub_proc.liveAPI.shot_interval_sec),
+                                                    "clip_interval_sec": str(addin_module['class'].sub_proc.liveAPI.clip_interval_sec), }
             except Exception as e:
                 print(e)
 

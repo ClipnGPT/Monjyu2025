@@ -997,12 +997,12 @@ class WebUiClass:
         speech_text = str(data.speech_text) if data.speech_text else ""
 
         # 音声合成
-        ext_module = self.addin.addin_modules.get('addin_UI_TTS', None)
+        addin_module = self.addin.addin_modules.get('addin_UI_TTS', None)
         nowTime  = datetime.datetime.now()
         stamp    = nowTime.strftime('%Y%m%d.%H%M%S')
         file_seq = 0
 
-        if (ext_module is not None):
+        if (addin_module is not None):
             try:
                 # [で始まる１行目削除
                 speech_text = speech_text.strip()
@@ -1028,12 +1028,12 @@ class WebUiClass:
         speech_text = str(data.speech_text) if data.speech_text else ""
 
         # 音声合成
-        ext_module = self.addin.addin_modules.get('addin_UI_TTS', None)
+        addin_module = self.addin.addin_modules.get('addin_UI_TTS', None)
         nowTime  = datetime.datetime.now()
         stamp    = nowTime.strftime('%Y%m%d.%H%M%S')
         file_seq = 0
 
-        if (ext_module is not None):
+        if (addin_module is not None):
             try:
                 # [で始まる１行目削除
                 speech_text = speech_text.strip()
@@ -1055,12 +1055,12 @@ class WebUiClass:
 
     async def get_stt(self, input_field: str ):
         # 音声入力
-        ext_module = None
+        addin_module = None
         for module_dic in self.botFunc.function_modules.values():
             if (module_dic['script'] == '認証済_音声入力202405'):
-                ext_module = module_dic
+                addin_module = module_dic
                 break
-        if (ext_module is not None):
+        if (addin_module is not None):
             try:
                 dic = {}
                 dic['runMode']  = self.runMode
@@ -1072,8 +1072,8 @@ class WebUiClass:
                     if (engine != ''):
                         dic['api'] = engine
                 json_dump = json.dumps(dic, ensure_ascii=False, )
-                ext_func_proc  = ext_module['func_proc']
-                res_json = ext_func_proc( json_dump )
+                addin_func_proc  = addin_module['func_proc']
+                res_json = addin_func_proc( json_dump )
                 args_dic = json.loads(res_json)
                 recognition_text = args_dic.get('recognition_text')
                 return JSONResponse(content={"recognition_text": recognition_text})
@@ -1084,19 +1084,19 @@ class WebUiClass:
 
     async def get_url_to_text(self, url_path: str ):
         # 認証済_URLからテキスト取得
-        ext_module = None
+        addin_module = None
         for module_dic in self.botFunc.function_modules.values():
             if (module_dic['script'] == '認証済_URLからテキスト取得'):
-                ext_module = module_dic
+                addin_module = module_dic
                 break
-        if (ext_module is not None):
+        if (addin_module is not None):
             try:
                 dic = {}
                 dic['runMode']  = self.runMode
                 dic['url_path'] = url_path
                 json_dump = json.dumps(dic, ensure_ascii=False, )
-                ext_func_proc  = ext_module['func_proc']
-                res_json = ext_func_proc( json_dump )
+                addin_func_proc  = addin_module['func_proc']
+                res_json = addin_func_proc( json_dump )
                 args_dic = json.loads(res_json)
                 result_text = args_dic.get('result_text')
                 return JSONResponse(content={"result_text": result_text})
@@ -1116,7 +1116,7 @@ class WebUiClass:
         tts_yesno = data.tts_yesno
 
         # 音声合成
-        ext_module = self.addin.addin_modules.get('addin_UI_TTS', None)
+        addin_module = self.addin.addin_modules.get('addin_UI_TTS', None)
         nowTime  = datetime.datetime.now()
         stamp    = nowTime.strftime('%Y%m%d.%H%M%S')
         file_seq = 0
@@ -1195,7 +1195,7 @@ class WebUiClass:
                 speech_text += tts_text
 
                 # TTS
-                if (ext_module is not None):
+                if (addin_module is not None):
                     if (tts_yesno == 'yes'):
                         try:
                             text = tts_text.strip()
@@ -1232,16 +1232,16 @@ class WebUiClass:
                 raise HTTPException(status_code=404, detail='post_set_react error')
 
             # SandBox
-            ext_module = self.addin.addin_modules.get('addin_autoSandbox', None)
-            if (ext_module is not None):
+            addin_module = self.addin.addin_modules.get('addin_autoSandbox', None)
+            if (addin_module is not None):
 
                 dic = {}
                 dic['runMode']   = self.runMode
                 dic['file_path'] = filename
                 dic['browser']   = 'no'
                 json_dump = json.dumps(dic, ensure_ascii=False, )
-                ext_func_proc  = ext_module['func_proc']
-                res_json = ext_func_proc( json_dump )
+                addin_func_proc  = addin_module['func_proc']
+                res_json = addin_func_proc( json_dump )
                 #args_dic = json.loads(res_json)
                 return JSONResponse(content={'message': 'post_set_react successfully'})
 
