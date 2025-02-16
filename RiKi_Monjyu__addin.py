@@ -97,7 +97,6 @@ class _addin_class:
                         ext_module = loader.load_module()
                         ext_onoff = 'off'
                         ext_class = ext_module._class()
-                        print('Addins    Loading ... "' + ext_script + '" (' + ext_class.func_name + ') _class.func_proc')
                         
                         # クラスの情報取得
                         ext_version = ext_class.version
@@ -153,6 +152,7 @@ class _addin_class:
                                 'func_proc': ext_func_proc
                             }
                             self.addin_modules[ext_script] = module_dic
+                            print('Addins    Loading ... "' + ext_script + '" (' + ext_class.func_name + ') ' + ext_onoff + '. ')
                             # 特定アドインのプロシージャを設定
                             if ext_script == 'addin_directive':
                                 self.addin_directive = ext_func_proc
@@ -178,9 +178,9 @@ class _addin_class:
             ext_script = module_dic['script']
             ext_func_name = module_dic['func_name']
             ext_func_reset = module_dic['func_reset']
-            print('Addins    Reset   ... "' + ext_script + '" (' + ext_func_name + ') _class.func_reset')
             try:
                 res = ext_func_reset()
+                print('Addins    Reset   ... "' + ext_script + '" (' + ext_func_name + ') OK. ')
             except:
                 res = False
             if not res:
@@ -199,11 +199,11 @@ class _addin_class:
             ext_func_name = module_dic['func_name']
             ext_module = module_dic['module']
             ext_class = module_dic['class']
-            print('Addins    Unload  ... "' + ext_script + '" (' + ext_func_name + ') _class.func_proc')
             try:
                 # クラスとモジュールの削除
                 del ext_class
                 del ext_module
+                print('Addins    Unload  ... "' + ext_script + '" (' + ext_func_name + ') OK. ')
             except:
                 res_unload_all = False
                 res_unload_msg += ext_func_name + 'の開放中にエラーがありました。' + '\n'

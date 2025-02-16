@@ -1056,7 +1056,7 @@ class WebUiClass:
     async def get_stt(self, input_field: str ):
         # 音声入力
         ext_module = None
-        for module_dic in self.botFunc.function_modules:
+        for module_dic in self.botFunc.function_modules.values():
             if (module_dic['script'] == '認証済_音声入力202405'):
                 ext_module = module_dic
                 break
@@ -1085,7 +1085,7 @@ class WebUiClass:
     async def get_url_to_text(self, url_path: str ):
         # 認証済_URLからテキスト取得
         ext_module = None
-        for module_dic in self.botFunc.function_modules:
+        for module_dic in self.botFunc.function_modules.values():
             if (module_dic['script'] == '認証済_URLからテキスト取得'):
                 ext_module = module_dic
                 break

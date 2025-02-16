@@ -27,7 +27,7 @@ qIO_py2func       = 'temp/research操作Agent_py2func.txt'
 qIO_agent2live    = 'temp/monjyu_io_agent2live.txt'
 
 qTimeout_reset    = 30
-qTimeout_init     = 60
+qTimeout_init     = 300
 qTimeout_start    = 30
 qTimeout_proc     = 120
 
@@ -170,12 +170,17 @@ class _class:
         self.start_time = time.time()
 
         # 設定
-        self.data = None
         self.agent_models   = AGENT_MODELS
         self.agent_engine   = AGENT_ENGINE
         self.agent_model    = AGENT_MODEL
         self.agent_max_step = '5'
         self.agent_browser  = 'chromium' # chromium, chrome,
+
+        # main,data,addin,botFunc,
+        self.main    = None
+        self.data    = None
+        self.addin   = None
+        self.botFunc = None
 
     def __del__(self, ):
         # Python 停止
@@ -190,9 +195,15 @@ class _class:
                 pass
         # Python kill!
 
-    def func_reset(self, data=None, ):
-        if data is not None:
+    def func_reset(self, main=None, data=None, addin=None, botFunc=None, ):
+        if (main is not None):
+            self.main = main
+        if (data is not None):
             self.data = data
+        if (addin is not None):
+            self.addin = addin
+        if (botFunc is not None):
+            self.botFunc = botFunc
         # 初回直後のリセットは無効
         if (self.start_time != None):
             if ((time.time() - self.start_time) < qTimeout_reset):

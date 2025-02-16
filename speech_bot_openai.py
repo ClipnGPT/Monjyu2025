@@ -61,7 +61,7 @@ class my_eventHandler(AssistantEventHandler):
                  my_client=None,
                  my_assistant_id='', my_assistant_name='',
                  my_thread_id='', 
-                 session_id='admin', res_history=[], function_modules=[], 
+                 session_id='admin', res_history=[], function_modules={}, 
                  res_text='', res_path='', res_files=[], 
                  upload_files=[], upload_flag=False, ):
         
@@ -235,7 +235,7 @@ class my_eventHandler(AssistantEventHandler):
                 json_kwargs   = tool_calls[t].function.arguments
 
                 hit = False
-                for module_dic in self.function_modules:
+                for module_dic in self.function_modules.values():
                     if (function_name == module_dic['func_name']):
                         hit = True
                         self.print(self.session_id, f" Assistant :   function_call '{ module_dic['script'] }' ({  function_name })")
@@ -914,7 +914,7 @@ class ChatBotAPI:
 
     def run_gpt(self, chat_class='chat', model_select='auto',
                 nick_name=None, model_name=None,
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは',
                 upload_files=[], image_urls=[], 
                 temperature=0.8, max_step=10, jsonSchema=None, ):
@@ -922,7 +922,7 @@ class ChatBotAPI:
         #self.assistant_id[str(session_id)] = None
         self.thread_id[str(session_id)] = None
         functions = []
-        for module_dic in function_modules:
+        for module_dic in function_modules.values():
             functions.append(module_dic['function'])
 
         # 戻り値
@@ -1330,7 +1330,7 @@ class ChatBotAPI:
 
                         hit = False
 
-                        for module_dic in function_modules:
+                        for module_dic in function_modules.values():
                             if (f_name == module_dic['func_name']):
                                 hit = True
                                 self.print(session_id, f" ChatGPT :   function_call '{ module_dic['script'] }' ({ f_name })")
@@ -1562,10 +1562,10 @@ class ChatBotAPI:
 
                     vector_store = self.client_x.beta.vector_stores.create(
                                         name = assistant_name,
-                                        expires_after = {
-                                        "anchor": "last_active_at",
-                                        "days": 2
-                                        }
+                                        #expires_after = {
+                                        #"anchor": "last_active_at",
+                                        #"days": 2
+                                        #}
                                     )
 
                     file_batch = self.client_x.beta.vector_stores.file_batches.create_and_poll(
@@ -1670,17 +1670,19 @@ class ChatBotAPI:
 
     def my_assistant_update(self, session_id='admin', my_assistant_id=None, my_assistant_name='',
                             model_name='gpt-4o', instructions='', 
-                            functions=[], vectorStore_ids=[], upload_ids=[], ):
+                            function_list=[], vectorStore_ids=[], upload_ids=[], ):
 
         try:
 
             # ツール設定
-            tools = [{"type": "code_interpreter"}]
-            if (len(vectorStore_ids) > 0):
-                tools.append({"type": "file_search"})
-            if (len(functions) != 0):
-                for f in range(len(functions)):
-                    tools.append({"type": "function", "function": functions[f]})
+            tools = []
+            if (model_name[:1].lower() != 'o'): # o1, o3, ... 以外
+                tools.append({"type": "code_interpreter"})
+                if (len(vectorStore_ids) > 0):
+                    tools.append({"type": "file_search"})
+            if (len(function_list) != 0):
+                for f in range(len(function_list)):
+                    tools.append({"type": "function", "function": function_list[f]})
             #print(tools)
 
             # アシスタント取得
@@ -1725,20 +1727,20 @@ class ChatBotAPI:
                 # OPENAI
                 if (self.openai_api_type != 'azure'):
 
+                    tool_resources = {}
+                    if (model_name[:1].lower() != 'o'): # o1, o3, ... 以外
+                        if (len(vectorStore_ids) > 0):
+                            tool_resources["file_search"] = { "vector_store_ids": vectorStore_ids }
+                        if (len(upload_ids) > 0):
+                            tool_resources["code_interpreter"] = { "file_ids": upload_ids }
+
                     assistant = self.client_x.beta.assistants.update(
                                         assistant_id = my_assistant_id,
                                         model        = model_name,
                                         instructions = instructions,
                                         tools        = tools,
                                         timeout      = int(self.timeOut * 3),
-                                        tool_resources = {
-                                            "file_search": {
-                                                "vector_store_ids": vectorStore_ids
-                                                },
-                                            "code_interpreter": {
-                                                "file_ids": upload_ids
-                                                }
-                                            },
+                                        tool_resources = tool_resources,
                                     )
 
                 # Azure
@@ -1769,14 +1771,14 @@ class ChatBotAPI:
 
     def run_assistant(self, chat_class='assistant', model_select='auto',
                       nick_name=None, model_name=None,
-                      session_id='admin', history=[], function_modules=[],
+                      session_id='admin', history=[], function_modules={},
                       sysText=None, reqText=None, inpText='こんにちは',
                       upload_files=[], image_urls=[],
                       temperature=0.8, max_step=10, jsonSchema=None, ):
 
-        functions = []
-        for module_dic in function_modules:
-            functions.append(module_dic['function'])
+        function_list = []
+        for module_dic in function_modules.values():
+            function_list.append(module_dic['function'])
 
         # 戻り値
         res_text    = ''
@@ -1927,14 +1929,14 @@ class ChatBotAPI:
 
             # アシスタント更新
             if (my_assistant_id is not None):
-                res = self.my_assistant_update(session_id        = session_id,
-                                               my_assistant_id   = my_assistant_id,
-                                               my_assistant_name = my_assistant_name,
-                                               model_name        = model_name, 
-                                               instructions      = instructions, 
-                                               functions         = functions,
-                                               vectorStore_ids   = vectorStore_ids,
-                                               upload_ids        = upload_ids, )
+                res = self.my_assistant_update( session_id        = session_id,
+                                                my_assistant_id   = my_assistant_id,
+                                                my_assistant_name = my_assistant_name,
+                                                model_name        = model_name, 
+                                                instructions      = instructions, 
+                                                function_list     = function_list,
+                                                vectorStore_ids   = vectorStore_ids,
+                                                upload_ids        = upload_ids, )
                 # proc? wait
                 #if (res == True):
                 #    time.sleep(1.00)
@@ -1976,7 +1978,7 @@ class ChatBotAPI:
             content_text += reqText.rstrip() + '\n'
         if (inpText is not None) and (inpText.strip() != ''):
             content_text += inpText.rstrip() + '\n'
-        res = self.client.beta.threads.messages.create(
+        res = self.client_x.beta.threads.messages.create(
             thread_id = my_thread_id,
             role      = 'user',
             content   = content_text, )
@@ -2025,14 +2027,14 @@ class ChatBotAPI:
                 if (upload_flag == True):
 
                     # アシスタント更新
-                    res = self.my_assistant_update(session_id        = session_id,
-                                                my_assistant_id   = my_assistant_id,
-                                                my_assistant_name = my_assistant_name,
-                                                model_name        = model_name, 
-                                                instructions      = instructions, 
-                                                functions         = functions,
-                                                vectorStore_ids   = vectorStore_ids,
-                                                upload_ids        = upload_ids, )
+                    res = self.my_assistant_update( session_id        = session_id,
+                                                    my_assistant_id   = my_assistant_id,
+                                                    my_assistant_name = my_assistant_name,
+                                                    model_name        = model_name, 
+                                                    instructions      = instructions, 
+                                                    function_list     = function_list,
+                                                    vectorStore_ids   = vectorStore_ids,
+                                                    upload_ids        = upload_ids, )
 
                 # 終了待機
                 exit_status = my_handler.my_run_status
@@ -2205,7 +2207,7 @@ class ChatBotAPI:
                             json_kwargs   = tool_calls[t].function.arguments
 
                             hit = False
-                            for module_dic in function_modules:
+                            for module_dic in function_modules.values():
                                 if (function_name == module_dic['func_name']):
                                     hit = True
                                     self.print(session_id, f" Assistant :   function_call '{ module_dic['script'] }' ({  function_name })")
@@ -2356,7 +2358,7 @@ class ChatBotAPI:
 
     def auto_assistant(self, chat_class='chat', model_select='auto',
                       nick_name=None, model_name=None,
-                      session_id='admin', history=[], function_modules=[], 
+                      session_id='admin', history=[], function_modules={}, 
                       sysText=None, reqText=None, inpText='こんにちは',
                       upload_files=[], image_urls=[],
                       temperature=0.8, max_step=10, jsonSchema=None, ):
@@ -2476,7 +2478,7 @@ Respond according to the following criteria:
 
             # GPT
             n += 1
-            self.print(session_id, f" Assistant : { res_name.lower() }, { model_name }, pass={ n }, ")
+            self.print(session_id, f" Assistant : { nick_name.lower() }, { model_name }, pass={ n }, ")
 
             # Assistant
             res_text2, res_path2, res_files2, nick_name, model_name, res_history = \
@@ -2515,7 +2517,7 @@ Respond according to the following criteria:
                 wk_json, wk_path, wk_files, wk_nick_name, wk_model_name, wk_history = \
                     self.run_gpt(chat_class='check', model_select='auto',
                                  nick_name=None, model_name=None,
-                                 session_id='internal', history=[], function_modules=[],
+                                 session_id='internal', history=[], function_modules={},
                                  sysText=auto_sysText, reqText=auto_reqText, inpText=check_inpText,
                                  upload_files=[], image_urls=[], jsonSchema=auto_jsonSchema, )
 
@@ -2567,7 +2569,7 @@ Respond according to the following criteria:
 
 
     def chatBot(self, chat_class='auto', model_select='auto',
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは', 
                 filePath=[],
                 temperature=0.8, max_step=10, jsonSchema=None,
@@ -2741,7 +2743,7 @@ if __name__ == '__main__':
         print('authenticate:', res, )
         if (res == True):
             
-            function_modules = []
+            function_modules = {}
             filePath         = []
 
             if True:
@@ -2754,11 +2756,11 @@ if __name__ == '__main__':
                     print(msg)
                     print()
 
-                for module_dic in botFunc.function_modules:
+                for key, module_dic in botFunc.function_modules.items():
                     if (module_dic['onoff'] == 'on'):
-                        function_modules.append(module_dic)
+                        function_modules[key] = module_dic
 
-            if False:
+            if True:
                 sysText = None
                 reqText = ''
                 inpText = 'おはようございます。'
@@ -2794,7 +2796,7 @@ if __name__ == '__main__':
                 print('', res_text)
                 print()
 
-            if False:
+            if True:
                 sysText = None
                 reqText = ''
                 inpText = 'この画像はなんだと思いますか？'
@@ -2813,29 +2815,9 @@ if __name__ == '__main__':
                 print('', res_text)
                 print()
 
-            if False:
-                sysText = None
-                reqText = ''
-                inpText = 'riki,おはようございます。'
-                filePath = []
-                print()
-                print('[Request]')
-                print(reqText, inpText )
-                print()
-                res_text, res_path, res_files, res_name, res_api, openaiAPI.history = \
-                    openaiAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                        session_id='guest1', history=openaiAPI.history, function_modules=function_modules,
-                                        sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
-                                        inpLang='ja', outLang='ja', )
-                print()
-                print('[' + res_name + '] (' + res_api + ')' )
-                print('', res_text)
-                print()
-
             if True:
                 sysText = None
                 reqText = ''
-                #inpText = 'riki,今日は何月何日？'
                 inpText = 'riki,日本の主要３都市の天気？'
                 filePath = []
                 print('[Request]')
@@ -2851,7 +2833,7 @@ if __name__ == '__main__':
                 print('', res_text)
                 print()
 
-            if False:
+            if True:
                 sysText = None
                 reqText = ''
                 inpText = 'riki,この画像はなんだと思いますか？'
@@ -2871,39 +2853,6 @@ if __name__ == '__main__':
                 print()
 
             if False:
-                sysText = None
-                reqText = ''
-                #inpText = 'riki,おはようございます。'
-                #inpText = '計算式 123 * 456 * (7 + 8) の答え？'
-                #inpText = 'riki,東京の天気？'
-                #inpText = 'gpt4,日本の主要３都市の天気？'
-                inpText = 'riki,今日は何月何日？'
-                #inpText = 'riki,私のニックネームを覚えていますか？'
-                #inpText = 'riki,小説でマインは何階に住んでいますか？'
-                #inpText = 'riki,かわいい猫の画像生成して、その画像を言葉で説明して'
-                #inpText = '保存してあるClip&GPTのナレッジ文書を検索して、日本語で起動方法教えて'
-                #inpText = 'ランダムな数値での折れ線グラフ出力するプログラム生成。\n生成後に実行\n実行結果の画像と使ったソースをください。'
-                #inpText = 'guiですぐに遊べるリバーシプログラムの生成お願いします。最後にソースをください。'
-                filePath = []
-                # 2023/11/12時点添付ファイルの処理には課題あり
-                # 2023/11/18時点添付ファイルの処理には課題解消
-                #inpText = 'riki,送信してある売上のcsvファイルの総合計を計算してください'
-                #filePath = ['_icons/test_sales.csv',]
-                print()
-                print('[Request]')
-                print(reqText, inpText )
-                print()
-                res_text, res_path, res_files, res_name, res_api, openaiAPI.history = \
-                    openaiAPI.chatBot(  chat_class='auto', model_select='auto', 
-                                        session_id='admin', history=openaiAPI.history, function_modules=function_modules,
-                                        sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
-                                        inpLang='ja', outLang='ja', )
-                print()
-                print('[' + res_name + '] (' + res_api + ')' )
-                print('', res_text)
-                print()
-
-            if True:
                 print('[History]')
                 for h in range(len(openaiAPI.history)):
                     print(openaiAPI.history[h])

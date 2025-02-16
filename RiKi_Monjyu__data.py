@@ -218,19 +218,16 @@ class _data_class:
         }
 
         # liveの設定 freeai
-        self.live_models[ 'freeai'] = {}
-        self.live_voices[ 'freeai'] = {}
+        #self.live_models[ 'freeai'] = {}
+        #self.live_voices[ 'freeai'] = {}
         self.live_setting['freeai'] = { "live_model": "",
                                         "live_voice": "", 
                                         "shot_interval_sec":"",
                                         "clip_interval_sec":"", }
         # liveの設定 openai
-        self.live_models[ 'openai'] = {}
-        self.live_voices[ 'openai'] = {}
-        self.live_setting['openai'] = { "live_model": "",
-                                        "live_voice": "alloy",
-                                        "shot_interval_sec":"",
-                                        "clip_interval_sec":"", }
+        #self.live_models[ 'openai'] = {}
+        #self.live_voices[ 'openai'] = {}
+        self.live_setting['openai'] = self.live_setting['freeai']
 
         # Agentの設定
         self.webOperator_models['freeai'] = {}

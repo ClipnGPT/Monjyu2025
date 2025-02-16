@@ -277,11 +277,11 @@ class SubAiClass:
         else:
             qLog.log('info', self.proc_id, f"{ user_id } : { from_port } -> { to_port } ({ req_mode })")
         # ファンクション設定
-        self.function_modules = []
+        self.function_modules = {}
         if self.botFunc is not None:
-            for module_dic in self.botFunc.function_modules:
+            for key, module_dic in self.botFunc.function_modules.items():
                 if module_dic['onoff'] == 'on':
-                    self.function_modules.append(module_dic)
+                    self.function_modules[key] = module_dic
         # チャット処理開始
         if req_mode not in ['serial', 'parallel']:
             thread = threading.Thread(target=self.chat_proc, 

@@ -318,9 +318,11 @@ class _live_api_freeai:
         # イメージショット設定
         self.imageShot = _imageShot_class()
 
-        # botFunc/data
-        self.botFunc = None
+        # main,data,addin,botFunc,
+        self.main    = None
         self.data    = None
+        self.addin   = None
+        self.botFunc = None
 
         # monjyu
         self.monjyu = _monjyu_class(runMode='assistant', )
@@ -750,7 +752,7 @@ class _live_api_freeai:
                 hit = False
 
                 if self.botFunc is not None:
-                    for module_dic in self.botFunc.function_modules:
+                    for module_dic in self.botFunc.function_modules.values():
                         if (f_name == module_dic['func_name']):
 
                             hit = True
@@ -831,7 +833,7 @@ class _live_api_freeai:
             self.researchAgent_enable = False
             # 有効確認
             if self.botFunc is not None:
-                for module_dic in self.botFunc.function_modules:
+                for module_dic in self.botFunc.function_modules.values():
                     if (module_dic['func_name'] == 'execute_monjyu_request'):
                         self.monjyu_enable = True
                         print(f" Live(freeai) : [INIT] (execute_monjyu_request) ")
@@ -962,7 +964,7 @@ Agentic AI Web-Operator(ウェブオペレーター:web_operation_agent) が利�
                 tools.append({"google_search": {}, })
                 function_declarations = []
                 if self.botFunc is not None:
-                    for module_dic in self.botFunc.function_modules:
+                    for module_dic in self.botFunc.function_modules.values():
                         func_dic = module_dic['function']
                         #func_str = json.dumps(func_dic, ensure_ascii=False, )
                         #func_str = func_str.replace('"type"', '"type_"')
@@ -1598,17 +1600,15 @@ class _class:
         # 初期化
         self.func_reset()
 
-    def func_reset(self, botFunc=None, data=None, ):
-        if botFunc is not None:
-            self.sub_proc.liveAPI.botFunc = botFunc
-        if data is not None:
+    def func_reset(self, main=None, data=None, addin=None, botFunc=None, ):
+        if (main is not None):
+            self.sub_proc.liveAPI.main = main
+        if (data is not None):
             self.sub_proc.liveAPI.data = data
-            self.sub_proc.liveAPI.data.live_models['freeai']  = self.sub_proc.liveAPI.live_models
-            self.sub_proc.liveAPI.data.live_voices['freeai']  = self.sub_proc.liveAPI.live_voices
-            self.sub_proc.liveAPI.data.live_setting['freeai'] = {   "live_model": self.sub_proc.liveAPI.live_model,
-                                                                    "live_voice": self.sub_proc.liveAPI.live_voice,
-                                                                    "shot_interval_sec": str(self.sub_proc.liveAPI.shot_interval_sec),
-                                                                    "clip_interval_sec": str(self.sub_proc.liveAPI.clip_interval_sec), }
+        if (addin is not None):
+            self.sub_proc.liveAPI.addin = addin
+        if (botFunc is not None):
+            self.sub_proc.liveAPI.botFunc = botFunc
         return True
 
     def func_proc(self, json_kwargs=None, ):

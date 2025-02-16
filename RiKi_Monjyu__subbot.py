@@ -708,7 +708,7 @@ class ChatClass:
 
     def chatBot(self,   req_mode='chat', engine='freeai',
                         chat_class='auto', model_select='auto', session_id='debug', 
-                        history=[], function_modules=[],
+                        history=[], function_modules={},
                         sysText='', reqText='', inpText='',
                         filePath=[], jsonSchema=None, inpLang='ja', outLang='ja'):
         qLog.log('info', self.proc_id, 'chatBot start')
@@ -1865,7 +1865,7 @@ class ChatClass:
             MAX_RETRY = int(max_retry)
 
         # function_modules 設定
-        function_modules = []
+        function_modules = {}
         if (req_functions == 'yes,'):
             if (parent_self is not None):
                 function_modules = parent_self.function_modules
@@ -2019,7 +2019,7 @@ $$$ user_text $$$
             res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
                 self.chatBot(   req_mode=req_mode, engine=before_engine,
                                 chat_class='auto', model_select='auto', session_id=self.self_port, 
-                                history=self.history, function_modules=[],
+                                history=self.history, function_modules={},
                                 sysText=sysText, reqText=reqText, inpText=inpText,
                                 filePath=filePath, jsonSchema=None, inpLang='ja', outLang='ja', )
 
@@ -2304,7 +2304,7 @@ $$$ inpBase2 $$$
                 AI_MAX = int(max_ai_count)
 
         # function_modules 設定
-        function_modules = []
+        function_modules = {}
         if (req_functions == 'yes,'):
             if (parent_self is not None):
                 function_modules = parent_self.function_modules
@@ -2503,7 +2503,7 @@ AIメンバー毎に重複しても構わないし総合的なことでもよい
             res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
                 self.chatBot(   req_mode=req_mode, engine=before_engine,
                                 chat_class='auto', model_select='auto', session_id=self.self_port, 
-                                history=self.history, function_modules=[],
+                                history=self.history, function_modules={},
                                 sysText=sysText, reqText=reqText, inpText=inpText,
                                 filePath=filePath, jsonSchema=None, inpLang='ja', outLang='ja', )
 

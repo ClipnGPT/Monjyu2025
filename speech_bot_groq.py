@@ -412,7 +412,7 @@ class _groqAPI:
 
     def run_gpt(self, chat_class='chat', model_select='auto',
                 nick_name=None, model_name=None,
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは',
                 upload_files=[], image_urls=[], 
                 temperature=0.8, max_step=10, jsonSchema=None, ):
@@ -734,7 +734,7 @@ class _groqAPI:
 
 
     def chatBot(self, chat_class='auto', model_select='auto',
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは', 
                 filePath=[],
                 temperature=0.8, max_step=10, jsonSchema=None,
@@ -817,7 +817,7 @@ if __name__ == '__main__':
         print('authenticate:', res, )
         if (res == True):
             
-            function_modules = []
+            function_modules = {}
             filePath         = []
 
             if True:

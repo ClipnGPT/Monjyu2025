@@ -427,7 +427,7 @@ class _openrtAPI:
 
     def run_gpt(self, chat_class='chat', model_select='auto',
                 nick_name=None, model_name=None,
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは',
                 upload_files=[], image_urls=[], 
                 temperature=0.8, max_step=10, jsonSchema=None, ):
@@ -611,7 +611,7 @@ class _openrtAPI:
         if True:
             if (use_tools.lower().find('yes') >= 0):
                 functions = []
-                for module_dic in function_modules:
+                for module_dic in function_modules.values():
                     functions.append(module_dic['function'])
                 for f in range(len(functions)):
                     tools.append({"type": "function", "function": functions[f]})
@@ -766,7 +766,7 @@ class _openrtAPI:
 
                         hit = False
 
-                        for module_dic in function_modules:
+                        for module_dic in function_modules.values():
                             if (f_name == module_dic['func_name']):
                                 hit = True
                                 self.print(session_id, f" OpenRT :   function_call '{ module_dic['script'] }' ({ f_name })")
@@ -850,7 +850,7 @@ class _openrtAPI:
 
 
     def chatBot(self, chat_class='auto', model_select='auto',
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは', 
                 filePath=[],
                 temperature=0.8, max_step=10, jsonSchema=None,
@@ -933,7 +933,7 @@ if __name__ == '__main__':
         print('authenticate:', res, )
         if (res == True):
             
-            function_modules = []
+            function_modules = {}
             filePath         = []
 
             if True:
@@ -946,9 +946,9 @@ if __name__ == '__main__':
                     print(msg)
                     print()
 
-                for module_dic in botFunc.function_modules:
+                for key, module_dic in botFunc.function_modules.items():
                     if (module_dic['onoff'] == 'on'):
-                        function_modules.append(module_dic)
+                        function_modules[key] = module_dic
 
             if True:
                 sysText = None

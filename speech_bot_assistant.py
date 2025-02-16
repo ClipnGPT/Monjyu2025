@@ -446,29 +446,34 @@ class _assistantAPI:
         for v in range(len(vector_stores.data)):
             vs_id   = vector_stores.data[v].id
             vs_name = vector_stores.data[v].name
-            if (vs_name == assistant_name):
-                vs_files = self.client.beta.vector_stores.files.list(vector_store_id=vs_id)
+            # bug?
+            if (vs_id in ['vs_67a9cb0bdd748191aa1a2892c6612d68']):
+                #self.client.beta.vector_stores.delete(vector_store_id=vs_id)
+                pass
+            else:
+                if (vs_name == assistant_name):
+                    vs_files = self.client.beta.vector_stores.files.list(vector_store_id=vs_id)
 
-                vectorStore_ids = [vs_id]
-                if (len(proc_files) != len(vs_files.data)):
-                    vectorStore_ids = []
-                else:
-                    for f in range(len(vs_files.data)):
-                        file_id   = vs_files.data[f].id
-                        file_info = self.client.files.retrieve(file_id=file_id, )
-                        file_name = file_info.filename
-                        if (file_name not in proc_files):
-                            vectorStore_ids = []
-                            break
+                    vectorStore_ids = [vs_id]
+                    if (len(proc_files) != len(vs_files.data)):
+                        vectorStore_ids = []
+                    else:
+                        for f in range(len(vs_files.data)):
+                            file_id   = vs_files.data[f].id
+                            file_info = self.client.files.retrieve(file_id=file_id, )
+                            file_name = file_info.filename
+                            if (file_name not in proc_files):
+                                vectorStore_ids = []
+                                break
 
-                if (len(vectorStore_ids) == 0):
-                    for f in range(len(vs_files.data)):
-                        file_id   = vs_files.data[f].id
-                        self.client.files.delete(file_id=file_id, )
-                    self.print(session_id, f" Assistant : Delete vector store = '{ vs_name }', ")
-                    self.client.beta.vector_stores.delete(vector_store_id=vs_id)
+                    if (len(vectorStore_ids) == 0):
+                        for f in range(len(vs_files.data)):
+                            file_id   = vs_files.data[f].id
+                            self.client.files.delete(file_id=file_id, )
+                        self.print(session_id, f" Assistant : Delete vector store = '{ vs_name }', ")
+                        self.client.beta.vector_stores.delete(vector_store_id=vs_id)
 
-                break
+                    break
 
         # 転送不要
         if (len(vectorStore_ids) == len(proc_files)):
@@ -625,7 +630,7 @@ class _assistantAPI:
 
     def my_assistant_update(self, session_id='admin', my_assistant_id=None, my_assistant_name='',
                             model_name='gpt-4o', use_tools='yes', instructions='', 
-                            functions=[], vectorStore_ids=[], upload_ids=[], ):
+                            function_list=[], vectorStore_ids=[], upload_ids=[], ):
 
         try:
 
@@ -636,9 +641,9 @@ class _assistantAPI:
                     tools.append({"type": "code_interpreter"})
                     if (len(vectorStore_ids) > 0):
                         tools.append({"type": "file_search"})
-                if (len(functions) != 0):
-                    for f in range(len(functions)):
-                        tools.append({"type": "function", "function": functions[f]})
+                if (len(function_list) != 0):
+                    for f in range(len(function_list)):
+                        tools.append({"type": "function", "function": function_list[f]})
             #print(tools)
 
             # アシスタント取得
@@ -683,12 +688,12 @@ class _assistantAPI:
                 # OPENAI
                 if (self.assistant_api_type != 'azure'):
 
-                    tool_resouces = {}
+                    tool_resources = {}
                     if (model_name[:1].lower() != 'o'): # o1, o3, ... 以外
                         if (len(vectorStore_ids) > 0):
-                            tool_resouces["file_search"] = { "vector_store_ids": vectorStore_ids }
+                            tool_resources["file_search"] = { "vector_store_ids": vectorStore_ids }
                         if (len(upload_ids) > 0):
-                            tool_resouces["code_interpreter"] = { "file_ids": upload_ids }
+                            tool_resources["code_interpreter"] = { "file_ids": upload_ids }
 
                     assistant = self.client.beta.assistants.update(
                                         assistant_id = my_assistant_id,
@@ -696,7 +701,7 @@ class _assistantAPI:
                                         instructions = instructions,
                                         tools        = tools,
                                         timeout      = self.assistant_max_wait_sec,
-                                        tool_resources = tool_resouces,
+                                        tool_resources = tool_resources,
                                     )
 
                 # Azure
@@ -727,14 +732,14 @@ class _assistantAPI:
 
     def run_assistant(self, chat_class='assistant', model_select='auto',
                       nick_name=None, model_name=None,
-                      session_id='admin', history=[], function_modules=[],
+                      session_id='admin', history=[], function_modules={},
                       sysText=None, reqText=None, inpText='こんにちは',
                       upload_files=[], image_urls=[],
                       temperature=0.8, max_step=10, jsonSchema=None, ):
 
-        functions = []
-        for module_dic in function_modules:
-            functions.append(module_dic['function'])
+        function_list = []
+        for module_dic in function_modules.values():
+            function_list.append(module_dic['function'])
 
         # 戻り値
         res_text        = ''
@@ -981,7 +986,7 @@ class _assistantAPI:
                                                         model_name        = res_api, 
                                                         use_tools         = use_tools,
                                                         instructions      = instructions, 
-                                                        functions         = functions,
+                                                        function_list     = function_list,
                                                         vectorStore_ids   = vectorStore_ids,
                                                         upload_ids        = upload_ids, )
 
@@ -1211,7 +1216,7 @@ class _assistantAPI:
                         json_kwargs   = tool_calls[t].function.arguments
 
                         hit = False
-                        for module_dic in function_modules:
+                        for module_dic in function_modules.values():
                             if (function_name == module_dic['func_name']):
                                 hit = True
                                 self.print(session_id, f" Assistant :   function_call '{ module_dic['script'] }' ({  function_name })")
@@ -1291,7 +1296,7 @@ class _assistantAPI:
                                                         my_assistant_name = my_assistant_name,
                                                         model_name        = res_api, 
                                                         instructions      = instructions, 
-                                                        functions         = functions,
+                                                        function_list     = function_list,
                                                         vectorStore_ids   = vectorStore_ids,
                                                         upload_ids        = upload_ids, )
 
@@ -1363,7 +1368,7 @@ class _assistantAPI:
 
 
     def chatBot(self, chat_class='auto', model_select='auto',
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは', 
                 filePath=[],
                 temperature=0.8, max_step=10, jsonSchema=None,
@@ -1460,7 +1465,7 @@ if __name__ == '__main__':
         print('authenticate:', res, )
         if (res == True):
             
-            function_modules = []
+            function_modules = {}
             filePath         = []
 
             if True:
@@ -1473,9 +1478,9 @@ if __name__ == '__main__':
                     print(msg)
                     print()
 
-                for module_dic in botFunc.function_modules:
+                for key, module_dic in botFunc.function_modules.items():
                     if (module_dic['onoff'] == 'on'):
-                        function_modules.append(module_dic)
+                        function_modules[key] = module_dic
 
             session_id = 'admin'
             if True:

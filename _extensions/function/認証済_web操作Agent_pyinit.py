@@ -88,10 +88,12 @@ if __name__ == '__main__':
     # インストール確認
     try:
         import_flag = False
+        import pygame
+        import playwright
+
         import langchain_openai
         import langchain_anthropic
         import langchain_google_genai
-
         import browser_use
 
     except:
@@ -114,12 +116,6 @@ if __name__ == '__main__':
         pip_install('langchain-google-genai')
         #pip_install('browser-use')
         pip_install('browser-use', '0.1.29')
-
-        # web-ui
-        pip_install('pyperclip')
-        pip_install('gradio')
-        pip_install('json-repair')
-        pip_install('langchain-mistralai')
 
         print('playwright install ...')
         if (os.name == 'nt'):

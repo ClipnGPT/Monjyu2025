@@ -544,7 +544,7 @@ class _ollamaAPI:
 
     def run_gpt(self, chat_class='chat', model_select='auto',
                 nick_name=None, model_name=None,
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは',
                 upload_files=[], image_urls=[], 
                 temperature=0.8, max_step=10, jsonSchema=None, ):
@@ -831,7 +831,7 @@ class _ollamaAPI:
 
 
     def chatBot(self, chat_class='auto', model_select='auto',
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは', 
                 filePath=[],
                 temperature=0.8, max_step=10, jsonSchema=None,
@@ -914,22 +914,8 @@ if __name__ == '__main__':
         print('authenticate:', res, )
         if (res == True):
             
-            function_modules = []
+            function_modules = {}
             filePath         = []
-
-            #if True:
-            #    import    speech_bot_function
-            #    botFunc = speech_bot_function.botFunction()
-
-            #    res, msg = botFunc.functions_load(
-            #        functions_path='_extensions/function/', secure_level='low', )
-            #    if (res != True) or (msg != ''):
-            #        print(msg)
-            #        print()
-
-            #    for module_dic in botFunc.function_modules:
-            #        if (module_dic['onoff'] == 'on'):
-            #            function_modules.append(module_dic)
 
             if True:
                 sysText = None

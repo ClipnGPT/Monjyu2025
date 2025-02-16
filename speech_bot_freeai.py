@@ -402,7 +402,7 @@ class _freeaiAPI:
 
     def run_gpt(self, chat_class='chat', model_select='auto',
                 nick_name=None, model_name=None,
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは',
                 upload_files=[], image_urls=[], 
                 temperature=0.8, max_step=10, jsonSchema=None, ):
@@ -619,7 +619,7 @@ class _freeaiAPI:
                 # tools
                 #tools.append({"code_execution": {}, })
                 #tools.append({"google_search": {}, })
-                for module_dic in function_modules:
+                for module_dic in function_modules.values():
                     func_dic = module_dic['function']
                     func_str = json.dumps(func_dic, ensure_ascii=False, )
                     func_str = func_str.replace('"type"', '"type_"')
@@ -789,7 +789,7 @@ class _freeaiAPI:
 
                         hit = False
 
-                        for module_dic in function_modules:
+                        for module_dic in function_modules.values():
                             if (f_name == module_dic['func_name']):
                                 hit = True
                                 self.print(session_id, f" FreeAI :   function_call '{ module_dic['script'] }' ({ f_name })")
@@ -892,7 +892,7 @@ class _freeaiAPI:
 
 
     def chatBot(self, chat_class='auto', model_select='auto',
-                session_id='admin', history=[], function_modules=[],
+                session_id='admin', history=[], function_modules={},
                 sysText=None, reqText=None, inpText='こんにちは', 
                 filePath=[],
                 temperature=0.8, max_step=10, jsonSchema=None,
@@ -975,7 +975,7 @@ if __name__ == '__main__':
         print('authenticate:', res, )
         if (res == True):
             
-            function_modules = []
+            function_modules = {}
             filePath         = []
 
             if True:
@@ -988,9 +988,9 @@ if __name__ == '__main__':
                     print(msg)
                     print()
 
-                for module_dic in botFunc.function_modules:
+                for key, module_dic in botFunc.function_modules.items():
                     if (module_dic['onoff'] == 'on'):
-                        function_modules.append(module_dic)
+                        function_modules[key] = module_dic
 
             if True:
                 sysText = None

@@ -850,7 +850,7 @@ class CoreAiClass:
                 "upd_time": now_time, "dsp_time": None, }
 
         # function_modules 設定
-        function_modules = []
+        function_modules = {}
         if (req_functions == 'yes,'):
             if (self.botFunc is not None):
                 function_modules = self.botFunc.function_modules
@@ -1631,7 +1631,7 @@ class CoreAiClass:
         try:
             # Agent
             ext_module = None
-            for module_dic in self.botFunc.function_modules:
+            for module_dic in self.botFunc.function_modules.values():
                 if (module_dic['script'] == '認証済_web操作Agent'):
                     ext_module = module_dic
                     break
@@ -1680,7 +1680,7 @@ class CoreAiClass:
         try:
             # Agent
             ext_module = None
-            for module_dic in self.botFunc.function_modules:
+            for module_dic in self.botFunc.function_modules.values():
                 if (module_dic['script'] == '認証済_research操作Agent'):
                     ext_module = module_dic
                     break

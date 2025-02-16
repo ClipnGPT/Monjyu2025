@@ -93,11 +93,12 @@ if __name__ == '__main__':
     # インストール確認
     try:
         import_flag = False
+        import pygame
+        import playwright
         import gradio
         import json_repair
     except:
         import_flag = True
-    pip_install('browser-use', '0.1.29')
 
     # 動的インストール
     if (import_flag == True) \
@@ -118,28 +119,25 @@ if __name__ == '__main__':
         pip_install('wheel')
         pip_install('setuptools')
 
+        pip_install('pygame')
+        pip_install('playwright')
+
+        # browser-use
+        pip_install('langchain-openai')
+        pip_install('langchain-anthropic')
+        pip_install('langchain-google-genai')
+        #pip_install('browser-use')
+        pip_install('browser-use', '0.1.29')
+
         requirement_file = qPath_sandbox + qWebUI_name + '/requirements.txt'
         if (not os.path.isfile(requirement_file)):
 
-            pip_install('pygame')
-            pip_install('playwright')
-
             # web-ui
-            #pip_install('browser-use')
-            pip_install('browser-use', '0.1.29')
+            #pip_install('browser-use', '0.1.29')
             pip_install('pyperclip')
             pip_install('gradio')
             pip_install('json-repair')
-            #pip_install('langchain-openai')
-            #pip_install('langchain-google-genai')
-            #pip_install('langchain-anthropic')
             pip_install('langchain-mistralai')
-
-        print('playwright install ...')
-        if (os.name == 'nt'):
-            install_proc1 = subprocess.Popen(['cmd', '/c', 'start /min playwright install'], shell=True, )
-        else:
-            install_proc1 = subprocess.Popen(['playwright install'])
 
         if (os.path.isfile(requirement_file)):
             print('requirements install ...')
@@ -147,6 +145,12 @@ if __name__ == '__main__':
                 install_proc2 = subprocess.call(['cmd', '/c', f"pip install -r { requirement_file }"], shell=True, )
             else:
                 install_proc2 = subprocess.call([f"pip install -r { requirement_file }"])
+
+        print('playwright install ...')
+        if (os.name == 'nt'):
+            install_proc1 = subprocess.Popen(['cmd', '/c', 'start /min playwright install'], shell=True, )
+        else:
+            install_proc1 = subprocess.Popen(['playwright install'])
 
         print('install complete! ')
 

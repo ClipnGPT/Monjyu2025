@@ -58,10 +58,6 @@ class _worker_class:
 
     def __init__(self, runMode='assistant', ):
         self.runMode = runMode
-
-        # 設定
-        self.data = None
-        self.botFunc = None
         self.mixer_enable = False
 
         # woker設定
@@ -69,6 +65,12 @@ class _worker_class:
         self._running = False
         self.task_files = {}
         self.file_seq = 0
+
+        # main,data,addin,botFunc,
+        self.main    = None
+        self.data    = None
+        self.addin   = None
+        self.botFunc = None
 
     def start_worker(self):
         """ワーカースレッドを開始"""
@@ -96,12 +98,19 @@ class _worker_class:
             now_time = datetime.datetime.now()
             current_yymmdd = now_time.strftime('%Y%m%d')
             current_hh     = now_time.strftime('%H')
+            current_hh_mm  = now_time.strftime('%H:%M')
             current_hhmm   = now_time.strftime('%H%M')
             
             # 時刻が変化した場合に表示
             if (current_hh != self.last_hh):
+                if (self.last_hhmm is not None):
+                    print(f" TASK Worker : { current_hh_mm } ")
+                    for key in self.task_files.keys():
+                        key4 = key[:4]
+                        if  (key4 >= str(current_hh + '00')) \
+                        and (key4 <= str(current_hh + '59')):
+                            print(f" - '{ key }' ")
                 self.last_hh = current_hh
-                print(f" TASK Worker : { current_yymmdd } ")
                 self.task_files = {}
                 #res = self.load_task_files(path_base=qPath_task)
                 res = self.load_task_files(path_base=qPath_task_ai)
@@ -155,7 +164,7 @@ class _worker_class:
                         f_base = os.path.basename(f_name)
                         if (f_base[:4].isdigit()):
                             self.task_files[f_base] = f_name
-                            print(f" - '{ f_base }' ")
+                            #print(f" - '{ f_base }' ")
         return True
 
     def task_execute(self, hhmm='0000',):
@@ -351,7 +360,7 @@ class _worker_class:
         # AI要求送信
         try:
             if self.botFunc is not None:
-                for module_dic in self.botFunc.function_modules:
+                for module_dic in self.botFunc.function_modules.values():
 
                     # Monjyu 実行
                     if (module_dic['func_name'] == 'execute_monjyu_request'):
@@ -415,11 +424,15 @@ class _class:
         # リセット
         self.func_reset()
 
-    def func_reset(self, botFunc=None, data=None, ):
-        if botFunc is not None:
-            self.sub_worker.botFunc = botFunc
-        if data is not None:
+    def func_reset(self, main=None, data=None, addin=None, botFunc=None, ):
+        if (main is not None):
+            self.sub_worker.main = main
+        if (data is not None):
             self.sub_worker.data = data
+        if (addin is not None):
+            self.sub_worker.addin = addin
+        if (botFunc is not None):
+            self.sub_worker.botFunc = botFunc
         self.sub_worker.stop_worker()
         self.sub_worker.start_worker()
         return True

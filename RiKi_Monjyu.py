@@ -254,7 +254,7 @@ if __name__ == '__main__':
             try:
                 if (ext_module['onoff'] == 'on'):
                     func_reset = ext_module['func_reset']
-                    res  = func_reset(main=main, data=data, )
+                    res  = func_reset(main=main, data=data, addin=addin, botFunc=botFunc, )
                     print('reset', 'monjyu_UI_ClipnMonjyu')
             except Exception as e:
                 print(e)
@@ -277,9 +277,16 @@ if __name__ == '__main__':
             try:
                 if (ext_module['onoff'] == 'on'):
                     func_reset = ext_module['func_reset']
-                    res  = func_reset(botFunc=botFunc, data=data, )
+                    res  = func_reset(main=main, data=data, addin=addin, botFunc=botFunc, )
                     print('reset', 'monjyu_UI_key2Live_freeai')
                     liveai_enable = True
+
+                    data.live_models['freeai']  = ext_module['class'].sub_proc.liveAPI.live_models
+                    data.live_voices['freeai']  = ext_module['class'].sub_proc.liveAPI.live_voices
+                    data.live_setting['freeai'] = { "live_model": ext_module['class'].sub_proc.liveAPI.live_model,
+                                                    "live_voice": ext_module['class'].sub_proc.liveAPI.live_voice,
+                                                    "shot_interval_sec": str(ext_module['class'].sub_proc.liveAPI.shot_interval_sec),
+                                                    "clip_interval_sec": str(ext_module['class'].sub_proc.liveAPI.clip_interval_sec), }
             except Exception as e:
                 print(e)
 
@@ -290,18 +297,30 @@ if __name__ == '__main__':
             try:
                 if (ext_module['onoff'] == 'on'):
                     func_reset = ext_module['func_reset']
-                    res  = func_reset(botFunc=botFunc, data=data, )
+                    res  = func_reset(main=main, data=data, addin=addin, botFunc=botFunc, )
                     print('reset', 'monjyu_UI_key2Live_openai')
                     liveai_enable = True
+
+                    data.live_models['openai']  = ext_module['class'].sub_proc.liveAPI.live_models
+                    data.live_voices['openai']  = ext_module['class'].sub_proc.liveAPI.live_voices
+                    data.live_setting['openai'] = { "live_model": ext_module['class'].sub_proc.liveAPI.live_model,
+                                                    "live_voice": ext_module['class'].sub_proc.liveAPI.live_voice,
+                                                    "shot_interval_sec": str(ext_module['class'].sub_proc.liveAPI.shot_interval_sec),
+                                                    "clip_interval_sec": str(ext_module['class'].sub_proc.liveAPI.clip_interval_sec), }
             except Exception as e:
                 print(e)
 
         # web操作Agent
         webOperator_enable = False
-        for module_dic in botFunc.function_modules:
+        for module_dic in botFunc.function_modules.values():
             if (module_dic['func_name'] == 'web_operation_agent'):
                 try:
                     if (module_dic['onoff'] == 'on'):
+                        func_reset = module_dic['func_reset']
+                        res  = func_reset(main=main, data=data, addin=addin, botFunc=botFunc, )
+                        print('reset', 'web_operation_agent')
+                        webOperator_enable = True
+
                         data.webOperator_models['freeai'] = module_dic['class'].agent_models['freeai']
                         data.webOperator_models['openai'] = module_dic['class'].agent_models['openai']
                         data.webOperator_models['claude'] = module_dic['class'].agent_models['claude']
@@ -309,20 +328,21 @@ if __name__ == '__main__':
                                                         'model':    module_dic['class'].agent_model,
                                                         'max_step': module_dic['class'].agent_max_step,
                                                         'browser':  module_dic['class'].agent_browser, }
-                        func_reset = module_dic['func_reset']
-                        res  = func_reset(data=data, )
-                        print('reset', 'web_operation_agent')
-                        webOperator_enable = True
                 except Exception as e:
                     print(e)
                 break
 
         # research操作Agent
         researchAgent_enable = False
-        for module_dic in botFunc.function_modules:
+        for module_dic in botFunc.function_modules.values():
             if (module_dic['func_name'] == 'research_operation_agent'):
                 try:
                     if (module_dic['onoff'] == 'on'):
+                        func_reset = module_dic['func_reset']
+                        res  = func_reset(main=main, data=data, addin=addin, botFunc=botFunc, )
+                        print('reset', 'research_operation_agent')
+                        researchAgent_enable = True
+
                         data.researchAgent_models['freeai'] = module_dic['class'].agent_models['freeai']
                         data.researchAgent_models['openai'] = module_dic['class'].agent_models['openai']
                         data.researchAgent_models['claude'] = module_dic['class'].agent_models['claude']
@@ -330,10 +350,6 @@ if __name__ == '__main__':
                                                         'model':    module_dic['class'].agent_model,
                                                         'max_step': module_dic['class'].agent_max_step,
                                                         'browser':  module_dic['class'].agent_browser, }
-                        func_reset = module_dic['func_reset']
-                        res  = func_reset(data=data, )
-                        print('reset', 'research_operation_agent')
-                        researchAgent_enable = True
                 except Exception as e:
                     print(e)
                 break

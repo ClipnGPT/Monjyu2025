@@ -44,7 +44,9 @@ import pygame
 
 
 # インターフェース
-qPath_input   = 'temp/input/'
+qPath_input    = 'temp/input/'
+READY_BASE_SEC = 60
+READY_WAIT_SEC = 300
 
 # 定数の定義
 CORE_PORT = '8000'
@@ -68,10 +70,6 @@ class _clip_woker:
         if (not os.path.isdir(qPath_input)):
             os.makedirs(qPath_input)
 
-        # main/data
-        self.main = None
-        self.data = None
-
         # 変数設定
         self.last_string = "Monjyu READY!"
         self.last_image_hash = None
@@ -94,11 +92,11 @@ class _clip_woker:
     # Worker デーモン
     def proc_worker(self):
         startTime = time.time()
-        time.sleep(60.0)
+        time.sleep(READY_BASE_SEC)
         while True:
             hit = False
-            if ((self.main is None) and ((time.time() - startTime) > 120)) \
-            or ((self.main is not None) and (self.main.main_all_ready == True)):
+            if ((self.monjyu.main is None) and ((time.time() - startTime) > READY_WAIT_SEC)) \
+            or ((self.monjyu.main is not None) and (self.monjyu.main.main_all_ready == True)):
                 batch_string = None
                 batch_image  = None
                 batch_list   = None
@@ -359,9 +357,11 @@ class _monjyu_class:
     def __init__(self, runMode='assistant' ):
         self.runMode   = runMode
 
-        # main/data
-        self.main = None
-        self.data = None
+        # main,data,addin,botFunc,
+        self.main    = None
+        self.data    = None
+        self.addin   = None
+        self.botFunc = None
 
         # ポート設定等
         self.chat_models = {}
@@ -378,9 +378,9 @@ class _monjyu_class:
     # get_model デーモン
     def get_models(self):
         startTime = time.time()
-        time.sleep(60.00)
+        time.sleep(READY_BASE_SEC)
         while True:
-            if ((self.main is None) and ((time.time() - startTime) > 120)) \
+            if ((self.main is None) and ((time.time() - startTime) > READY_WAIT_SEC)) \
             or ((self.main is not None) and (self.main.main_all_ready == True)):
 
                 # ファイル添付
@@ -633,18 +633,20 @@ class _class:
         self.runMode    = 'assistant'
 
         # クリップボード監視
-        self.clipWorker = _clip_woker(runMode=self.runMode, )
+        self.clip_worker = _clip_woker(runMode=self.runMode, )
 
         # 結果をクリップボードへ
         self.clip2memo  = _clip_to_memo(runMode=self.runMode, )
 
-    def func_reset(self, main=None, data=None, ):
-        if main is not None:
-            self.clipWorker.main = main
-            self.clipWorker.monjyu.main = main
-        if data is not None:
-            self.clipWorker.data = data
-            self.clipWorker.monjyu.data = data
+    def func_reset(self, main=None, data=None, addin=None, botFunc=None, ):
+        if (main is not None):
+            self.clip_worker.monjyu.main = main
+        if (data is not None):
+            self.clip_worker.monjyu.data = data
+        if (addin is not None):
+            self.clip_worker.monjyu.addin = addin
+        if (botFunc is not None):
+            self.clip_worker.monjyu.botFunc = botFunc
         return True
 
     def func_proc(self, json_kwargs=None, ):
@@ -666,7 +668,7 @@ class _class:
             self.runMode = runMode
 
         # 処理
-        self.clipWorker.to_clip(sendText)
+        self.clip_worker.to_clip(sendText)
         self.clip2memo.to_memo(sendText)
 
         # 戻り
@@ -686,6 +688,6 @@ if __name__ == '__main__':
     json_kwargs = json.dumps(json_dic, ensure_ascii=False, )
     print(ext.func_proc(json_kwargs))
 
-    time.sleep(60)
+    time.sleep(120)
 
 

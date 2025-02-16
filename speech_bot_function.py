@@ -29,7 +29,7 @@ qRiKi_key = _v6__qRiKi_key.qRiKi_key_class()
 class botFunction:
 
     def __init__(self, ):
-        self.function_modules = []
+        self.function_modules = {}
 
     def init(self, ):
         return True
@@ -59,7 +59,6 @@ class botFunction:
                         ext_module = loader.load_module()
                         ext_onoff  = 'off'
                         ext_class  = ext_module._class()
-                        print('Functions Loading ... "' + ext_script + '" (' + ext_class.func_name + ') _class.func_proc')
                         ext_version     = ext_class.version
                         ext_func_name   = ext_class.func_name
                         ext_func_ver    = ext_class.func_ver
@@ -115,7 +114,8 @@ class botFunction:
                             module_dic['function']   = ext_function
                             module_dic['func_reset'] = ext_func_reset
                             module_dic['func_proc']  = ext_func_proc
-                            self.function_modules.append(module_dic)
+                            self.function_modules[ext_script] = module_dic
+                            print('Functions Loading ... "' + ext_script + '" (' + ext_class.func_name + ') ' + ext_onoff + '. ')
 
                     except Exception as e:
                         print(e)
@@ -127,14 +127,14 @@ class botFunction:
         res_reset_msg = ''
         #print('Reset functions ... ')
 
-        for module_dic in self.function_modules:
+        for module_dic in self.function_modules.values():
             ext_script     = module_dic['script']
             ext_func_name  = module_dic['func_name']
             ext_func_reset = module_dic['func_reset']
-            print('Functions Reset   ... "' + ext_script + '" (' + ext_func_name + ') _class.func_reset')
             try:
                 res = False
                 res = ext_func_reset()
+                print('Functions Reset   ... "' + ext_script + '" (' + ext_func_name + ') OK. ')
             except:
                 pass
             if (res == False):
@@ -149,23 +149,22 @@ class botFunction:
         res_unload_msg = ''
         #print('Unload functions ... ')
 
-        for module_dic in self.function_modules:
+        for module_dic in self.function_modules.values():
             ext_script    = module_dic['script']
             ext_func_name = module_dic['func_name']
             ext_module    = module_dic['module']
             ext_class     = module_dic['class']
             ext_func_proc = module_dic['func_proc']
-            print('Functions Unload  ... "' + ext_script + '" (' + ext_func_name + ') _class.func_proc')
-
             try:
                 #del ext_func_proc
                 del ext_class
                 del ext_module
+                print('Functions Unload  ... "' + ext_script + '" (' + ext_func_name + ') OK. ')
             except:
                 res_unload_all = False
                 res_unload_msg += ext_func_name + 'の開放中にエラーがありました。' + '\n'
 
-        self.function_modules = []
+        self.function_modules = {}
 
         return res_unload_all, res_unload_msg
 
