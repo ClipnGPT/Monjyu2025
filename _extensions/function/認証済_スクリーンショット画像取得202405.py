@@ -18,7 +18,7 @@ import glob
 
 import json
 
-import pygame
+from playsound3 import playsound
 
 import screeninfo
 import pyautogui
@@ -53,7 +53,6 @@ else:
 class scrnShot_class:
     def __init__(self, runMode='assistant', ):
         self.runMode      = runMode
-        self.mixer_enable = False
         
         # ディレクトリ作成
         if (not os.path.isdir(qPath_output)):
@@ -66,32 +65,16 @@ class scrnShot_class:
             os.makedirs(qPath_videos)
 
     def play(self, outFile='temp/_work/sound.mp3', ):
-        if (not os.path.exists(outFile)):
+        if (outFile is None) or (outFile == ''):
             return False
-
-        # ミキサー開始、リセット
-        if (self.mixer_enable == False):
-            try:
-                pygame.mixer.init()
-                self.mixer_enable = True
-            except Exception as e:
-                print(e)
-
-        # ミキサー再生
-        if (self.mixer_enable == True):
-            try:
-                #print(outFile)
-                #pygame.mixer.init()
-                pygame.mixer.music.load(outFile)
-                pygame.mixer.music.play(1)
-                while (pygame.mixer.music.get_busy() == True):
-                    time.sleep(0.10)
-                pygame.mixer.music.unload()
-                return True
-            except Exception as e:
-                print(e)
-                self.mixer_enable = False
-
+        if (not os.path.isfile(outFile)):
+            return False
+        try:
+            # 再生
+            playsound(sound=outFile, block=True, )
+            return True
+        except Exception as e:
+            print(e)
         return False
 
     def screen_shot(self, screen_number='auto', ):

@@ -19,7 +19,7 @@ import glob
 import json
 import base64
 import pyaudio
-import pygame
+from playsound3 import playsound
 import wave
 
 import threading
@@ -267,7 +267,6 @@ class _key2Action:
 
 class _live_api_freeai:
     def __init__(self, api_key, ):
-        self.mixer_enable = False
 
         # 実行パラメータ
         self.live_models = LIVE_MODELS
@@ -328,29 +327,16 @@ class _live_api_freeai:
         self.monjyu = _monjyu_class(runMode='assistant', )
 
     def play(self, outFile='temp/_work/sound.mp3', ):
-        if (not os.path.exists(outFile)):
+        if (outFile is None) or (outFile == ''):
             return False
-        # ミキサー開始、リセット
-        if (self.mixer_enable == False):
-            try:
-                pygame.mixer.init()
-                self.mixer_enable = True
-            except Exception as e:
-                print(e)
-        # ミキサー再生
-        if (self.mixer_enable == True):
-            try:
-                #print(outFile)
-                #pygame.mixer.init()
-                pygame.mixer.music.load(outFile)
-                pygame.mixer.music.play(1)
-                while (pygame.mixer.music.get_busy() == True):
-                    time.sleep(0.10)
-                pygame.mixer.music.unload()
-                return True
-            except Exception as e:
-                print(e)
-                self.mixer_enable = False
+        if (not os.path.isfile(outFile)):
+            return False
+        try:
+            # 再生
+            playsound(sound=outFile, block=True, )
+            return True
+        except Exception as e:
+            print(e)
         return False
 
     async def input_audio(self):

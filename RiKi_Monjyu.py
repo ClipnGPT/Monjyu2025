@@ -24,10 +24,10 @@ import multiprocessing
 
 # ダミーインポート
 #import pip
-import pygame
+from playsound3 import playsound
+import pynput
 import screeninfo
 import pyautogui
-import pynput
 import pyperclip
 import hashlib
 import PIL  # Pillow

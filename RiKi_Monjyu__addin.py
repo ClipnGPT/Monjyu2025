@@ -93,77 +93,77 @@ class _addin_class:
                         file_name = os.path.splitext(base_name)[0]
                         print('Addins    Loading ... "' + file_name + '" ...')
                         loader = importlib.machinery.SourceFileLoader(file_name, f)
-                        ext_script = file_name
-                        ext_module = loader.load_module()
-                        ext_onoff = 'off'
-                        ext_class = ext_module._class()
+                        addin_script = file_name
+                        addin_module = loader.load_module()
+                        addin_onoff = 'off'
+                        addin_class = addin_module._class()
                         
                         # クラスの情報取得
-                        ext_version = ext_class.version
-                        ext_func_name = ext_class.func_name
-                        ext_func_ver = ext_class.func_ver
-                        ext_func_auth = ext_class.func_auth
-                        ext_function = ext_class.function
-                        ext_func_reset = ext_class.func_reset
-                        ext_func_proc = ext_class.func_proc
+                        addin_version = addin_class.version
+                        addin_func_name = addin_class.func_name
+                        addin_func_ver = addin_class.func_ver
+                        addin_func_auth = addin_class.func_auth
+                        addin_function = addin_class.function
+                        addin_func_reset = addin_class.func_reset
+                        addin_func_proc = addin_class.func_proc
                         # コード認証
                         auth = False
                         if self.secure_level in ['low', 'medium']:
-                            if ext_func_auth == '':
+                            if addin_func_auth == '':
                                 auth = '1' # 注意
                                 if self.secure_level != 'low':
-                                    res_load_msg += '"' + ext_script + '"が認証されていません。(Warning!)' + '\n'
+                                    res_load_msg += '"' + addin_script + '"が認証されていません。(Warning!)' + '\n'
                             else:
-                                auth = qRiKi_key.decryptText(text=ext_func_auth)
-                                if auth != ext_func_name + '-' + ext_func_ver and (self.organization_auth != '' and auth != self.organization_auth):
+                                auth = qRiKi_key.decryptText(text=addin_func_auth)
+                                if auth != addin_func_name + '-' + addin_func_ver and (self.organization_auth != '' and auth != self.organization_auth):
                                     if self.secure_level == 'low':
                                         auth = '1' # 注意
-                                        res_load_msg += '"' + ext_script + '"は改ざんされたコードです。(Warning!)' + '\n'
+                                        res_load_msg += '"' + addin_script + '"は改ざんされたコードです。(Warning!)' + '\n'
                                     else:
-                                        res_load_msg += '"' + ext_script + '"は改ざんされたコードです。Loadingはキャンセルされます。' + '\n'
+                                        res_load_msg += '"' + addin_script + '"は改ざんされたコードです。Loadingはキャンセルされます。' + '\n'
                                         res_load_all = False
                                 else:
                                     auth = '2' # 認証
-                                    ext_onoff = 'on'
+                                    addin_onoff = 'on'
                         else:
-                            if ext_func_auth == '':
-                                res_load_msg += '"' + ext_script + '"が認証されていません。Loadingはキャンセルされます。' + '\n'
+                            if addin_func_auth == '':
+                                res_load_msg += '"' + addin_script + '"が認証されていません。Loadingはキャンセルされます。' + '\n'
                                 res_load_all = False
                             else:
-                                auth = qRiKi_key.decryptText(text=ext_func_auth)
-                                if auth != ext_func_name + '-' + ext_func_ver and (self.organization_auth != '' and auth != self.organization_auth):
-                                    res_load_msg += '"' + ext_script + '"は改ざんされたコードです。Loadingはキャンセルされます。' + '\n'
+                                auth = qRiKi_key.decryptText(text=addin_func_auth)
+                                if auth != addin_func_name + '-' + addin_func_ver and (self.organization_auth != '' and auth != self.organization_auth):
+                                    res_load_msg += '"' + addin_script + '"は改ざんされたコードです。Loadingはキャンセルされます。' + '\n'
                                     res_load_all = False
                                 else:
                                     auth = '2' # 認証
-                                    ext_onoff = 'on'
+                                    addin_onoff = 'on'
                         # モジュールの登録
                         if auth != False:
                             module_dic = {
-                                'script': ext_script,
-                                'module': ext_module,
-                                'onoff': ext_onoff,
-                                'class': ext_class,
-                                'func_name': ext_func_name,
-                                'func_ver': ext_func_ver,
-                                'func_auth': ext_func_auth,
-                                'function': ext_function,
-                                'func_reset': ext_func_reset,
-                                'func_proc': ext_func_proc
+                                'script': addin_script,
+                                'module': addin_module,
+                                'onoff': addin_onoff,
+                                'class': addin_class,
+                                'func_name': addin_func_name,
+                                'func_ver': addin_func_ver,
+                                'func_auth': addin_func_auth,
+                                'function': addin_function,
+                                'func_reset': addin_func_reset,
+                                'func_proc': addin_func_proc
                             }
-                            self.addin_modules[ext_script] = module_dic
-                            print('Addins    Loading ... "' + ext_script + '" (' + ext_class.func_name + ') ' + ext_onoff + '. ')
+                            self.addin_modules[addin_script] = module_dic
+                            print('Addins    Loading ... "' + addin_script + '" (' + addin_class.func_name + ') ' + addin_onoff + '. ')
                             # 特定アドインのプロシージャを設定
-                            if ext_script == 'addin_directive':
-                                self.addin_directive = ext_func_proc
-                            elif ext_script == 'addin_pdf':
-                                self.addin_pdf = ext_func_proc
-                            elif ext_script == 'addin_url':
-                                self.addin_url = ext_func_proc
-                            elif ext_script == 'addin_ocr':
-                                self.addin_ocr = ext_func_proc
-                            elif ext_script == 'addin_autoSandbox':
-                                self.addin_autoSandbox = ext_func_proc
+                            if addin_script == 'addin_directive':
+                                self.addin_directive = addin_func_proc
+                            elif addin_script == 'addin_pdf':
+                                self.addin_pdf = addin_func_proc
+                            elif addin_script == 'addin_url':
+                                self.addin_url = addin_func_proc
+                            elif addin_script == 'addin_ocr':
+                                self.addin_ocr = addin_func_proc
+                            elif addin_script == 'addin_autoSandbox':
+                                self.addin_autoSandbox = addin_func_proc
                     except Exception as e:
                         print(e)
         return res_load_all, res_load_msg
@@ -175,18 +175,18 @@ class _addin_class:
         
         # アドインのリセット処理
         for module_dic in self.addin_modules.values():
-            ext_script = module_dic['script']
-            ext_func_name = module_dic['func_name']
-            ext_func_reset = module_dic['func_reset']
+            addin_script = module_dic['script']
+            addin_func_name = module_dic['func_name']
+            addin_func_reset = module_dic['func_reset']
             try:
-                res = ext_func_reset()
-                print('Addins    Reset   ... "' + ext_script + '" (' + ext_func_name + ') OK. ')
+                res = addin_func_reset()
+                print('Addins    Reset   ... "' + addin_script + '" (' + addin_func_name + ') OK. ')
             except:
                 res = False
             if not res:
                 module_dic['onoff'] = 'off'
                 res_reset_all = False
-                res_reset_msg += ext_func_name + 'のリセット中にエラーがありました。' + '\n'
+                res_reset_msg += addin_func_name + 'のリセット中にエラーがありました。' + '\n'
         return res_reset_all, res_reset_msg
 
     # アドインのアンロード
@@ -195,18 +195,18 @@ class _addin_class:
         res_unload_msg = ''
         # アドインのアンロード処理
         for module_dic in self.addin_modules.values():
-            ext_script = module_dic['script']
-            ext_func_name = module_dic['func_name']
-            ext_module = module_dic['module']
-            ext_class = module_dic['class']
+            addin_script = module_dic['script']
+            addin_func_name = module_dic['func_name']
+            addin_module = module_dic['module']
+            addin_class = module_dic['class']
             try:
                 # クラスとモジュールの削除
-                del ext_class
-                del ext_module
-                print('Addins    Unload  ... "' + ext_script + '" (' + ext_func_name + ') OK. ')
+                del addin_class
+                del addin_module
+                print('Addins    Unload  ... "' + addin_script + '" (' + addin_func_name + ') OK. ')
             except:
                 res_unload_all = False
-                res_unload_msg += ext_func_name + 'の開放中にエラーがありました。' + '\n'
+                res_unload_msg += addin_func_name + 'の開放中にエラーがありました。' + '\n'
         self.addin_modules = {}
         return res_unload_all, res_unload_msg
 

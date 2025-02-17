@@ -1,6 +1,6 @@
 import requests
 import json
-from playsound import playsound
+from playsound3 import playsound
 
 def voicevox_speech(text, speaker=1):
     # 音声合成用のクエリを作成
@@ -21,7 +21,7 @@ def voicevox_speech(text, speaker=1):
         f.write(synthesis_response.content)
     
     # 音声を再生
-    playsound("output.wav")
+    playsound(sound="output.wav", block=True, )
 
 # 使用例
 voicevox_speech("こんにちは、ずんだもんです")

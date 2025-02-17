@@ -37,7 +37,8 @@ ECHO -------
     python -m pip  install --upgrade psutil
     python -m pip  install --upgrade rainbow-logging-handler
     python -m pip  install --upgrade pycryptodome
-    python -m pip  install --upgrade pygame
+rem python -m pip  install --upgrade pygame
+    python -m pip  install --upgrade playsound3
     python -m pip  install --upgrade pynput
 
     python -m pip  install --upgrade numpy

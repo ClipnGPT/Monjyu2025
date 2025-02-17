@@ -88,7 +88,7 @@ if __name__ == '__main__':
     # インストール確認
     try:
         import_flag = False
-        import pygame
+        from playsound3 import playsound
         import playwright
 
         import langchain_openai
@@ -108,14 +108,14 @@ if __name__ == '__main__':
         pip_install('wheel')
         pip_install('setuptools')
 
-        pip_install('pygame')
+        pip_install('playsound3')
         pip_install('playwright')
 
         pip_install('langchain-openai')
         pip_install('langchain-anthropic')
         pip_install('langchain-google-genai')
         #pip_install('browser-use')
-        pip_install('browser-use', '0.1.29')
+        pip_install('browser-use', '0.1.37')
 
         print('playwright install ...')
         if (os.name == 'nt'):

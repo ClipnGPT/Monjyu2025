@@ -19,7 +19,7 @@ import glob
 import json
 import threading
 
-import pygame
+from playsound3 import playsound
 import subprocess
 import requests
 
@@ -58,7 +58,6 @@ class _worker_class:
 
     def __init__(self, runMode='assistant', ):
         self.runMode = runMode
-        self.mixer_enable = False
 
         # woker設定
         self.worker = None
@@ -104,7 +103,7 @@ class _worker_class:
             # 時刻が変化した場合に表示
             if (current_hh != self.last_hh):
                 if (self.last_hhmm is not None):
-                    print(f" TASK Worker : { current_hh_mm } ")
+                    print(f" TASK Worker  : { current_hh_mm } ")
                     for key in self.task_files.keys():
                         key4 = key[:4]
                         if  (key4 >= str(current_hh + '00')) \
@@ -171,7 +170,7 @@ class _worker_class:
         for f_base, f_name in self.task_files.items():
             if (f_base[:4] == hhmm):
                 name, ext = os.path.splitext(f_base)
-                print(f" TASK Worker : { hhmm } - '{ f_base }' ", ext)
+                print(f" TASK Worker  : { hhmm } - '{ f_base }' ", ext)
 
                 try:
                     now_time  = datetime.datetime.now()
@@ -199,7 +198,7 @@ class _worker_class:
 
                     # .mp3, .wav,
                     elif (ext.lower() in ['.mp3', '.wav']):
-                        self.play_sound(play_file=f_name)
+                        self.play(outFile=f_name, )
 
                     # .mp4,
                     elif (ext.lower() == '.mp4'):
@@ -288,33 +287,17 @@ class _worker_class:
             print(e)
         return False
 
-    def play_sound(self, play_file='temp/_work/sound.mp3', ):
-        file = play_file
-        if (os.name == 'nt'):
-            file = play_file.replace('/','\\')
-        if (not os.path.exists(file)):
+    def play(self, outFile='temp/_work/sound.mp3', ):
+        if (outFile is None) or (outFile == ''):
             return False
-        # ミキサー開始、リセット
-        if (self.mixer_enable == False):
-            try:
-                pygame.mixer.init()
-                self.mixer_enable = True
-            except Exception as e:
-                print(e)
-        # ミキサー再生
-        if (self.mixer_enable == True):
-            try:
-                #print(outFile)
-                #pygame.mixer.init()
-                pygame.mixer.music.load(file)
-                pygame.mixer.music.play(1)
-                while (pygame.mixer.music.get_busy() == True):
-                    time.sleep(0.10)
-                pygame.mixer.music.unload()
-                return True
-            except Exception as e:
-                print(e)
-                self.mixer_enable = False
+        if (not os.path.isfile(outFile)):
+            return False
+        try:
+            # 再生
+            playsound(sound=outFile, block=True, )
+            return True
+        except Exception as e:
+            print(e)
         return False
 
     def play_video(self, play_file='temp/_work/sound.mp4', ):

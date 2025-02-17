@@ -18,7 +18,7 @@ import datetime
 import codecs
 import glob
 
-import pygame
+from playsound3 import playsound
 import threading
 import requests
 
@@ -105,7 +105,6 @@ def txtsWrite(filename, txts=[''], encoding='utf-8', mode='w', ):
 
 class _researchAgent_class:
     def __init__(self, ):
-        self.mixer_enable = False
         self.monjyu = _monjyu_class(runMode='agent', )
 
         # APIキーを取得
@@ -155,29 +154,16 @@ class _researchAgent_class:
             webui_proc = subprocess.Popen([f"{ self.webui_bat }"])
 
     def play(self, outFile='temp/_work/sound.mp3', ):
-        if (not os.path.exists(outFile)):
+        if (outFile is None) or (outFile == ''):
             return False
-        # ミキサー開始、リセット
-        if (self.mixer_enable == False):
-            try:
-                pygame.mixer.init()
-                self.mixer_enable = True
-            except Exception as e:
-                print(e)
-        # ミキサー再生
-        if (self.mixer_enable == True):
-            try:
-                #print(outFile)
-                #pygame.mixer.init()
-                pygame.mixer.music.load(outFile)
-                pygame.mixer.music.play(1)
-                while (pygame.mixer.music.get_busy() == True):
-                    time.sleep(0.10)
-                pygame.mixer.music.unload()
-                return True
-            except Exception as e:
-                print(e)
-                self.mixer_enable = False
+        if (not os.path.isfile(outFile)):
+            return False
+        try:
+            # 再生
+            playsound(sound=outFile, block=True, )
+            return True
+        except Exception as e:
+            print(e)
         return False
 
     def stop_agent(self):

@@ -93,7 +93,7 @@ if __name__ == '__main__':
     # インストール確認
     try:
         import_flag = False
-        import pygame
+        from playsound3 import playsound
         import playwright
         import gradio
         import json_repair
@@ -119,7 +119,7 @@ if __name__ == '__main__':
         pip_install('wheel')
         pip_install('setuptools')
 
-        pip_install('pygame')
+        pip_install('playsound3')
         pip_install('playwright')
 
         # browser-use
@@ -127,13 +127,13 @@ if __name__ == '__main__':
         pip_install('langchain-anthropic')
         pip_install('langchain-google-genai')
         #pip_install('browser-use')
-        pip_install('browser-use', '0.1.29')
+        pip_install('browser-use', '0.1.37')
 
         requirement_file = qPath_sandbox + qWebUI_name + '/requirements.txt'
         if (not os.path.isfile(requirement_file)):
 
             # web-ui
-            #pip_install('browser-use', '0.1.29')
+            #pip_install('browser-use', '0.1.37')
             pip_install('pyperclip')
             pip_install('gradio')
             pip_install('json-repair')

@@ -21,7 +21,7 @@ import json
 import queue
 import threading
 
-import pygame
+from playsound3 import playsound
 
 from pynput import keyboard, mouse
 #import pyautogui
@@ -41,7 +41,6 @@ class _play_woker:
 
     def __init__(self, runMode='assistant', ):
         self.runMode      = runMode
-        self.mixer_enable = False
 
         # ディレクトリ作成
         if (not os.path.isdir(qPath_play)):
@@ -62,7 +61,6 @@ class _play_woker:
         self.worker_proc.start()
 
     def init(self, ):
-        self.mixer_enable = False
         return True
 
     # キーボード監視 開始
@@ -118,7 +116,7 @@ class _play_woker:
                 (x, y) = self.mouse_position()
                 self.last_mouse_x = x
                 self.last_mouse_y = y
-                hit = self.play_proc()
+                hit = self.play_check()
             except:
                 pass
             if hit == True:
@@ -128,7 +126,7 @@ class _play_woker:
 
         return True
 
-    def play_proc(self, remove=True, ):
+    def play_check(self, remove=True, ):
         res        = False
         about_flag = False
         
@@ -185,33 +183,17 @@ class _play_woker:
 
         return res
 
-    def play(self, outFile='temp/_work/tts.mp3', ):
-        if (not os.path.exists(outFile)):
+    def play(self, outFile='temp/_work/sound.mp3', ):
+        if (outFile is None) or (outFile == ''):
             return False
-
-        # ミキサー開始、リセット
-        if (self.mixer_enable == False):
-            try:
-                pygame.mixer.init()
-                self.mixer_enable = True
-            except Exception as e:
-                print(e)
-
-        # ミキサー再生
-        if (self.mixer_enable == True):
-            try:
-                #print(outFile)
-                #pygame.mixer.init()
-                pygame.mixer.music.load(outFile)
-                pygame.mixer.music.play(1)
-                while (pygame.mixer.music.get_busy() == True):
-                    time.sleep(0.10)
-                pygame.mixer.music.unload()
-                return True
-            except Exception as e:
-                print(e)
-                self.mixer_enable = False
-
+        if (not os.path.isfile(outFile)):
+            return False
+        try:
+            # 再生
+            playsound(sound=outFile, block=True, )
+            return True
+        except Exception as e:
+            print(e)
         return False
 
     def remove(self, filename, maxWait=1, ):
