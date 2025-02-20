@@ -35,6 +35,7 @@ qText_start       = 'Research-Agent function start!'
 qText_complete    = 'Research-Agent function complete!'
 qIO_func2py       = 'temp/research操作Agent_func2py.txt'
 qIO_py2func       = 'temp/research操作Agent_py2func.txt'
+qIO_liveAiRun     = 'temp/monjyu_live_ai_run.txt'
 qIO_agent2live    = 'temp/monjyu_io_agent2live.txt'
 
 qPath_sandbox     = 'temp/sandbox/'
@@ -107,6 +108,9 @@ class _researchAgent_class:
     def __init__(self, ):
         self.monjyu = _monjyu_class(runMode='agent', )
 
+        # 接続
+        self.client = None
+
         # APIキーを取得
         self.openai_organization = os.environ.get('OPENAI_ORGANIZATION', '< ? >')
         self.openai_key_id = os.environ.get('OPENAI_API_KEY', '< ? >')
@@ -166,9 +170,22 @@ class _researchAgent_class:
             print(e)
         return False
 
+    def client_open(self):
+        if (self.client is None):
+            try:
+                self.client = gradio_client.Client("http://localhost:7788/")
+                return self.client
+            except Exception as e:
+                print('gradio_client open error!', e)
+                self.client = None
+        return self.client
+
     def stop_agent(self):
+        client = self.client_open()
+        if (client is None):
+            print('gradio_client not open error!')
+            return False
         try:
-            client = gradio_client.Client("http://localhost:7788/")
             result = client.predict(api_name="/stop_agent")
             print(result)
             return True
@@ -177,9 +194,27 @@ class _researchAgent_class:
         return False
 
     def stop_research_agent(self):
+        client = self.client_open()
+        if (client is None):
+            print('gradio_client not open error!')
+            return False
         try:
-            client = gradio_client.Client("http://localhost:7788/")
             result = client.predict(api_name="/stop_research_agent")
+            print(result)
+            return True
+        except Exception as e:
+            print(e)
+        return False
+
+    def close_global_browser(self):
+        client = self.client_open()
+        if (client is None):
+            print('gradio_client not open error!')
+            return False
+        try:
+            result = client.predict(api_name="/close_global_browser")
+            print(result)
+            result = client.predict(api_name="/close_global_browser_1")
             print(result)
             return True
         except Exception as e:
@@ -201,12 +236,18 @@ class _researchAgent_class:
         return True
 
     def run_deep_search(self, request_text='',):
+        client = self.client_open()
+        if (client is None):
+            print('gradio_client not open error!')
+            return False
+
         # 開始音
         self.play(outFile='_sounds/_sound_accept.mp3')
 
         # 旧中断
         self.stop_agent()
         self.stop_research_agent()
+        self.close_global_browser()
 
         # パラメータ
         if   (self.agent_engine == 'openai'):
@@ -223,10 +264,9 @@ class _researchAgent_class:
             headless = False
         else:
             use_own_browser = False
-            headless = True
+            headless = False
 
         # 実行
-        client = gradio_client.Client("http://localhost:7788/")
         result = client.predict(
                 api_name="/run_deep_search",
                 research_task=request_text,
@@ -248,11 +288,17 @@ class _researchAgent_class:
         result_text = ''
         for res in result:
             #print("#" + res + "#")
+            if (res is None):
+                break
             if (res != '') and (res != '[]'):
                 if (res[:2] != 'C:'):
                     result_text += res + '\n'
             else:
                 break
+
+        # 終了
+        self.stop_research_agent()
+        self.close_global_browser()
 
         # live, Monjyu, 連携
         self._result(result_text=result_text, )
@@ -265,12 +311,18 @@ class _researchAgent_class:
         return True
 
     def run_with_stream(self, request_text='',):
+        client = self.client_open()
+        if (client is None):
+            print('gradio_client not open error!')
+            return False
+
         # 開始音
         self.play(outFile='_sounds/_sound_accept.mp3')
 
         # 旧中断
         self.stop_agent()
         self.stop_research_agent()
+        #self.close_global_browser()
 
         # パラメータ
         if   (self.agent_engine == 'openai'):
@@ -288,7 +340,6 @@ class _researchAgent_class:
             use_own_browser = False
 
         # 実行
-        client = gradio_client.Client("http://localhost:7788/")
         result = client.predict(
                 api_name="/run_with_stream",
                 task=request_text,
@@ -327,8 +378,13 @@ class _researchAgent_class:
             else:
                 break
 
-        # live, Monjyu, 連携
-        self._result(result_text=result_text, )
+        # Monjyu, Live, 連携
+        #self._result(request_text=request_text, result_text=result_text, )
+        result_thread = threading.Thread(
+            target=self._result,args=(request_text, result_text, ),
+            daemon=True
+        )
+        result_thread.start()
 
         # 終了音
         if (result_text != '') and (result_text != '!'):
@@ -337,46 +393,50 @@ class _researchAgent_class:
             self.play(outFile='_sounds/_sound_ng.mp3')
         return True
 
-    def _result(self, result_text='',):
+    def _result(self, request_text='', result_text='', ):
         try:
-            print('Research-Agent : (result)')
-            print(result_text)
+            #print('Research-Agent : (result)')
+            #print(result_text)
 
-            # Live 連携
-            text = ''
-            text += f"[RESULT] AIエージェント Research-Agent(リサーチエージェント: browser-use/web-ui/{ self.agent_engine }/{ self.agent_model }) \n"
-            text += request_text.rstrip() + '\n'
-            text += "について、以下が結果報告です。要約して日本語音声で報告してください。\n"
-            text += result_text.rstrip() + '\n\n'
-            res = io_text_write(qIO_agent2live, text)
-
-            # Monjyu 連携
-            reqText = request_text
+            # Monjyu 連携 (結果通知)
+            reqText = request_text.rstrip() + '\n'
             inpText = ''
-            outText = f"[Research-Agent] ({ self.agent_engine }/{ self.agent_model })\n" + result_text
-            outData = result_text
+            outText = f"[Research-Agent] ({ self.agent_engine }/{ self.agent_model })\n"
+            outText += result_text.rstrip() + '\n'
+            outData = result_text.rstrip() + '\n'
 
             # (output_log)
             try:
-                #self.monjyu.post_output_log(outText=outText, outData=outText)
-                outlog_thread = threading.Thread(
-                    target=self.monjyu.post_output_log,args=(outText, outText),
-                    daemon=True
-                )
-                outlog_thread.start()
+                self.monjyu.post_output_log(outText=outText, outData=outText)
             except Exception as e:
                 print(e)
 
             # (histories)
             try:
-                #self.monjyu.post_histories(reqText=reqText, inpText=inpText, outText=outText, outData=outData)
-                histories_thread = threading.Thread(
-                    target=self.monjyu.post_histories,args=(reqText, inpText, outText, outData),
-                    daemon=True
-                )
-                histories_thread.start()
+                self.monjyu.post_histories(reqText=reqText, inpText=inpText, outText=outText, outData=outData)
             except Exception as e:
                 print(e)
+
+            # Live 連携
+            if (os.path.isfile(qIO_liveAiRun)):
+                text = f"[RESULT] AIエージェント Research-Agent(リサーチエージェント: browser-use/web-ui/{ self.agent_engine }/{ self.agent_model }) \n"
+                text += request_text.rstrip() + '\n'
+                text += "について、以下が結果報告です。要約して日本語の音声で報告してください。\n"
+                text += result_text.rstrip() + '\n\n'
+                res = io_text_write(qIO_agent2live, text)
+
+            # Monjyu 連携 (tts指示)
+            else:
+                sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
+                reqText = f"AIエージェントの実行結果の報告です。"
+                reqText += request_text.rstrip() + '\n'
+                reqText += "について、以下が結果報告です。要約して日本語で音声合成(execute_text_to_speech)してください。\n"
+                inpText = f"[Research-Agent] ({ self.agent_engine }/{ self.agent_model })\n"
+                inpText += result_text.rstrip() + '\n'
+                try:
+                    res_port = self.monjyu.request(req_mode='chat', user_id='admin', sysText=sysText, reqText=reqText, inpText=inpText, )
+                except Exception as e:
+                    print(e)
 
         except Exception as e:
             print(f"_result: {e}")
@@ -430,6 +490,30 @@ class _monjyu_class:
             print('error', f"Error communicating ({ CORE_PORT }/post_histories) : {e}")
             return False
         return True
+
+    def request(self, req_mode='chat', user_id='admin', sysText='', reqText='', inpText='', ):
+        res_port = None
+
+        # ファイル添付
+        file_names = []
+
+        # AI要求送信
+        try:
+            response = requests.post(
+                self.local_endpoint + '/post_req',
+                json={'user_id': user_id, 'from_port': CORE_PORT, 'to_port': '',
+                    'req_mode': req_mode,
+                    'system_text': sysText, 'request_text': reqText, 'input_text': inpText,
+                    'file_names': file_names, 'result_savepath': '', 'result_schema': '', },
+                timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT)
+            )
+            if response.status_code == 200:
+                res_port = str(response.json()['port'])
+            else:
+                print('Research-Agent :', f"Error response ({ CORE_PORT }/post_req) : {response.status_code}")
+        except Exception as e:
+            print('Research-Agent :', f"Error communicating ({ CORE_PORT }/post_req) : {e}")
+        return res_port
 
 
 
@@ -520,8 +604,8 @@ if __name__ == '__main__':
                 researchAgent.request(request_text=request_text)
 
                 # 結果
-                res_text  = 'AIエージェント Research-Agent(リサーチエージェント) が非同期実行で開始されました。\n'
-                res_text += 'しばらくお待ちください。\n'
+                res_text  = 'AIエージェント Research-Agent(リサーチエージェント) が非同期で実行を開始しました。\n'
+                res_text += '結果は即答ではありません。別途回答します。\n'
 
                 # 戻り
                 dic = {}

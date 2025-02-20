@@ -32,9 +32,9 @@ import langchain_google_genai
 os.environ['ANONYMIZED_TELEMETRY'] = 'false'
 #os.environ['BROWSER_USE_LOGGING_LEVEL'] = 'debug'
 os.environ['BROWSER_USE_LOGGING_LEVEL'] = 'info'
-#if (os.name == 'nt'):
-#    os.environ['CHROME_PATH']='C:/Program Files/Google/Chrome/Application/chrome.exe'
-#    os.environ['CHROME_USER_DATA']='C:/Users/admin/AppData/Local/Google/Chrome/User Data'
+if (os.name == 'nt'):
+    os.environ['CHROME_PATH']='C:/Program Files/Google/Chrome/Application/chrome.exe'
+    os.environ['CHROME_USER_DATA']='C:/Users/admin/AppData/Local/Google/Chrome/User Data'
 #else:
 #    os.environ['CHROME_PATH']='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 #    os.environ['CHROME_USER_DATA']='/Users/<YourUsername>/Library/Application Support/Google/Chrome/<profile name>'
@@ -51,6 +51,7 @@ qText_start       = 'Web-Operator function start!'
 qText_complete    = 'Web-Operator function complete!'
 qIO_func2py       = 'temp/web操作Agent_func2py.txt'
 qIO_py2func       = 'temp/web操作Agent_py2func.txt'
+qIO_liveAiRun     = 'temp/monjyu_live_ai_run.txt'
 qIO_agent2live    = 'temp/monjyu_io_agent2live.txt'
 
 # Monjyu連携
@@ -121,7 +122,6 @@ class _webOperator_class:
 
         # 設定
         self.request_queue = None
-        self.result_queue = None
         self.main_running = False
         self.break_flag = False
         self.error_flag = False
@@ -148,21 +148,11 @@ class _webOperator_class:
     async def start_async(self):
         # 初期化
         self.request_queue = asyncio.Queue()
-        self.result_queue = asyncio.Queue()
-        self.result_running = True
         self.main_running = True
         self.break_flag = False
         self.error_flag = False
 
         # スレッド処理
-        def result_thread():
-            try:
-                asyncio.run( self._result() )
-            except Exception as e:
-                print(f"result_thread: {e}")
-            finally:
-                self.break_flag = True
-
         def main_thread():
             print(f" Browser-use : [START] { self.agent_engine } / { self.agent_model } ")
             try:
@@ -174,8 +164,6 @@ class _webOperator_class:
                 print(" Browser-use : [END] ")
 
         # 起動
-        self.result_task = threading.Thread(target=result_thread, daemon=True)
-        self.result_task.start()
         self.main_task = threading.Thread(target=main_thread, daemon=True)
         self.main_task.start()
         return True
@@ -187,9 +175,6 @@ class _webOperator_class:
         if (self.main_task is not None):
             self.main_task.join()
             self.main_task = None
-        if (self.result_task is not None):
-            self.result_task.join()
-            self.result_task = None
         return True
 
     def request(self, request_text='',):
@@ -210,61 +195,6 @@ class _webOperator_class:
             print(f"request_async: {e}")
             self.error_flag = True
             return False
-        return True
-
-    async def _result(self):
-        try:
-            while (not self.break_flag):
-                if self.result_queue.empty():
-                    await asyncio.sleep(0.25)
-                else:
-                    [request_text, result_text] = await self.result_queue.get()
-
-                    print('Web-Operator : (result)')
-                    print(result_text)
-
-                    # Live 連携
-                    text = ''
-                    text += f"[RESULT] AIエージェント Web-Operator(ウェブオペレーター: browser-use/{ self.agent_engine }/{ self.agent_model }) \n"
-                    text += request_text.rstrip() + '\n'
-                    text += "について、以下が結果報告です。要約して日本語で報告してください。\n"
-                    text += result_text.rstrip() + '\n\n'
-                    res = io_text_write(qIO_agent2live, text)
-
-                    # Monjyu 連携
-                    reqText = request_text
-                    inpText = ''
-                    outText = f"[Web-Operator] ({ self.agent_engine }/{ self.agent_model })\n" + result_text
-                    outData = result_text
-
-                    # (output_log)
-                    try:
-                        #self.monjyu.post_output_log(outText=outText, outData=outText)
-                        outlog_thread = threading.Thread(
-                            target=self.monjyu.post_output_log,args=(outText, outText),
-                            daemon=True
-                        )
-                        outlog_thread.start()
-                    except Exception as e:
-                        print(e)
-
-                    # (histories)
-                    try:
-                        #self.monjyu.post_histories(reqText=reqText, inpText=inpText, outText=outText, outData=outData)
-                        histories_thread = threading.Thread(
-                            target=self.monjyu.post_histories,args=(reqText, inpText, outText, outData),
-                            daemon=True
-                        )
-                        histories_thread.start()
-                    except Exception as e:
-                        print(e)
-
-        except Exception as e:
-            print(f"_result: {e}")
-            self.error_flag = True
-        finally:
-            self.break_flag = True
-            self.result_running = False
         return True
 
     async def _main(self):
@@ -367,7 +297,14 @@ class _webOperator_class:
                         except Exception as e:
                             #print(e)
                             pass
-                        await self.result_queue.put([request_text, result_text])
+
+                        # Monjyu, Live, 連携
+                        #self._result(request_text=request_text, result_text=result_text, )
+                        result_thread = threading.Thread(
+                            target=self._result,args=(request_text, result_text, ),
+                            daemon=True
+                        )
+                        result_thread.start()
 
                         # 終了音
                         if (result_text != '') and (result_text != '!'):
@@ -383,6 +320,56 @@ class _webOperator_class:
             await browser_context.close()
             await browser.close()
             self.main_running = False
+        return True
+
+    def _result(self, request_text='', result_text='', ):
+        try:
+            #print('Web-Operator : (result)')
+            #print(result_text)
+
+            # Monjyu 連携 (結果通知)
+            reqText = request_text.rstrip() + '\n'
+            inpText = ''
+            outText = f"[Web-Operator] ({ self.agent_engine }/{ self.agent_model })\n"
+            outText += result_text.rstrip() + '\n'
+            outData = result_text.rstrip() + '\n'
+
+            # (output_log)
+            try:
+                self.monjyu.post_output_log(outText=outText, outData=outText)
+            except Exception as e:
+                print(e)
+
+            # (histories)
+            try:
+                self.monjyu.post_histories(reqText=reqText, inpText=inpText, outText=outText, outData=outData)
+            except Exception as e:
+                print(e)
+
+            # Live 連携
+            if (os.path.isfile(qIO_liveAiRun)):
+                text = f"[RESULT] AIエージェント Web-Operator(ウェブオペレーター: browser-use/{ self.agent_engine }/{ self.agent_model }) \n"
+                text += request_text.rstrip() + '\n'
+                text += "について、以下が結果報告です。要約して日本語の音声で報告してください。\n"
+                text += result_text.rstrip() + '\n\n'
+                res = io_text_write(qIO_agent2live, text)
+
+            # Monjyu 連携 (tts指示)
+            else:
+                sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
+                reqText = f"AIエージェントの実行結果の報告です。"
+                reqText += request_text.rstrip() + '\n'
+                reqText += "について、以下が結果報告です。要約して日本語で音声合成(execute_text_to_speech)してください。\n"
+                inpText = f"[Web-Operator] ({ self.agent_engine }/{ self.agent_model })\n"
+                inpText += result_text.rstrip() + '\n'
+                try:
+                    res_port = self.monjyu.request(req_mode='chat', user_id='admin', sysText=sysText, reqText=reqText, inpText=inpText, )
+                except Exception as e:
+                    print(e)
+
+        except Exception as e:
+            print(f"_result: {e}")
+            return False
         return True
 
 
@@ -432,6 +419,30 @@ class _monjyu_class:
             print('error', f"Error communicating ({ CORE_PORT }/post_histories) : {e}")
             return False
         return True
+
+    def request(self, req_mode='chat', user_id='admin', sysText='', reqText='', inpText='', ):
+        res_port = None
+
+        # ファイル添付
+        file_names = []
+
+        # AI要求送信
+        try:
+            response = requests.post(
+                self.local_endpoint + '/post_req',
+                json={'user_id': user_id, 'from_port': CORE_PORT, 'to_port': '',
+                    'req_mode': req_mode,
+                    'system_text': sysText, 'request_text': reqText, 'input_text': inpText,
+                    'file_names': file_names, 'result_savepath': '', 'result_schema': '', },
+                timeout=(CONNECTION_TIMEOUT, REQUEST_TIMEOUT)
+            )
+            if response.status_code == 200:
+                res_port = str(response.json()['port'])
+            else:
+                print('Research-Agent :', f"Error response ({ CORE_PORT }/post_req) : {response.status_code}")
+        except Exception as e:
+            print('Research-Agent :', f"Error communicating ({ CORE_PORT }/post_req) : {e}")
+        return res_port
 
 
 
@@ -522,8 +533,8 @@ if __name__ == '__main__':
                 webOperator.request(request_text=request_text)
 
                 # 結果
-                res_text  = 'AIエージェント Web-Operator(ウェブオペレーター) が非同期実行で開始されました。\n'
-                res_text += 'しばらくお待ちください。\n'
+                res_text  = 'AIエージェント Web-Operator(ウェブオペレーター) が非同期で実行を開始しました。\n'
+                res_text += '結果は即答ではありません。別途回答します。\n'
 
                 # 戻り
                 dic = {}

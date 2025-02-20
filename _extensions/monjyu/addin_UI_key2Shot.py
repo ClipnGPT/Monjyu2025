@@ -18,7 +18,7 @@ import glob
 
 import json
 
-from pynput import keyboard
+import keyboard
 
 from PIL import Image
 
@@ -64,6 +64,7 @@ class _key2Shot:
         self.runMode = runMode
 
         # キーボード監視 開始
+        self.last_key_time      = 0
         self.start_kb_listener()
 
     # キーボード監視 開始
@@ -72,19 +73,36 @@ class _key2Shot:
         self.last_prtScrn_count = 0
         self.last_shift_r_time  = 0
         self.last_shift_r_count = 0
-        self.kb_listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
-        self.kb_listener.start()
+
+        # イベントハンドラの登録
+        self.last_key_time      = 0
+        self.debounce_interval  = 0.05  # 50ミリ秒のデバウンス時間
+        keyboard.hook(self._keyboard_event_handler)
+
+    # イベントハンドラ
+    def _keyboard_event_handler(self, event):
+        if event.event_type == keyboard.KEY_DOWN:
+            # デバウンス期間中は処理をスキップ 
+            now_time = time.time()
+            if (now_time - self.last_key_time < self.debounce_interval):
+                return
+            self.last_key_time = now_time
+            self.on_press(event)
+        elif event.event_type == keyboard.KEY_UP:
+            self.on_release(event)
 
     # キーボード監視 終了
     def stop_kb_listener(self):
-        if self.kb_listener:
-            self.kb_listener.stop()
+        try:
+            keyboard.unhook_all()
+        except Exception as e:
+            print(e)
 
     # キーボードイベント
-    def on_press(self, key):
-        if   (os.name == 'nt') and (key == keyboard.Key.print_screen):
+    def on_press(self, event):
+        if (event.name == "print screen"):
             pass
-        elif (key == keyboard.Key.shift_r):
+        elif (event.name == "right shift"):
             pass
         else:
             self.last_prtScrn_time  = 0
@@ -92,12 +110,11 @@ class _key2Shot:
             self.last_shift_r_time  = 0
             self.last_shift_r_count = 0
 
-    def on_release(self, key):
-
+    def on_release(self, event):
         # --------------------
         # prtScrn キー
         # --------------------
-        if (os.name == 'nt') and (key == keyboard.Key.print_screen):
+        if (event.name == "print screen"):
             press_time = time.time()
             if ((press_time - self.last_prtScrn_time) > 1):
                 self.last_prtScrn_time  = press_time
@@ -148,9 +165,9 @@ class _key2Shot:
                     self.start_kb_listener()
 
         # --------------------
-        # shift_r キー
+        # right shiftキー
         # --------------------
-        if (key == keyboard.Key.shift_r):
+        elif (event.name == "right shift"):
             press_time = time.time()
             if ((press_time - self.last_shift_r_time) > 1):
                 self.last_shift_r_time  = press_time
@@ -162,12 +179,12 @@ class _key2Shot:
                 else:
                     self.last_shift_r_time  = 0
                     self.last_shift_r_count = 0
-                    #print("Press shift_r x 3 !")
+                    #print("Press right shift x 3 !")
 
                     # キー操作監視 停止
                     self.stop_kb_listener()
 
-                    # スクリーンショット
+                    # カメラ画像取得
                     image_path = None
                     try:
                         if (cameraShot is not None):
@@ -241,7 +258,7 @@ class _class:
 """
 拡張ＵＩ
 キー(PrtScrn)連打で、マウス位置の画面をスクリーンショットする。
-キー(shift_r)連打で、カメラ画像を取得する。
+キー(right shift)連打で、カメラ画像を取得する。
 """,
             "parameters": {
                 "type": "object",
@@ -275,7 +292,7 @@ class _class:
             runMode = args_dic.get('runMode')
 
         if (runMode is None) or (runMode == ''):
-            runMode      = self.runMode
+            runMode = self.runMode
         else:
             self.runMode = runMode
 

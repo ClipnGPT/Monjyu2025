@@ -22,6 +22,7 @@ from playsound3 import playsound
 
 import screeninfo
 import pyautogui
+import mouse
 from PIL import ImageGrab
 
 import numpy as np
@@ -134,7 +135,7 @@ class scrnShot_class:
                     max_buttom = (s.y+s.height)
 
             # マウス配置
-            mouse_x,mouse_y = pyautogui.position()
+            (mouse_x,mouse_y) = mouse.get_position()
 
             # 画像切り出し
             screen = -1

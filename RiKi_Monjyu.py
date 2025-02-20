@@ -24,9 +24,10 @@ import multiprocessing
 
 # ダミーインポート
 #import pip
-from playsound3 import playsound
-import pynput
+import keyboard
+import mouse
 import screeninfo
+from playsound3 import playsound
 import pyautogui
 import pyperclip
 import hashlib

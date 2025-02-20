@@ -29,14 +29,14 @@ from google import genai
 from google.genai import types
 import speech_recognition as sr
 
-from pynput import keyboard
-#from pynput.keyboard import Controller
+import keyboard
 
 # クリップボード画像処理
 from PIL import Image, ImageGrab, ImageTk
 import io
 import screeninfo
 import pyautogui
+import mouse
 import cv2
 import hashlib
 
@@ -55,6 +55,7 @@ matplotlib.use('TkAgg')
 
 
 # インターフェース
+qIO_liveAiRun  = 'temp/monjyu_live_ai_run.txt'
 qIO_agent2live = 'temp/monjyu_io_agent2live.txt'
 
 # モデル設定 (freeai)
@@ -131,6 +132,9 @@ class _key2Action:
         # APIキーを取得
         self.freeai_key_id = os.environ.get('FREEAI_API_KEY', '< ? >')
 
+        # live実行状況クリア
+        dummy = io_text_read(qIO_liveAiRun)
+
         # liveAPI クラス
         self.liveAPI = _live_api_freeai(api_key=self.freeai_key_id, )
 
@@ -140,6 +144,7 @@ class _key2Action:
         self.liveAPI_task.start()
 
         # キーボード監視 開始
+        self.last_key_time = 0
         self.start_kb_listener()
 
     # liveAPI監視
@@ -159,26 +164,43 @@ class _key2Action:
                 self.liveAPI_rerun = 0
 
     # キーボード監視 開始
-    def start_kb_listener(self):
+    def start_kb_listener(self, runMode='assistant',):
         self.shift_l_down = False
         self.shift_r_down = False
         self.last_ctrl_l_time  = 0
         self.last_ctrl_l_count = 0
-        self.kb_listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
-        self.kb_listener.start()
+
+        # イベントハンドラの登録
+        self.last_key_time      = 0
+        self.debounce_interval  = 0.05  # 50ミリ秒のデバウンス時間
+        keyboard.hook(self._keyboard_event_handler)
+
+    # イベントハンドラ
+    def _keyboard_event_handler(self, event):
+        if event.event_type == keyboard.KEY_DOWN:
+            # デバウンス期間中は処理をスキップ 
+            now_time = time.time()
+            if (now_time - self.last_key_time < self.debounce_interval):
+                return
+            self.last_key_time = now_time
+            self.on_press(event)
+        elif event.event_type == keyboard.KEY_UP:
+            self.on_release(event)
 
     # キーボード監視 終了
     def stop_kb_listener(self):
-        if self.kb_listener:
-            self.kb_listener.stop()
+        try:
+            keyboard.unhook_all()
+        except Exception as e:
+            print(e)
 
     # キーボードイベント
-    def on_press(self, key):
-        if   (key == keyboard.Key.shift_l):
+    def on_press(self, event):
+        if (event.name in ["left shift", "shift"]):
             self.shift_l_down = True
-        elif (key == keyboard.Key.shift_r):
+        elif (event.name == "right shift"):
             self.shift_r_down = True
-        elif (key == keyboard.Key.ctrl_l) \
+        elif (event.name in ["left ctrl", "ctrl"]) \
         and (self.shift_l_down == False) \
         and (self.shift_r_down == False):
             pass
@@ -186,17 +208,17 @@ class _key2Action:
             self.last_ctrl_l_time  = 0
             self.last_ctrl_l_count = 0
 
-    def on_release(self, key):
+    def on_release(self, event):
 
-        if   (key == keyboard.Key.shift_l):
+        if (event.name in ["left shift", "shift"]):
             self.shift_l_down = False
-        elif (key == keyboard.Key.shift_r):
+        elif (event.name == "right shift"):
             self.shift_r_down = False
 
         # --------------------
         # ctrl_l キー
         # --------------------
-        elif (key == keyboard.Key.ctrl_l) \
+        elif (event.name in ["left ctrl", "ctrl"]) \
         and (self.shift_l_down == False) \
         and (self.shift_r_down == False):
             press_time = time.time()
@@ -217,12 +239,14 @@ class _key2Action:
 
                     # live API クラス
                     if self.liveAPI.session is None:
+                        dummy = io_text_write(qIO_liveAiRun, 'run')
                         dummy = io_text_read(qIO_agent2live)
                         #self.liveAPI.start()
                         self.liveAPI.break_flag = False
                         self.liveAPI.error_flag = False
                         self.liveAPI_rerun = 1
                     else:
+                        dummy = io_text_read(qIO_liveAiRun)
                         self.liveAPI_rerun = 0
                         self.liveAPI.stop()
 
@@ -232,7 +256,7 @@ class _key2Action:
         # --------------------
         # end キー
         # --------------------
-        elif (key == keyboard.Key.end):
+        elif (event.name == "end"):
             self.last_ctrl_l_time  = 0
             self.last_ctrl_l_count = 0
 
@@ -250,8 +274,8 @@ class _key2Action:
         # --------------------
         # shift + print_screen キー
         # --------------------
-        elif (key == keyboard.Key.print_screen) and (self.shift_l_down == True) \
-        or   (key == keyboard.Key.print_screen) and (self.shift_r_down == True):
+        elif (event.name == "print screen") and (self.shift_l_down == True) \
+        or   (event.name == "print screen") and (self.shift_r_down == True):
             # live API クラス
             if self.liveAPI.session is not None:
                 if (self.liveAPI.image_input_number is None):
@@ -1128,7 +1152,7 @@ class _imageShot_class:
                     max_buttom = (s.y+s.height)
 
             # マウス配置
-            mouse_x,mouse_y = pyautogui.position()
+            (mouse_x,mouse_y) = mouse.get_position()
 
             # 画像切り出し
             screen = -1

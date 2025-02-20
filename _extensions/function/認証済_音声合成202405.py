@@ -649,7 +649,8 @@ class _class:
         # テキスト無しはエラー！
         if (speech_text == ''):
             dic = {}
-            dic['error'] = '音声合成エラー。テキストがありません。'
+            dic['result']     = 'ng'
+            dic['error_text'] = '音声合成エラー。テキストがありません。'
             json_dump = json.dumps(dic, ensure_ascii=False, )
             #print('  --> ', json_dump)
             return json_dump
@@ -658,7 +659,8 @@ class _class:
         if  (speech_text == self.last_text) \
         and (speaker     == self.last_speaker):
             dic = {}
-            dic['error'] = 'さきほど再生した内容と同じ内容です。'
+            dic['result']     = 'ng'
+            dic['error_text'] = 'さきほど再生した内容と同じ内容です。'
             json_dump = json.dumps(dic, ensure_ascii=False, )
             #print('  --> ', json_dump)
             return json_dump
@@ -757,7 +759,8 @@ class _class:
         # 音声合成エラー
         if (tts_ok == False):
             dic = {}
-            dic['error'] = '音声合成でエラーが発生しました。'
+            dic['result']     = 'ng'
+            dic['error_text'] = '音声合成でエラーが発生しました。'
             json_dump = json.dumps(dic, ensure_ascii=False, )
             #print('  --> ', json_dump)
             return json_dump
@@ -767,7 +770,8 @@ class _class:
 
         if (immediate == 'no'):
             dic = {}
-            dic['result'] = '音声合成を実施しました。'
+            dic['result']      = 'ok'
+            dic['result_text'] = '音声合成を実施しました。'
             dic['output_path'] = outFile
             json_dump = json.dumps(dic, ensure_ascii=False, )
             #print('  --> ', json_dump)
@@ -782,14 +786,16 @@ class _class:
             # 戻り値
             if (play_ok == True):
                 dic = {}
-                dic['result'] = '音声合成及び音声ファイルの再生も実施しました。'
+                dic['result']      = 'ok'
+                dic['result_text'] = '音声合成及び音声ファイルの再生も実施しました。'
                 dic['output_path'] = outFile
                 json_dump = json.dumps(dic, ensure_ascii=False, )
                 #print('  --> ', json_dump)
                 return json_dump
             else:
                 dic = {}
-                dic['error'] = '音声ファイルの再生でエラーが発生しました'
+                dic['result']     = 'ng'
+                dic['error_text'] = '音声ファイルの再生でエラーが発生しました'
                 json_dump = json.dumps(dic, ensure_ascii=False, )
                 #print('  --> ', json_dump)
                 return json_dump

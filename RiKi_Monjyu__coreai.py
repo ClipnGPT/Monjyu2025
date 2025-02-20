@@ -791,7 +791,7 @@ class CoreAiClass:
             req_reset = 'yes,'
 
         # シンプル実行
-        if  (req_mode in ['clip', 'voice']) or (to_port is None):
+        if  (req_mode in ['clip', 'voice']) or (from_port == to_port) or (to_port is None):
             if  ((max_retry == '') or (max_retry == '0')) \
             and (before_proc.find('profile,' ) < 0) \
             and (before_proc.find('prompt,'  ) < 0) \

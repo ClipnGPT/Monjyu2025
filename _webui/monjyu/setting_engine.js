@@ -584,6 +584,9 @@ $(document).ready(function() {
     $('#chat-openai').click(function() {
         chat_set_engine('[openai]');
     });
+    $('#chat-grok').click(function() {
+        chat_set_engine('[grok]');
+    });
 
     // serial-engineボタンのクリックイベント
     $('#serial-auto').click(function() {

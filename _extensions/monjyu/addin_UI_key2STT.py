@@ -18,8 +18,7 @@ import glob
 
 import json
 
-from pynput import keyboard
-#from pynput.keyboard import Controller
+import keyboard
 
 import pyperclip
 import pyautogui
@@ -80,6 +79,7 @@ class _key2STT:
             os.makedirs(qPath_stt)
 
         # キーボード監視 開始
+        self.last_key_time      = 0
         self.start_kb_listener()
 
         # カウンタ
@@ -92,30 +92,44 @@ class _key2STT:
         self.last_alt_l_time    = 0
         self.last_alt_l_count   = 0
         self.last_alt_l_clip    = ''
-        self.last_alt_r_time    = 0
-        self.last_alt_r_count   = 0
-        self.last_alt_r_clip    = ''
         self.last_shift_l_time  = 0
         self.last_shift_l_count = 0
         self.last_shift_r_time  = 0
         self.last_shift_r_count = 0
         self.last_copy_time     = 0
-        self.last_copy_string   = clip_text = pyperclip.paste()
-        self.kb_listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
-        self.kb_listener.start()
+        self.last_copy_string   = pyperclip.paste()
+
+        # イベントハンドラの登録
+        self.last_key_time      = 0
+        self.debounce_interval  = 0.05  # 50ミリ秒のデバウンス時間
+        keyboard.hook(self._keyboard_event_handler)
+
+    # イベントハンドラ
+    def _keyboard_event_handler(self, event):
+        if event.event_type == keyboard.KEY_DOWN:
+            # デバウンス期間中は処理をスキップ 
+            now_time = time.time()
+            if (now_time - self.last_key_time < self.debounce_interval):
+                return
+            self.last_key_time = now_time
+            self.on_press(event)
+        elif event.event_type == keyboard.KEY_UP:
+            self.on_release(event)
 
     # キーボード監視 終了
     def stop_kb_listener(self):
-        if self.kb_listener:
-            self.kb_listener.stop()
+        try:
+            keyboard.unhook_all()
+        except Exception as e:
+            print(e)
 
     # キーボードイベント
-    def on_press(self, key):
-        if   (os.name == 'nt') and (key == keyboard.Key.print_screen):
+    def on_press(self, event):
+        if (event.name == 'print screen'):
             pass
-        elif (key == keyboard.Key.alt_l)  or (key == keyboard.Key.alt_r):
+        elif (event.name in ['alt', 'left alt', 'right alt']):
             pass
-        elif (key == keyboard.Key.shift_l)   or (key == keyboard.Key.shift_r):
+        elif (event.name in ['shift', 'left shift', 'right shift']):
             pass
         else:
             self.last_prtScrn_time  = 0
@@ -123,20 +137,16 @@ class _key2STT:
             self.last_alt_l_time    = 0
             self.last_alt_l_count   = 0
             self.last_alt_l_clip    = ''
-            self.last_alt_r_time    = 0
-            self.last_alt_r_count   = 0
-            self.last_alt_r_clip    = ''
             self.last_shift_l_time  = 0
             self.last_shift_l_count = 0
             self.last_shift_r_time  = 0
             self.last_shift_r_count = 0
 
-    def on_release(self, key):
-
+    def on_release(self, event):
         # --------------------
         # prtScrn キー
         # --------------------
-        if (os.name == 'nt') and (key == keyboard.Key.print_screen):
+        if (event.name == "print screen"):
             press_time = time.time()
             if ((press_time - self.last_prtScrn_time) > 1):
                 self.last_prtScrn_time  = press_time
@@ -206,16 +216,16 @@ class _key2STT:
                     self.start_kb_listener()
 
         # --------------------
-        # alt_l キー
+        # alt キー
         # --------------------
-        elif (key == keyboard.Key.alt_l):
+        elif (event.name in ['alt', 'left alt', 'right alt']):
             press_time = time.time()
             if ((press_time - self.last_alt_l_time) > 1):
                 self.last_alt_l_time  = press_time
                 self.last_alt_l_count = 1
                 if ((press_time - self.last_copy_time) < 1):
                     self.last_alt_l_clip = self.last_copy_string
-                    print("Press alt_l key with clip text ?")
+                    print("Press alt key with clip text ?")
             else:
                 self.last_alt_l_count += 1
                 if (self.last_alt_l_count < 3):
@@ -225,7 +235,7 @@ class _key2STT:
                     self.last_alt_l_count = 0
                     #print("Press alt_l x 3 !")
                     if (self.last_alt_l_clip != ''):
-                        print("Press alt_l key with clip ok.")
+                        print("Press alt key with clip ok.")
 
                     # キー操作監視 停止
                     self.stop_kb_listener()
@@ -281,84 +291,9 @@ class _key2STT:
                     self.start_kb_listener()
 
         # --------------------
-        # alt_r キー
-        # --------------------
-        elif (key == keyboard.Key.alt_r):
-            press_time = time.time()
-            if ((press_time - self.last_alt_r_time) > 1):
-                self.last_alt_r_time  = press_time
-                self.last_alt_r_count = 1
-                if ((press_time - self.last_copy_time) < 1):
-                    self.last_alt_r_clip = self.last_copy_string
-                    print("Press alt_r key with clip text ?")
-            else:
-                self.last_alt_r_count += 1
-                if (self.last_alt_r_count < 3):
-                    self.last_alt_r_time = press_time
-                else:
-                    self.last_alt_r_time  = 0
-                    self.last_alt_r_count = 0
-                    #print("Press alt_r x 3 !")
-                    if (self.last_alt_r_clip != ''):
-                        print("Press alt_r key with clip ok.")
-
-                    # キー操作監視 停止
-                    self.stop_kb_listener()
-
-                    # カウンタ
-                    self.file_seq += 1
-                    if (self.file_seq > 9999):
-                        self.file_seq = 1
-
-                    # ファイル名
-                    nowTime  = datetime.datetime.now()
-                    stamp    = nowTime.strftime('%Y%m%d.%H%M%S')
-                    seq      = '{:04}'.format(self.file_seq)
-                    filename = qPath_stt + stamp + '.' + seq + '.alt_r_key.txt'
-
-                    # 音声入力
-                    text = ''
-                    try:
-                        if (stt is not None):
-                            dic = {}
-                            dic['runMode']  = self.runMode
-                            dic['api']      = 'auto' # auto, google, openai,
-                            if(qHOSTNAME in use_openai_list):
-                                dic['api']  = 'openai' # auto, google, openai,
-                            dic['language'] = 'auto'
-                            json_dump = json.dumps(dic, ensure_ascii=False, )
-                            res_json = stt.func_proc(json_dump)
-                            args_dic = json.loads(res_json)
-                            text = args_dic.get('recognition_text')
-                        else:
-                            print('★音声入力は利用できません！')
-                    except Exception as e:
-                        print(e)
-
-                    # RiKi処理
-                    if (text != ''):
-                        text  = 'gemini,' + text + '\n'
-                        #if(qHOSTNAME not in not_feedback_list):
-                        #    text += '結果は要約した内容で音声合成でお願いします。\n'
-                        if (self.last_alt_l_clip != ''):
-                            text += "''' 補足情報 \n"
-                            text += self.last_alt_r_clip + '\n'
-                            text += "''' \n"
-
-                        #text  = text
-                        self.txtsWrite(filename, txts=[text], encoding='utf-8', exclusive=False, mode='w', )
-                
-                    #keycontrol = Controller()
-                    #keycontrol.press(keyboard.Key.ctrl)
-                    #keycontrol.release(keyboard.Key.ctrl)
-
-                    # キー操作監視 再開
-                    self.start_kb_listener()
-
-        # --------------------
         # shift_l キー
         # --------------------
-        elif (key == keyboard.Key.shift_l):
+        elif (event.name in ['shift', 'left shift']):
             press_time = time.time()
             if ((press_time - self.last_shift_l_time) > 1):
                 self.last_shift_l_time  = press_time
@@ -412,7 +347,7 @@ class _key2STT:
         # --------------------
         # shift_r キー
         # --------------------
-        elif (key == keyboard.Key.shift_r):
+        elif (event.name == 'right shift'):
             press_time = time.time()
             if ((press_time - self.last_shift_r_time) > 1):
                 self.last_shift_r_time  = press_time
@@ -490,9 +425,6 @@ class _key2STT:
             self.last_alt_l_time    = 0
             self.last_alt_l_count   = 0
             self.last_alt_l_clip    = ''
-            self.last_alt_r_time    = 0
-            self.last_alt_r_count   = 0
-            self.last_alt_r_clip    = ''
             self.last_shift_l_time  = 0
             self.last_shift_l_count = 0
             self.last_shift_r_time  = 0

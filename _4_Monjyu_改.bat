@@ -30,6 +30,8 @@ ECHO;
 ECHO -------
 ECHO etc
 ECHO -------
+    python -m pip  install --upgrade keyboard
+    python -m pip  install --upgrade mouse
     python -m pip  install --upgrade screeninfo
     python -m pip  install --upgrade pyautogui
     python -m pip  install --upgrade pywin32
@@ -39,7 +41,7 @@ ECHO -------
     python -m pip  install --upgrade pycryptodome
 rem python -m pip  install --upgrade pygame
     python -m pip  install --upgrade playsound3
-    python -m pip  install --upgrade pynput
+rem python -m pip  install --upgrade pynput Žg—p‹ÖŽ~!
 
     python -m pip  install --upgrade numpy
 rem python -m pip  install --upgrade numpy==2.0.2

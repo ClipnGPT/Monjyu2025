@@ -21,8 +21,7 @@ import json
 import queue
 import threading
 
-from pynput import keyboard, mouse
-#import pyautogui
+import keyboard
 
 
 
@@ -68,74 +67,35 @@ class _tts_woker:
         if (not os.path.isdir(qPath_tts)):
             os.makedirs(qPath_tts)
 
-        # マウス監視 開始
-        self.last_mouse_time = 0
-        self.last_mouse_x    = 0
-        self.last_mouse_y    = 0
-        self.start_mouse_listener()
-
         # キーボード監視 開始
         self.last_key_time = 0
-        self.start_key_listener()
+        self.start_kb_listener()
 
         # Worker デーモン起動
         self.worker_proc = threading.Thread(target=self.proc_worker, args=(), daemon=True, )
         self.worker_proc.start()
 
     # キーボード監視 開始
-    def start_key_listener(self):
+    def start_kb_listener(self, runMode='assistant',):
+        # イベントハンドラの登録
         self.last_key_time = 0
-        self.key_listener = keyboard.Listener(on_press=self.key_press, on_release=self.key_release)
-        self.key_listener.start()
+        keyboard.hook(self._keyboard_event_handler)
+    # イベントハンドラ
+    def _keyboard_event_handler(self, event):
+        self.last_key_time = time.time()
     # キーボード監視 終了
-    def stop_key_listener(self):
-        if self.key_listener:
-            self.key_listener.stop()
-    # キーボードイベント
-    def key_press(self, key):
-        self.last_key_time = time.time()
-    def key_release(self, key):
-        self.last_key_time = time.time()
-
-    # マウス操作監視 開始
-    def start_mouse_listener(self):
-        (x, y) = self.mouse_position()
-        self.last_mouse_x    = x
-        self.last_mouse_y    = y
-        self.last_mouse_time = 0
-        self.mouse_listener = mouse.Listener(on_move=self.mouse_move)
-        self.mouse_listener.start()
-    # マウス監視 終了
-    def stop_mouse_listener(self):
-        if self.mouse_listener:
-            self.mouse_listener.stop()
-    # マウス移動イベント
-    def mouse_move(self, x, y):
-        #self.last_mouse_time = time.time()
-        #(x, y) = self.mouse_position()
-        if (abs(self.last_mouse_x-x) > 50) or (abs(self.last_mouse_y-y) > 50):
-            self.last_mouse_x = x
-            self.last_mouse_y = y
-            self.last_mouse_time = time.time()
-    # マウス位置
-    def mouse_position(self):
+    def stop_kb_listener(self):
         try:
-            mouse_controler = mouse.Controller()
-            #print("check", mouse_controler.position)
-            return mouse_controler.position
-        except:
-            return (0, 0)
+            keyboard.unhook_all()
+        except Exception as e:
+            print(e)
 
     # Worker デーモン
     def proc_worker(self):
         while True:
             hit = False
             try:
-                #(x, y) = pyautogui.position()
-                (x, y) = self.mouse_position()
-                self.last_mouse_x = x
-                self.last_mouse_y = y
-                self.tts_proc()
+                hit = self.tts_proc()
             except:
                 pass
             if hit == True:
@@ -230,20 +190,8 @@ class _tts_woker:
 
                             for t in text.splitlines():
 
-                                #(x, y) = pyautogui.position()
-                                #(x, y) = self.mouse_position()
-                                #if (abs(self.last_mouse_x-x) > 50) or (abs(self.last_mouse_y-y) > 50):
-                                #    about_flag = True
-
-                                #if  (time.time() > (self.last_key_time + OPERATION_WAIT_SEC)) \
-                                #and (time.time() > (self.last_mouse_time + OPERATION_WAIT_SEC)) \
-                                #and (about_flag == False):
-
                                 if  (time.time() > (self.last_key_time + OPERATION_WAIT_SEC)) \
                                 and (about_flag == False):
-                                    (x, y) = self.mouse_position()
-                                    self.last_mouse_x = x
-                                    self.last_mouse_y = y
 
                                     # 音声合成
                                     try:

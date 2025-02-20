@@ -194,23 +194,33 @@ class _worker_class:
 
                     # .txt,
                     if   (ext.lower() == '.txt'):
-                        self.play_tts(input_text=input_text, )
+                        #self.play_tts(input_text=input_text, )
+                        tts_proc = threading.Thread(target=self.play_tts, args=(input_text,), daemon=True, )
+                        tts_proc.start()
 
                     # .mp3, .wav,
                     elif (ext.lower() in ['.mp3', '.wav']):
-                        self.play(outFile=f_name, )
+                        #self.play(outFile=f_name, )
+                        mp3_proc = threading.Thread(target=self.play, args=(f_name,), daemon=True, )
+                        mp3_proc.start()
 
                     # .mp4,
                     elif (ext.lower() == '.mp4'):
-                        self.play_video(play_file=f_name)
+                        #self.play_video(play_file=f_name)
+                        mp4_proc = threading.Thread(target=self.play_video, args=(f_name,), daemon=True, )
+                        mp4_proc.start()
 
                     # .bat,
                     elif (ext.lower() == '.bat'):
-                        self.play_bat(bat_file=f_name)
+                        #self.play_bat(bat_file=f_name)
+                        bat_proc = threading.Thread(target=self.play_bat, args=(f_name,), daemon=True, )
+                        bat_proc.start()
 
                     # .ai,
                     elif (ext.lower() == '.ai'):
-                        self.play_monjyu(input_text=input_text, )
+                        #self.play_monjyu(input_text=input_text, )
+                        ai_proc = threading.Thread(target=self.play_monjyu, args=(input_text,), daemon=True, )
+                        ai_proc.start()
 
                 except Exception as e:
                     print(e)

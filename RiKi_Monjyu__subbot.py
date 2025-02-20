@@ -711,12 +711,56 @@ class ChatClass:
                         history=[], function_modules={},
                         sysText='', reqText='', inpText='',
                         filePath=[], jsonSchema=None, inpLang='ja', outLang='ja'):
-        qLog.log('info', self.proc_id, 'chatBot start')
 
         # debug
         if (DEBUG_FLAG == True):
             print('DEBUG', 'subbot.chatBot:reqText', )
             print('DEBUG', reqText, )
+
+        #qLog.log('info', self.proc_id, 'chatBot start')
+        print()
+
+        # pass 1
+        res_text, res_data, res_path, res_files, res_engine, res_name, res_api, history = \
+                self.chatBot_sub(   req_mode=req_mode, engine=engine,
+                                    chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                    history=history, function_modules=function_modules,
+                                    sysText=sysText, reqText=reqText, inpText=inpText,
+                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+
+        # pass 2 (エンジン指定なし?,エラー? 自動再試行)
+        if ((res_text == '') or (res_text == '!')):
+            engine2 = ''
+            if   (self.freeai_enable == True):
+                engine2 = '[freeai]'
+            elif (self.ollama_enable == True):
+                engine2 = '[ollama]'
+            elif (self.chatgpt_enable == True):
+                engine2 = '[chatgpt]'
+
+            if (engine2 != ''):
+                # pass 2
+                res_text, res_data, res_path, res_files, res_engine, res_name, res_api, history = \
+                self.chatBot_sub(   req_mode=req_mode, engine=engine2,
+                                    chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                    history=history, function_modules=function_modules,
+                                    sysText=sysText, reqText=reqText, inpText=inpText,
+                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+
+        if (res_text != '') and (res_text != '!'):
+            #qLog.log('info', self.proc_id, 'chatBot complite!')
+            print()
+        else:
+            #qLog.log('info', self.proc_id, 'chatBot error!')
+            print('!')
+            print()
+        return res_text, res_data, res_path, res_files, res_engine, res_name, res_api, history
+
+    def chatBot_sub(self,   req_mode='chat', engine='freeai',
+                        chat_class='auto', model_select='auto', session_id='debug', 
+                        history=[], function_modules={},
+                        sysText='', reqText='', inpText='',
+                        filePath=[], jsonSchema=None, inpLang='ja', outLang='ja'):
 
         # cancel
         self.bot_cancel_request = False
@@ -1624,7 +1668,9 @@ class ChatClass:
                     print('DEBUG', 'freeai, reqText and inpText not nick_name !!!', inpText, )
 
             engine_text = ''
-            if True:
+            if (engine == '[freeai]'):
+                engine_text = self.freeaiAPI.freeai_b_nick_name.lower() + ',\n'
+            else:
                 model_nick_name1 = 'free'
                 model_nick_name2 = 'freeai'
                 a_nick_name = self.freeaiAPI.freeai_a_nick_name.lower()
@@ -1678,65 +1724,65 @@ class ChatClass:
                         engine_text = x_nick_name + ',\n'
                         inpText = inpText[len(x_nick_name)+1:].strip()
 
-            if (engine_text == ''):
-                #engine_text = self.freeaiAPI.freeai_b_nick_name.lower() + ',\n'
-                if (req_mode == 'session'):
-                    engine_text = a_nick_name + ',\n'
-                else:
-                    engine_text = b_nick_name + ',\n'
+            #if (engine_text == ''):
+            #    #engine_text = self.freeaiAPI.freeai_b_nick_name.lower() + ',\n'
+            #    if (req_mode == 'session'):
+            #        engine_text = a_nick_name + ',\n'
+            #    else:
+            #        engine_text = b_nick_name + ',\n'
 
-            inpText2 = inpText
             if (engine_text != ''):
                 inpText2 = engine_text + inpText
                 engine_text = ''
 
-            #if (engine == 'freeai'):
-            n_max = 4
-            n = 0
-            while ((res_text == '') or (res_text == '!')) and (n < n_max) and (self.bot_cancel_request != True):
+                n_max = 1
+                if (engine == '[freeai]'):
+                    n_max = 4
+                n = 0
+                while ((res_text == '') or (res_text == '!')) and (n < n_max) and (self.bot_cancel_request != True):
+                    n += 1
 
-                n += 1
-                try:
-                    if (n == 1):
-                        qLog.log('info', self.proc_id, '### FreeAI ###')
+                    try:
+                        if (n == 1):
+                            qLog.log('info', self.proc_id, '### FreeAI ###')
 
-                        if (self.coreai is not None):
-                            self.freeaiAPI.set_models(  max_wait_sec=self.coreai.chat_class.freeaiAPI.freeai_max_wait_sec,
-                                                        a_model=self.coreai.chat_class.freeaiAPI.freeai_a_model,
-                                                        a_use_tools=self.coreai.chat_class.freeaiAPI.freeai_a_use_tools,
-                                                        b_model=self.coreai.chat_class.freeaiAPI.freeai_b_model,
-                                                        b_use_tools=self.coreai.chat_class.freeaiAPI.freeai_b_use_tools,
-                                                        v_model=self.coreai.chat_class.freeaiAPI.freeai_v_model,
-                                                        v_use_tools=self.coreai.chat_class.freeaiAPI.freeai_v_use_tools,
-                                                        x_model=self.coreai.chat_class.freeaiAPI.freeai_x_model,
-                                                        x_use_tools=self.coreai.chat_class.freeaiAPI.freeai_x_use_tools, )
+                            if (self.coreai is not None):
+                                self.freeaiAPI.set_models(  max_wait_sec=self.coreai.chat_class.freeaiAPI.freeai_max_wait_sec,
+                                                            a_model=self.coreai.chat_class.freeaiAPI.freeai_a_model,
+                                                            a_use_tools=self.coreai.chat_class.freeaiAPI.freeai_a_use_tools,
+                                                            b_model=self.coreai.chat_class.freeaiAPI.freeai_b_model,
+                                                            b_use_tools=self.coreai.chat_class.freeaiAPI.freeai_b_use_tools,
+                                                            v_model=self.coreai.chat_class.freeaiAPI.freeai_v_model,
+                                                            v_use_tools=self.coreai.chat_class.freeaiAPI.freeai_v_use_tools,
+                                                            x_model=self.coreai.chat_class.freeaiAPI.freeai_x_model,
+                                                            x_use_tools=self.coreai.chat_class.freeaiAPI.freeai_x_use_tools, )
 
-                    else:
-                        qLog.log('warning', self.proc_id, f'freeai retry = { n }/{ n_max },')
+                        else:
+                            qLog.log('warning', self.proc_id, f'freeai retry = { n }/{ n_max },')
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
-                            self.freeaiAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
-                                                        history=history, function_modules=function_modules,
-                                                        sysText=sysText, reqText=reqText, inpText=inpText2,
-                                                        filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
-                    if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'FreeAI'
-                        res_data = res_text
-                except Exception as e:
-                    qLog.log('error', self.proc_id, str(e))
-                    if (n >= n_max):
-                        break
-
-                    # n*20 + 40～60秒待機
-                    wait_sec = n*20 + random.uniform(40, 60)
-                    qLog.log('warning', self.proc_id, f'freeai retry waitting { float(wait_sec) :.1f}s ...')
-                    chkTime = time.time()
-                    while ((time.time() - chkTime) < wait_sec):
-                        time.sleep(0.25)
-
-                        # キャンセル確認
-                        if (self.bot_cancel_request == True):
+                        res_text, res_path, res_files, nick_name, model_name, res_history = \
+                                self.freeaiAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                            history=history, function_modules=function_modules,
+                                                            sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                            filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                        if ((res_text != '') and (res_text != '!')):
+                            res_engine = 'FreeAI'
+                            res_data = res_text
+                    except Exception as e:
+                        qLog.log('error', self.proc_id, str(e))
+                        if (n >= n_max):
                             break
+
+                        # n*20 + 40～60秒待機
+                        wait_sec = n*20 + random.uniform(40, 60)
+                        qLog.log('warning', self.proc_id, f'freeai retry waitting { float(wait_sec) :.1f}s ...')
+                        chkTime = time.time()
+                        while ((time.time() - chkTime) < wait_sec):
+                            time.sleep(0.25)
+
+                            # キャンセル確認
+                            if (self.bot_cancel_request == True):
+                                break
 
         if (res_text == '') or (res_text == '!'):
             res_text = '!'
@@ -1770,10 +1816,6 @@ class ChatClass:
             print('DEBUG', 'subbot.chatBot:res_text', )
             print('DEBUG', res_text, )
 
-        if (res_text != '') and (res_text != '!'):
-            qLog.log('info', self.proc_id, 'chatBot complite!')
-        else:
-            qLog.log('info', self.proc_id, 'chatBot error!')
         return res_text, res_data, res_path, res_files, res_engine, nick_name, model_name, res_history
 
 

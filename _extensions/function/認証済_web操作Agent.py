@@ -171,13 +171,15 @@ class _class:
         self.ext_pid    = None
         res = self.func_reset()
         self.start_time = time.time()
+        self.last_time  = 0
 
         # 設定
         self.agent_models   = AGENT_MODELS
         self.agent_engine   = AGENT_ENGINE
         self.agent_model    = AGENT_MODEL
         self.agent_max_step = '10'
-        self.agent_browser  = 'chromium' # chromium, chrome,
+        #self.agent_browser  = 'chromium' # chromium, chrome,
+        self.agent_browser  = 'chrome' # chromium, chrome,
 
         # main,data,addin,botFunc,
         self.main    = None
@@ -324,6 +326,16 @@ class _class:
             except Exception as e:
                 print(e)
 
+            # 連続実行はキャンセル！
+            if  ((time.time() - self.last_time) < 30):
+                self.last_time = time.time()
+                dic = {}
+                dic['result']     = 'ng'
+                dic['error_text'] = '先ほどの依頼を実行中です。連続した要求には対応していません。'
+                json_dump = json.dumps(dic, ensure_ascii=False, )
+                #print('  --> ', json_dump)
+                return json_dump
+
             dic = {}
             dic['runMode']      = args_dic.get('runMode', 'agent')
             dic['request_text'] = args_dic.get('request_text', '')
@@ -333,6 +345,7 @@ class _class:
             dic['browser']      = self.agent_browser
             json_dump = json.dumps(dic, ensure_ascii=False, )
             res = io_text_write(qIO_func2py, json_dump)
+            self.last_time = time.time()
 
         # 実行開始を待機
         start = False
@@ -357,7 +370,8 @@ class _class:
 
             # エラー結果
             dic = {}
-            dic['result'] = f"実行開始タイムアウト({ qTimeout_start }s)エラーが発生しました" 
+            dic['result']     = 'ng'
+            dic['error_text'] = f"実行開始タイムアウト({ qTimeout_start }s)エラーが発生しました" 
             json_dump = json.dumps(dic, ensure_ascii=False, )
             #print('  --> ', json_dump)
             return json_dump
@@ -388,7 +402,8 @@ class _class:
             return json_dump
         else:
             dic = {}
-            dic['result'] = f"実行タイムアウト({ qTimeout_proc }s)エラーが発生しました" 
+            dic['result']     = 'ng'
+            dic['error_text'] = f"実行タイムアウト({ qTimeout_proc }s)エラーが発生しました" 
             json_dump = json.dumps(dic, ensure_ascii=False, )
             #print('  --> ', json_dump)
             return json_dump
