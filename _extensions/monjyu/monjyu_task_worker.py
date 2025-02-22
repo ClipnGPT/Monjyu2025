@@ -28,8 +28,10 @@ import importlib
 
 
 # インターフェース
-#qPath_task    = '_config/_task/'
-qPath_task_ai = '_config/_task_ai/'
+qIO_liveAiRun  = 'temp/monjyu_live_ai_run.txt'
+qIO_agent2live = 'temp/monjyu_io_agent2live.txt'
+#qPath_task     = '_config/_task/'
+qPath_task_ai  = '_config/_task_ai/'
 
 YOUBIs  = ["1_mon", "2_tue", "3_wed", "4_thu", "5_fri", "6_sat", "7_sun"]
 FOLDERs = YOUBIs
@@ -51,6 +53,18 @@ except:
         tts  = 認証済_音声合成202405._class()
     except:
         print('★"認証済_音声合成202405"は利用できません！')
+
+def io_text_write(filename='', text='', encoding='utf-8', mode='w', ):
+    try:
+        w = codecs.open(filename, mode, encoding)
+        w.write(text)
+        w.close()
+        w = None
+        return True
+    except Exception as e:
+        print(e)
+    w = None
+    return False
 
 
 
@@ -350,6 +364,18 @@ class _worker_class:
     def play_monjyu(self, input_text='おはようございます', ):
         if (input_text == ''):
             return False
+
+        # Live 連携
+        if (os.path.isfile(qIO_liveAiRun)):
+            reqText = 'gpt,\n'
+            reqText += input_text
+
+        # Monjyu 連携 (tts指示)
+        else:
+            reqText = 'gpt,\n'
+            reqText += "以下の要求の結果を、要約して、日本語で音声合成してください。\n"
+            reqText += input_text
+
         # AI要求送信
         try:
             if self.botFunc is not None:
@@ -361,7 +387,7 @@ class _worker_class:
                         dic = {}
                         dic['runMode'] = 'chat' #ここは'chat'で内部的に問い合わせる
                         dic['userId'] = 'live'
-                        dic['reqText'] = input_text
+                        dic['reqText'] = reqText
                         f_kwargs = json.dumps(dic, ensure_ascii=False, )
                         try:
                             ext_func_proc = module_dic['func_proc']
@@ -374,8 +400,21 @@ class _worker_class:
                             print(e)
                             return False
 
-                        # 音声合成
-                        return self.play_tts(input_text=res_text, )
+                        # Live 連携
+                        if (os.path.isfile(qIO_liveAiRun)):
+                            text = f"[TASK Worker] \n"
+                            text += input_text.rstrip() + '\n'
+                            text += "について、以下が結果報告です。要約して日本語で報告してください。\n"
+                            text += res_text.rstrip() + '\n\n'
+                            res = io_text_write(qIO_agent2live, text)
+
+                        # Monjyu 連携 (tts指示)
+                        #else:
+                        #    # 音声合成
+                        #    self.play_tts(input_text=res_text, )
+        
+                        return True
+
         except Exception as e:
             print(e)
         return False

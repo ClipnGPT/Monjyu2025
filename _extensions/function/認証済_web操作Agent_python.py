@@ -349,17 +349,20 @@ class _webOperator_class:
             # Live 連携
             if (os.path.isfile(qIO_liveAiRun)):
                 text = f"[RESULT] AIエージェント Web-Operator(ウェブオペレーター: browser-use/{ self.agent_engine }/{ self.agent_model }) \n"
-                text += request_text.rstrip() + '\n'
-                text += "について、以下が結果報告です。要約して日本語の音声で報告してください。\n"
+                if (request_text.rstrip() != ''):
+                    text += request_text.rstrip() + '\nについて、'
+                text += "以下が結果報告です。要約して日本語で報告してください。\n"
                 text += result_text.rstrip() + '\n\n'
                 res = io_text_write(qIO_agent2live, text)
 
             # Monjyu 連携 (tts指示)
             else:
                 sysText = 'あなたは美しい日本語を話す賢いアシスタントです。'
-                reqText = f"AIエージェントの実行結果の報告です。"
-                reqText += request_text.rstrip() + '\n'
-                reqText += "について、以下が結果報告です。要約して日本語で音声合成(execute_text_to_speech)してください。\n"
+                reqText = "gpt,\n"
+                reqText += "AIエージェントの実行結果の報告です。\n"
+                if (request_text.rstrip() != ''):
+                    reqText += request_text.rstrip() + '\nについて、'
+                reqText += "以下が結果報告です。要約した結果を、日本語で音声合成してください。\n"
                 inpText = f"[Web-Operator] ({ self.agent_engine }/{ self.agent_model })\n"
                 inpText += result_text.rstrip() + '\n'
                 try:

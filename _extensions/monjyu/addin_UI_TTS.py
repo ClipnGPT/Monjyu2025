@@ -69,6 +69,7 @@ class _tts_woker:
 
         # キーボード監視 開始
         self.last_key_time = 0
+        self.kb_handler_id = None
         self.start_kb_listener()
 
         # Worker デーモン起動
@@ -79,14 +80,16 @@ class _tts_woker:
     def start_kb_listener(self, runMode='assistant',):
         # イベントハンドラの登録
         self.last_key_time = 0
-        keyboard.hook(self._keyboard_event_handler)
+        self.kb_handler_id = keyboard.hook(self._keyboard_event_handler)
     # イベントハンドラ
     def _keyboard_event_handler(self, event):
         self.last_key_time = time.time()
     # キーボード監視 終了
     def stop_kb_listener(self):
         try:
-            keyboard.unhook_all()
+            if (self.kb_handler_id is not None):
+                keyboard.unhook(self.kb_handler_id)
+                self.kb_handler_id = None
         except Exception as e:
             print(e)
 

@@ -145,6 +145,7 @@ class _key2Action:
 
         # キーボード監視 開始
         self.last_key_time = 0
+        self.kb_handler_id = None
         self.start_kb_listener()
 
     # liveAPI監視
@@ -173,7 +174,7 @@ class _key2Action:
         # イベントハンドラの登録
         self.last_key_time      = 0
         self.debounce_interval  = 0.05  # 50ミリ秒のデバウンス時間
-        keyboard.hook(self._keyboard_event_handler)
+        self.kb_handler_id = keyboard.hook(self._keyboard_event_handler)
 
     # イベントハンドラ
     def _keyboard_event_handler(self, event):
@@ -190,7 +191,9 @@ class _key2Action:
     # キーボード監視 終了
     def stop_kb_listener(self):
         try:
-            keyboard.unhook_all()
+            if (self.kb_handler_id is not None):
+                keyboard.unhook(self.kb_handler_id)
+                self.kb_handler_id = None
         except Exception as e:
             print(e)
 
@@ -370,14 +373,14 @@ class _live_api_freeai:
 
             # ストリーム設定
             audio_stream = pyaudio.PyAudio()
-            mic_info = audio_stream.get_default_input_device_info()
+            #mic_info = audio_stream.get_default_input_device_info()
             input_stream = await asyncio.to_thread(
                 audio_stream.open,
                 format=FORMAT,
                 channels=CHANNELS,
                 rate=INPUT_RATE,
                 input=True,
-                input_device_index=mic_info["index"],
+                #input_device_index=mic_info["index"],
                 frames_per_buffer=INPUT_CHUNK,
             )
 

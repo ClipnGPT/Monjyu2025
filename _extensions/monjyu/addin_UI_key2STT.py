@@ -79,7 +79,8 @@ class _key2STT:
             os.makedirs(qPath_stt)
 
         # キーボード監視 開始
-        self.last_key_time      = 0
+        self.last_key_time = 0
+        self.kb_handler_id = None
         self.start_kb_listener()
 
         # カウンタ
@@ -102,7 +103,7 @@ class _key2STT:
         # イベントハンドラの登録
         self.last_key_time      = 0
         self.debounce_interval  = 0.05  # 50ミリ秒のデバウンス時間
-        keyboard.hook(self._keyboard_event_handler)
+        self.kb_handler_id = keyboard.hook(self._keyboard_event_handler)
 
     # イベントハンドラ
     def _keyboard_event_handler(self, event):
@@ -119,7 +120,9 @@ class _key2STT:
     # キーボード監視 終了
     def stop_kb_listener(self):
         try:
-            keyboard.unhook_all()
+            if (self.kb_handler_id is not None):
+                keyboard.unhook(self.kb_handler_id)
+                self.kb_handler_id = None
         except Exception as e:
             print(e)
 
