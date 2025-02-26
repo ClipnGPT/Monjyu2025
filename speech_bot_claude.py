@@ -591,6 +591,9 @@ class _claudeAPI:
             stream = True
             #print(' Claude : stream=False, ')
             #stream = False
+            if (res_name == self.claude_x_nick_name):
+                print(' Claude : Thinking, stream=False, ')
+                stream = False
         else:
             stream = False
 
@@ -624,10 +627,18 @@ class _claudeAPI:
                 self.print(session_id, f" Claude : { res_name.lower() }, { res_api }, pass={ n }, ")
 
                 # max_tokens
-                max_tokens = 8192
+                max_tokens = 20000
                 if (res_api.lower().find('opus') >= 0):
                     max_tokens = 4096
                     print('opus max_token=4096 !')
+                if (res_api.lower().find('haiku') >= 0):
+                    max_tokens = 8192
+                    print('opus max_token=4096 !')
+
+                # Thinking
+                thinking = None
+                if (res_name == self.claude_x_nick_name):
+                    thinking = {"type": "enabled", "budget_tokens": 16000, }
 
                 # Stream 表示
                 if (stream == True):
@@ -638,9 +649,12 @@ class _claudeAPI:
                                                         temperature=temperature,
                                                         system=sysText,
                                                         messages=messages,
-                                                        tools=tools, ) as streams:
+                                                        tools=tools, 
+                                                        #thinking=thinking, 
+                                                        ) as streams:
                         # Stream 処理
-                        hit_string = False
+                        hit_thinking = False
+                        hit_string   = False
                         for chunk in streams:
                             if ((time.time() - chkTime) > self.claude_max_wait_sec):
                                 break
@@ -650,15 +664,30 @@ class _claudeAPI:
                                 if   (content_type == 'content_block_delta'):
                                     try:
                                         # ストリーム
-                                        delta_text = chunk.delta.text
-                                        delta_text = delta_text.replace('\n\n', '\n')
-                                        delta_text = delta_text.replace('\n\n', '\n')
-                                        if (hit_string == False):
-                                            if (delta_text[:1] == '\n'):
-                                                delta_text = delta_text[1:]
-                                        if (delta_text.strip() != ''):
-                                            hit_string = True
-                                            self.stream(session_id, delta_text)
+                                        if (chunk.delta.type == 'thinking'):
+                                            delta_thinking = chunk.delta.thinking
+                                            delta_thinking = delta_thinking.replace('\n\n', '\n')
+                                            delta_thinking = delta_thinking.replace('\n\n', '\n')
+                                            if (hit_thinking == False):
+                                                self.stream(session_id, "<think>\n")
+                                                if (delta_thinking[:1] == '\n'):
+                                                    delta_thinking = delta_thinking[1:]
+                                            if (delta_thinking.strip() != ''):
+                                                hit_thinking = True
+                                                self.stream(session_id, delta_thinking)
+
+                                        elif (chunk.delta.type == 'text'):
+                                            delta_text = chunk.delta.text
+                                            delta_text = delta_text.replace('\n\n', '\n')
+                                            delta_text = delta_text.replace('\n\n', '\n')
+                                            if (hit_string == False):
+                                                if (hit_thinking == True):
+                                                    self.stream(session_id, "</think>\n")
+                                                if (delta_text[:1] == '\n'):
+                                                    delta_text = delta_text[1:]
+                                            if (delta_text.strip() != ''):
+                                                hit_string = True
+                                                self.stream(session_id, delta_text)
                                     except:
                                         pass
 
@@ -682,12 +711,26 @@ class _claudeAPI:
 
                 # 通常実行
                 if (stream == False):
-                    response = self.client.messages.create( model=res_api, 
-                                                            max_tokens=max_tokens,
-                                                            temperature=temperature,
-                                                            system=sysText,
-                                                            messages=messages,
-                                                            tools=tools, )
+                    # Chat
+                    if (res_name != self.claude_x_nick_name):
+                        response = self.client.messages.create( model=res_api, 
+                                                                max_tokens=max_tokens,
+                                                                temperature=temperature,
+                                                                system=sysText,
+                                                                messages=messages,
+                                                                tools=tools, 
+                                                                #thinking=thinking, 
+                                                                )
+                    # Thinking
+                    else:
+                        response = self.client.messages.create( model=res_api, 
+                                                                max_tokens=max_tokens,
+                                                                #temperature=temperature,
+                                                                system=sysText,
+                                                                messages=messages,
+                                                                tools=tools, 
+                                                                thinking=thinking, 
+                                                                )
 
                 # 共通 response 処理
                 res_role    = response.role
@@ -699,7 +742,22 @@ class _claudeAPI:
 
                 for c in range(len(contents)):
                     c_type     = response.content[c].type
-                    if (c_type == 'text'):
+                    if (c_type == 'thinking'):
+                        c_thinking = response.content[c].thinking
+                        c_thinking = c_thinking.replace('\n\n', '\n')
+
+                        # History 追加格納
+                        if (c_thinking.strip() != ''):
+                            c_text = "<think>\n" + c_thinking.rstrip() + "\n</think>"
+                            if (stream == False):
+                                self.print(session_id, c_text)
+                            res_text += c_text + '\n'
+
+                            self.seq += 1
+                            dic = {'seq': self.seq, 'time': time.time(), 'role': 'assistant', 'name': '', 'content': c_text }
+                            res_history.append(dic)
+
+                    elif (c_type == 'text'):
                         c_text = response.content[c].text
 
                         # History 追加格納
@@ -712,7 +770,7 @@ class _claudeAPI:
                             dic = {'seq': self.seq, 'time': time.time(), 'role': 'assistant', 'name': '', 'content': c_text }
                             res_history.append(dic)
 
-                    if (c_type == 'tool_use'):
+                    elif (c_type == 'tool_use'):
                         f_id     = response.content[c].id
                         f_name   = response.content[c].name
                         f_kwargs = json.dumps(response.content[c].input, ensure_ascii=False, )
@@ -928,7 +986,7 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'sonnet,toolsで兵庫県三木市の天気を調べて'
+                inpText = 'claude-x,toolsで兵庫県三木市の天気を調べて'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
@@ -955,24 +1013,6 @@ if __name__ == '__main__':
                 res_text, res_path, res_files, res_name, res_api, claudeAPI.history = \
                     claudeAPI.chatBot(  chat_class='auto', model_select='auto', 
                                         session_id='admin', history=claudeAPI.history, function_modules=function_modules,
-                                        sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
-                                        inpLang='ja', outLang='ja', )
-                print()
-                print(f"[{ res_name }] ({ res_api })")
-                print(str(res_text))
-                print()
-
-            if False:
-                sysText = None
-                reqText = ''
-                inpText = "genarate 'cute cat in room' image"
-                print()
-                print('[Request]')
-                print(reqText, inpText )
-                print()
-                res_text, res_path, res_files, res_name, res_api, claudeAPI.history = \
-                    claudeAPI.chatBot(  chat_class='flash', model_select='auto', 
-                                        session_id='admin', history=claudeAPI.history, function_modules={},
                                         sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
                                         inpLang='ja', outLang='ja', )
                 print()

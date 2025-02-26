@@ -27,8 +27,7 @@ import wave
 
 from playsound3 import playsound
 
-import platform    # platform.system().lower() #windows,darwin,linux
-if (platform.system().lower() == 'windows'):
+if (os.name == 'nt'):
     import pythoncom
     import win32com.client
 
@@ -232,7 +231,7 @@ class tts_class:
     def winos_tts(self, outText='おはよう', outLang='auto', outSpeaker='winos', outGender='female', outFile='temp/_work/tts.wav'):
         outFile = outFile[:-4] + '.wav'
 
-        if (platform.system().lower() != 'windows'):
+        if (os.name != 'nt'):
             return False, None
 
         # 引数チェック
@@ -351,7 +350,7 @@ class tts_class:
             except Exception as e:
                 print(e)
 
-        if (platform.system().lower() != 'darwin'):
+        if (sys.platform != 'darwin'): # MacOS チェック
             return False, None
 
         # 引数チェック
@@ -636,7 +635,7 @@ class _class:
             language = 'auto'
 
         if (speaker == None) or (speaker == 'auto'):
-            if (platform.system().lower() != 'darwin'):
+            if (sys.platform != 'darwin'): # MacOS チェック
                 speaker = 'google'
             else:
                 speaker = 'macos'

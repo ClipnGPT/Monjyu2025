@@ -30,9 +30,9 @@ import hashlib
 import pandas as pd
 
 import array
-import platform
 
 if (os.name == 'nt'):
+    import platform
     import ctypes
     from ctypes import wintypes
     import comtypes.client
@@ -571,14 +571,15 @@ class _clip_to_memo:
     def notePad(self, txt='', cr=True, lf=False):
         if (os.name != 'nt'):
             return False
-        version = platform.release()
-        if version == '10':
-            return self.notePad10(txt, cr, lf)
-        elif version == '11':
-            return self.notePad11(txt, cr, lf)
         else:
-            #print('Clip&Monjyu :', f"Unsupported Windows version: {version}")
-            return False
+            version = platform.release()
+            if version == '10':
+                return self.notePad10(txt, cr, lf)
+            elif version == '11':
+                return self.notePad11(txt, cr, lf)
+            else:
+                #print('Clip&Monjyu :', f"Unsupported Windows version: {version}")
+                return False
 
 
 

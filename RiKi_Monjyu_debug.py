@@ -17,6 +17,7 @@ CONNECTION_TIMEOUT = 15
 REQUEST_TIMEOUT = 30
 
 
+
 def post_request(req_mode='chat'):
     try:
         response = requests.post(

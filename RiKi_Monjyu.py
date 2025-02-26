@@ -25,7 +25,6 @@ import multiprocessing
 # ダミーインポート
 #import pip
 import keyboard
-import mouse
 import screeninfo
 from playsound3 import playsound
 import pyautogui
@@ -85,13 +84,26 @@ except:
 import pyaudio
 import speech_recognition as sr
 
-# インターフェースのパス設定
+
+
+# パス設定
+qPath_base = os.path.dirname(sys.argv[0]) + '/'
+if (qPath_base == '/'):
+    qPath_base = os.getcwd() + '/'
+else:
+    os.chdir(qPath_base)
+
+# インターフェース
 qPath_temp    = 'temp/'
 qPath_log     = 'temp/_log/'
 qPath_work    = 'temp/_work/'
 qPath_input   = 'temp/input/'
 qPath_output  = 'temp/output/'
 qPath_sandbox = 'temp/sandbox/'
+
+# コアAIのポート番号設定
+CORE_PORT = 8000
+SUB_BASE  = 8100
 
 # 共通ルーチンのインポート
 import _v6__qFunc
@@ -108,9 +120,16 @@ import RiKi_Monjyu__subai
 import RiKi_Monjyu__webui
 import speech_bot_function
 
-# コアAIのポート番号設定
-CORE_PORT = 8000
-SUB_BASE  = 8100
+# シグナル処理
+import signal
+def signal_handler(signal_number, stack_frame):
+    print(os.path.basename(__file__), 'accept signal =', signal_number)
+
+#signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGINT,  signal.SIG_IGN)
+signal.signal(signal.SIGTERM, signal.SIG_IGN)
+
+
 
 # 実行モードの設定
 runMode = 'debug'
@@ -137,8 +156,6 @@ class _main_class:
         qLog.init(mode='logger', filename=qLog_fn)
         qLog.log('info', self.proc_id, 'init')
         return True
-
-
 
 if __name__ == '__main__':
     main_name = 'Monjyu'

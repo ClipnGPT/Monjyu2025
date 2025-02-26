@@ -158,7 +158,7 @@ if __name__ == '__main__':
     #print(qText_ready)
     res = io_text_write(qIO_py2func, qText_ready)
 
-    print('install ok.')
+    #print('install ok.')
     sys.exit(0)
 
 

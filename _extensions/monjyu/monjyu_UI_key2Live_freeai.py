@@ -36,7 +36,6 @@ from PIL import Image, ImageGrab, ImageTk
 import io
 import screeninfo
 import pyautogui
-import mouse
 import cv2
 import hashlib
 
@@ -1155,7 +1154,7 @@ class _imageShot_class:
                     max_buttom = (s.y+s.height)
 
             # マウス配置
-            (mouse_x,mouse_y) = mouse.get_position()
+            (mouse_x,mouse_y) = pyautogui.position()
 
             # 画像切り出し
             screen = -1

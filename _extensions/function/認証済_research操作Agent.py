@@ -251,6 +251,8 @@ class _class:
             self.__del__()
             # タイムアウトエラー
             raise RuntimeError(f"★{ ext_python_script }の起動タイムアウト({ wait_sec }s)が発生しました！")
+        else:
+            print(ext_python_init + ' ok')
 
         # 結果クリア
         dummy = io_text_read(qIO_py2func)
@@ -290,6 +292,8 @@ class _class:
             self.__del__()
             # タイムアウトエラー
             raise RuntimeError(f"★{ ext_python_script }の起動タイムアウト({ wait_sec }s)が発生しました！")
+        else:
+            print(ext_python_script + ' ready')
 
         return True
 
