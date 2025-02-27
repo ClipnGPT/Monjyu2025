@@ -338,10 +338,10 @@ function get_engine_setting(engine) {
             // chatgpt
             if (engine === 'chatgpt') {
                 if (JSON.stringify(data) !== last_engine_setting.chatgpt) {
-                    $('#gpt_a_nick_name').val(data.a_nick_name || '');
-                    $('#gpt_b_nick_name').val(data.b_nick_name || '');
-                    $('#gpt_v_nick_name').val(data.v_nick_name || '');
-                    $('#gpt_x_nick_name').val(data.x_nick_name || '');
+                    $('#gpt_a_nick_name').text(data.a_nick_name || '');
+                    $('#gpt_b_nick_name').text(data.b_nick_name || '');
+                    $('#gpt_v_nick_name').text(data.v_nick_name || '');
+                    $('#gpt_x_nick_name').text(data.x_nick_name || '');
                     $('#gpt_max_wait_sec').val(data.max_wait_sec || '');
                     $('#gpt_a_model').val(data.a_model || '');
                     $('#gpt_a_use_tools').val(data.a_use_tools || '');
@@ -358,10 +358,10 @@ function get_engine_setting(engine) {
             // assistant
             if (engine === 'assistant') {
                 if (JSON.stringify(data) !== last_engine_setting.assistant) {
-                    $('#asst_a_nick_name').val(data.a_nick_name || '');
-                    $('#asst_b_nick_name').val(data.b_nick_name || '');
-                    $('#asst_v_nick_name').val(data.v_nick_name || '');
-                    $('#asst_x_nick_name').val(data.x_nick_name || '');
+                    $('#asst_a_nick_name').text(data.a_nick_name || '');
+                    $('#asst_b_nick_name').text(data.b_nick_name || '');
+                    $('#asst_v_nick_name').text(data.v_nick_name || '');
+                    $('#asst_x_nick_name').text(data.x_nick_name || '');
                     $('#asst_max_wait_sec').val(data.max_wait_sec || '');
                     $('#asst_a_model').val(data.a_model || '');
                     $('#asst_a_use_tools').val(data.a_use_tools || '');
@@ -378,10 +378,10 @@ function get_engine_setting(engine) {
             // gemini
             if (engine === 'gemini') {
                 if (JSON.stringify(data) !== last_engine_setting.gemini) {
-                    $('#gemn_a_nick_name').val(data.a_nick_name || '');
-                    $('#gemn_b_nick_name').val(data.b_nick_name || '');
-                    $('#gemn_v_nick_name').val(data.v_nick_name || '');
-                    $('#gemn_x_nick_name').val(data.x_nick_name || '');
+                    $('#gemn_a_nick_name').text(data.a_nick_name || '');
+                    $('#gemn_b_nick_name').text(data.b_nick_name || '');
+                    $('#gemn_v_nick_name').text(data.v_nick_name || '');
+                    $('#gemn_x_nick_name').text(data.x_nick_name || '');
                     $('#gemn_max_wait_sec').val(data.max_wait_sec || '');
                     $('#gemn_a_model').val(data.a_model || '');
                     $('#gemn_a_use_tools').val(data.a_use_tools || '');
@@ -398,10 +398,10 @@ function get_engine_setting(engine) {
             // freeai
             if (engine === 'freeai') {
                 if (JSON.stringify(data) !== last_engine_setting.freeai) {
-                    $('#free_a_nick_name').val(data.a_nick_name || '');
-                    $('#free_b_nick_name').val(data.b_nick_name || '');
-                    $('#free_v_nick_name').val(data.v_nick_name || '');
-                    $('#free_x_nick_name').val(data.x_nick_name || '');
+                    $('#free_a_nick_name').text(data.a_nick_name || '');
+                    $('#free_b_nick_name').text(data.b_nick_name || '');
+                    $('#free_v_nick_name').text(data.v_nick_name || '');
+                    $('#free_x_nick_name').text(data.x_nick_name || '');
                     $('#free_max_wait_sec').val(data.max_wait_sec || '');
                     $('#free_a_model').val(data.a_model || '');
                     $('#free_a_use_tools').val(data.a_use_tools || '');
@@ -418,10 +418,10 @@ function get_engine_setting(engine) {
             // claude
             if (engine === 'claude') {
                 if (JSON.stringify(data) !== last_engine_setting.claude) {
-                    $('#clad_a_nick_name').val(data.a_nick_name || '');
-                    $('#clad_b_nick_name').val(data.b_nick_name || '');
-                    $('#clad_v_nick_name').val(data.v_nick_name || '');
-                    $('#clad_x_nick_name').val(data.x_nick_name || '');
+                    $('#clad_a_nick_name').text(data.a_nick_name || '');
+                    $('#clad_b_nick_name').text(data.b_nick_name || '');
+                    $('#clad_v_nick_name').text(data.v_nick_name || '');
+                    $('#clad_x_nick_name').text(data.x_nick_name || '');
                     $('#clad_max_wait_sec').val(data.max_wait_sec || '');
                     $('#clad_a_model').val(data.a_model || '');
                     $('#clad_a_use_tools').val(data.a_use_tools || '');
@@ -438,10 +438,10 @@ function get_engine_setting(engine) {
             // openrt
             if (engine === 'openrt') {
                 if (JSON.stringify(data) !== last_engine_setting.openrt) {
-                    $('#ort_a_nick_name').val(data.a_nick_name || '');
-                    $('#ort_b_nick_name').val(data.b_nick_name || '');
-                    $('#ort_v_nick_name').val(data.v_nick_name || '');
-                    $('#ort_x_nick_name').val(data.x_nick_name || '');
+                    $('#ort_a_nick_name').text(data.a_nick_name || '');
+                    $('#ort_b_nick_name').text(data.b_nick_name || '');
+                    $('#ort_v_nick_name').text(data.v_nick_name || '');
+                    $('#ort_x_nick_name').text(data.x_nick_name || '');
                     $('#ort_max_wait_sec').val(data.max_wait_sec || '');
                     $('#ort_a_model').val(data.a_model || '');
                     $('#ort_a_use_tools').val(data.a_use_tools || '');
@@ -458,10 +458,10 @@ function get_engine_setting(engine) {
             // perplexity
             if (engine === 'perplexity') {
                 if (JSON.stringify(data) !== last_engine_setting.perplexity) {
-                    $('#pplx_a_nick_name').val(data.a_nick_name || '');
-                    $('#pplx_b_nick_name').val(data.b_nick_name || '');
-                    $('#pplx_v_nick_name').val(data.v_nick_name || '');
-                    $('#pplx_x_nick_name').val(data.x_nick_name || '');
+                    $('#pplx_a_nick_name').text(data.a_nick_name || '');
+                    $('#pplx_b_nick_name').text(data.b_nick_name || '');
+                    $('#pplx_v_nick_name').text(data.v_nick_name || '');
+                    $('#pplx_x_nick_name').text(data.x_nick_name || '');
                     $('#pplx_max_wait_sec').val(data.max_wait_sec || '');
                     $('#pplx_a_model').val(data.a_model || '');
                     $('#pplx_a_use_tools').val(data.a_use_tools || '');
@@ -478,10 +478,10 @@ function get_engine_setting(engine) {
             // grok
             if (engine === 'grok') {
                 if (JSON.stringify(data) !== last_engine_setting.grok) {
-                    $('#grok_a_nick_name').val(data.a_nick_name || '');
-                    $('#grok_b_nick_name').val(data.b_nick_name || '');
-                    $('#grok_v_nick_name').val(data.v_nick_name || '');
-                    $('#grok_x_nick_name').val(data.x_nick_name || '');
+                    $('#grok_a_nick_name').text(data.a_nick_name || '');
+                    $('#grok_b_nick_name').text(data.b_nick_name || '');
+                    $('#grok_v_nick_name').text(data.v_nick_name || '');
+                    $('#grok_x_nick_name').text(data.x_nick_name || '');
                     $('#grok_max_wait_sec').val(data.max_wait_sec || '');
                     $('#grok_a_model').val(data.a_model || '');
                     $('#grok_a_use_tools').val(data.a_use_tools || '');
@@ -498,10 +498,10 @@ function get_engine_setting(engine) {
             // groq
             if (engine === 'groq') {
                 if (JSON.stringify(data) !== last_engine_setting.groq) {
-                    $('#groq_a_nick_name').val(data.a_nick_name || '');
-                    $('#groq_b_nick_name').val(data.b_nick_name || '');
-                    $('#groq_v_nick_name').val(data.v_nick_name || '');
-                    $('#groq_x_nick_name').val(data.x_nick_name || '');
+                    $('#groq_a_nick_name').text(data.a_nick_name || '');
+                    $('#groq_b_nick_name').text(data.b_nick_name || '');
+                    $('#groq_v_nick_name').text(data.v_nick_name || '');
+                    $('#groq_x_nick_name').text(data.x_nick_name || '');
                     $('#groq_max_wait_sec').val(data.max_wait_sec || '');
                     $('#groq_a_model').val(data.a_model || '');
                     $('#groq_a_use_tools').val(data.a_use_tools || '');
@@ -518,10 +518,10 @@ function get_engine_setting(engine) {
             // ollama
             if (engine === 'ollama') {
                 if (JSON.stringify(data) !== last_engine_setting.ollama) {
-                    $('#olm_a_nick_name').val(data.a_nick_name || '');
-                    $('#olm_b_nick_name').val(data.b_nick_name || '');
-                    $('#olm_v_nick_name').val(data.v_nick_name || '');
-                    $('#olm_x_nick_name').val(data.x_nick_name || '');
+                    $('#olm_a_nick_name').text(data.a_nick_name || '');
+                    $('#olm_b_nick_name').text(data.b_nick_name || '');
+                    $('#olm_v_nick_name').text(data.v_nick_name || '');
+                    $('#olm_x_nick_name').text(data.x_nick_name || '');
                     $('#olm_max_wait_sec').val(data.max_wait_sec || '');
                     $('#olm_a_model').val(data.a_model || '');
                     $('#olm_a_use_tools').val(data.a_use_tools || '');

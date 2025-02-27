@@ -185,25 +185,29 @@ class _data_class:
 
         # engineの設定
         self.engine_setting['chatgpt'] = {
-            "max_wait_sec": "", 
-            "a_model": "", 
-            "a_use_tools": "", 
-            "b_model": "", 
-            "b_use_tools": "", 
+            "a_nick_name": "",
+            "b_nick_name": "",
+            "v_nick_name": "",
+            "x_nick_name": "",
+            "max_wait_sec": "",
+            "a_model": "",
+            "a_use_tools": "",
+            "b_model": "",
+            "b_use_tools": "",
             "v_model": "",
-            "v_use_tools": "", 
+            "v_use_tools": "",
             "x_model": "",
-            "x_use_tools": "" 
+            "x_use_tools": ""
         }
-        self.engine_models['assistant'] = self.engine_setting['chatgpt']
-        self.engine_models['gemini'] = self.engine_setting['chatgpt']
-        self.engine_models['freeai'] = self.engine_setting['chatgpt']
-        self.engine_models['claude'] = self.engine_setting['chatgpt']
-        self.engine_models['openrt'] = self.engine_setting['chatgpt']
-        self.engine_models['perplexity'] = self.engine_setting['chatgpt']
-        self.engine_models['grok'] = self.engine_setting['chatgpt']
-        self.engine_models['groq'] = self.engine_setting['chatgpt']
-        self.engine_models['ollama'] = self.engine_setting['chatgpt']
+        self.engine_setting['assistant'] = self.engine_setting['chatgpt']
+        self.engine_setting['gemini'] = self.engine_setting['chatgpt']
+        self.engine_setting['freeai'] = self.engine_setting['chatgpt']
+        self.engine_setting['claude'] = self.engine_setting['chatgpt']
+        self.engine_setting['openrt'] = self.engine_setting['chatgpt']
+        self.engine_setting['perplexity'] = self.engine_setting['chatgpt']
+        self.engine_setting['grok'] = self.engine_setting['chatgpt']
+        self.engine_setting['groq'] = self.engine_setting['chatgpt']
+        self.engine_setting['ollama'] = self.engine_setting['chatgpt']
 
         # addinsの設定
         self.addins_setting = {

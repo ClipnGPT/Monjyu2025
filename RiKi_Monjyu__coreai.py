@@ -515,7 +515,10 @@ class CoreAiClass:
                         modelx =  'claude-3-opus-20240229'
                     if (modelx == 'claude-3.5-sonnet'):
                         modelx =  'claude-3-5-sonnet-20241022'
+                    if (modelx == 'claude-3.7-sonnet'):
+                        modelx =  'claude-3-7-sonnet-20250219'
                     modelx = modelx.replace('claude-3.5', 'claude-3-5')
+                    modelx = modelx.replace('claude-3.7', 'claude-3-7')
                     if (model in self.chat_class.claudeAPI.models):
                         self.chat_class.claudeAPI.models[model]['token'] = str(token)
                         self.chat_class.claudeAPI.models[model]['modality'] = str(modality)
