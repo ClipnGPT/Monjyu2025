@@ -734,10 +734,14 @@ class _ollamaAPI:
                     if (os.path.getsize(file_name) <= 20000000):
                         file_ext = os.path.splitext(file_name)[1][1:].lower()
                         if (file_ext in ('jpg', 'jpeg', 'png')):
-                            images.append(file_name)
-            msg = {"role": "user", "content": msg_text, "images":images }
-            print(images)
-            messages.append(msg)
+                            base64_text = base64_encode(file_name)
+                            images.append(base64_text)
+            if (len(images) == 0):
+                msg = {"role": "user", "content": msg_text }
+                messages.append(msg)
+            else:
+                msg = {"role": "user", "content": msg_text, "images": images }
+                messages.append(msg)
 
         # ストリーム実行?
         if (session_id == 'admin'):
@@ -938,8 +942,9 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = '添付画像を説明してください。'
-                #inpText = '画像検索に利用できるように、この画像の内容を箇条書きで教えてください。'
+                #inpText = '添付画像を説明してください。'
+                #inpText = '画像検索に利用できるように、この画像の内容を箇条書きで説明してください。'
+                inpText = 'To help with image search, please provide a brief description of what this image does.'
                 filePath = ['_icons/dog.jpg']
                 #filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
                 print()

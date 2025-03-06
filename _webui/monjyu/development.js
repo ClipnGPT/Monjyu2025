@@ -115,6 +115,7 @@ async function allHtmlRequest() {
     get_source_request('_webui/monjyu/setting_live.html');
     get_source_request('_webui/monjyu/setting_agent.html');
     get_source_request('_webui/monjyu/setting_other.html');
+    get_source_request('_webui/monjyu/chat.html');
     get_source_request('_webui/monjyu/input.html');
     get_source_request('_webui/monjyu/statuses.html');
     get_source_request('_webui/monjyu/output.html');
@@ -148,6 +149,7 @@ async function allJsRequest() {
     get_source_request('_webui/monjyu/setting_live.js');
     get_source_request('_webui/monjyu/setting_agent.js');
     get_source_request('_webui/monjyu/setting_other.js');
+    get_source_request('_webui/monjyu/chat.js');
     get_source_request('_webui/monjyu/input.js');
     get_source_request('_webui/monjyu/statuses.js');
     get_source_request('_webui/monjyu/output.js');
@@ -238,6 +240,7 @@ $(document).ready(function() {
         get_source_input('_webui/monjyu/setting_live.html');
         get_source_input('_webui/monjyu/setting_agent.html');
         get_source_input('_webui/monjyu/setting_other.html');
+        get_source_input('_webui/monjyu/chat.html');
         get_source_input('_webui/monjyu/input.html');
         get_source_input('_webui/monjyu/statuses.html');
         get_source_input('_webui/monjyu/output.html');
@@ -266,6 +269,7 @@ $(document).ready(function() {
         get_source_input('_webui/monjyu/setting_live.js');
         get_source_input('_webui/monjyu/setting_agent.js');
         get_source_input('_webui/monjyu/setting_other.js');
+        get_source_input('_webui/monjyu/chat.js');
         get_source_input('_webui/monjyu/input.js');
         get_source_input('_webui/monjyu/statuses.js');
         get_source_input('_webui/monjyu/output.js');
@@ -333,6 +337,9 @@ $(document).ready(function() {
     $('#btnSource_setting_other').click(function() {
         get_source_input('_webui/monjyu/setting_other.html');
     });
+    $('#btnSource_chat').click(function() {
+        get_source_input('_webui/monjyu/chat.html');
+    });
     $('#btnSource_input').click(function() {
         get_source_input('_webui/monjyu/input.html');
     });
@@ -391,6 +398,9 @@ $(document).ready(function() {
     });
     $('#btnSource_setting_other_js').click(function() {
         get_source_input('_webui/monjyu/setting_other.js');
+    });
+    $('#btnSource_chat_js').click(function() {
+        get_source_input('_webui/monjyu/chat.js');
     });
     $('#btnSource_input_js').click(function() {
         get_source_input('_webui/monjyu/input.js');
