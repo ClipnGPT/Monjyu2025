@@ -77,38 +77,42 @@ class _data_class:
         self.subai_reset = {port: {'reset': 'yes,'} for port in self.subai_ports}
 
         # 結果の保存
-        self.subai_sessions_all   = {}
-        self.subai_input_log_key  = 0
-        self.subai_input_log_all  = {}
-        self.subai_output_log_key = 0
-        self.subai_output_log_all = {}
-        self.subai_debug_log_key  = 0
-        self.subai_debug_log_all  = {}
-        self.subai_histories_key  = 0
-        self.subai_histories_all  = {}
+        self.subai_sessions_all     = {}
+        self.subai_input_log_key    = 0
+        self.subai_input_log_all    = {}
+        self.subai_output_log_key   = 0
+        self.subai_output_log_all   = {}
+        self.subai_debug_log_key    = 0
+        self.subai_debug_log_all    = {}
+        self.subai_histories_key    = 0
+        self.subai_histories_all    = {}
+
+        # sandbox表示更新
+        self.sandbox_update = True
+        self.sandbox_file   = None
 
         # 設定の保存
-        self.mode_setting = {}
-        self.engine_models = {}
-        self.engine_models['chatgpt'] = {}
-        self.engine_models['assistant'] = {}
-        self.engine_models['gemini'] = {}
-        self.engine_models['freeai'] = {}
-        self.engine_models['claude'] = {}
-        self.engine_models['openrt'] = {}
-        self.engine_models['perplexity'] = {}
-        self.engine_models['grok'] = {}
-        self.engine_models['groq'] = {}
-        self.engine_models['ollama'] = {}
+        self.mode_setting   = {}
+        self.engine_models  = {}
+        self.engine_models['chatgpt']       = {}
+        self.engine_models['assistant']     = {}
+        self.engine_models['gemini']        = {}
+        self.engine_models['freeai']        = {}
+        self.engine_models['claude']        = {}
+        self.engine_models['openrt']        = {}
+        self.engine_models['perplexity']    = {}
+        self.engine_models['grok']          = {}
+        self.engine_models['groq']          = {}
+        self.engine_models['ollama']        = {}
         self.engine_setting = {}
         self.addins_setting = {}
-        self.live_models = {}
-        self.live_voices = {}
-        self.live_setting = {}
-        self.webOperator_models = {}
-        self.webOperator_setting = {}
-        self.researchAgent_models = {}
-        self.researchAgent_setting = {}
+        self.live_models    = {}
+        self.live_voices    = {}
+        self.live_setting   = {}
+        self.webOperator_models     = {}
+        self.webOperator_setting    = {}
+        self.researchAgent_models   = {}
+        self.researchAgent_setting  = {}
         self._reset()
 
         # スレッドロック
@@ -118,6 +122,10 @@ class _data_class:
         self.start_subais()
 
     def _reset(self):
+
+        # sandbox表示更新
+        self.sandbox_update = True
+        self.sandbox_file   = None
 
         # 各動作モードの設定
         self.mode_setting['chat'] = {

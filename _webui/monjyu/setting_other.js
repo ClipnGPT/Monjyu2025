@@ -126,13 +126,13 @@ $(document).ready(function() {
         }
     });
     
-    $('#react-halloWorld').click(function() {
-        post_set_react('react-sample-halloWorld.zip');
+    $('#btn-html-sandbox').click(function() {
+        post_set_react('html-sandbox.zip');
     });
-    $('#react-realtimeConsole-openai').click(function() {
+    $('#btn-realtimeConsole-openai').click(function() {
         post_set_react('openai-realtime-console-main.zip');
     });
-    $('#react-realtimeConsole-google').click(function() {
+    $('#btn-realtimeConsole-google').click(function() {
         post_set_react('multimodal-live-api-web-console-main.zip');
     });
 

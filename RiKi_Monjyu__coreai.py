@@ -36,10 +36,11 @@ import socket
 qHOSTNAME = socket.gethostname().lower()
 
 # パスの設定
-qPath_temp   = 'temp/'
-qPath_log    = 'temp/_log/'
-qPath_output = 'temp/output/'
-qPath_tts    = 'temp/s6_5tts_txt/'
+qPath_temp    = 'temp/'
+qPath_log     = 'temp/_log/'
+qPath_output  = 'temp/output/'
+qPath_tts     = 'temp/s6_5tts_txt/'
+qPath_sandbox = 'temp/sandbox/'
 
 # インターフェース
 qIO_agent2live  = 'temp/monjyu_io_agent2live.txt'
@@ -1229,7 +1230,8 @@ class CoreAiClass:
                     print(e)
 
     def out_path(self, user_id: str, output_path: str, ):
-        if (output_path.lower()[-4:] == '.zip'):
+        _, ext = os.path.splitext(output_path)
+        if (ext.lower() in ['.zip', '.html', '.py']):
             # 自動サンドボックス
             addin_module = self.addin.addin_modules.get('addin_autoSandbox', None)
             if (addin_module is not None):
@@ -1242,6 +1244,21 @@ class CoreAiClass:
                         json_dump = json.dumps(dic, ensure_ascii=False, )
                         func_proc = addin_module['func_proc']
                         res_json  = func_proc(json_dump)
+
+                        # 表示更新
+                        if (ext.lower() in ['.zip', '.html']):
+                            self.data.sandbox_update = True
+                            self.data.sandbox_file = output_path
+                            if (ext.lower() == '.zip'):
+                                extract_dir = os.path.basename(output_path).replace('.zip', '')
+                                filename = qPath_sandbox + extract_dir + '/package.json'
+                                if (os.path.isfile(filename)):
+                                    self.data.sandbox_file = filename
+                            if (ext.lower() == '.html'):
+                                filename = qPath_sandbox + 'html-sandbox/public/index.html'
+                                if (os.path.isfile(filename)):
+                                    self.data.sandbox_file = filename
+
                 except Exception as e:
                     print(e)
                     res_json = None

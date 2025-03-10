@@ -46,13 +46,19 @@ win_code_path = 'C:/Program Files/Microsoft VS Code/Code.exe'
 
 class sandbox_class:
     def __init__(self, ):
-        self.react_reset   = True
         self.react_proc    = None
 
         # 出力フォルダ用意
         if (not os.path.isdir(qPath_sandbox)):
             os.makedirs(qPath_sandbox)
 
+        # main,data,addin,botFunc,
+        self.main    = None
+        self.data    = None
+        self.addin   = None
+        self.botFunc = None
+
+        # react 準備
         self.abs_path     = os.path.abspath(qPath_sandbox)
         self.sandbox_start = qPath_sandbox + '_' + qSandBox_name + '_start'
         self.sandbox_stop  = qPath_sandbox + '_' + qSandBox_name + '_stop'
@@ -60,11 +66,16 @@ class sandbox_class:
             self.sandbox_start = self.sandbox_start.replace('/', '\\') + '.bat'
             self.sandbox_stop  = self.sandbox_stop.replace('/', '\\') + '.bat'
 
-        # react 環境準備
+        # react 開始
         txts = []
+        if (os.name == 'nt'):
+            txts.append('taskkill /f /im node.exe')
         txts.append('cd "' + self.abs_path + '"')
         txts.append('call npx create-react-app ' + qSandBox_name)
         txts.append('echo yes > _yes.txt')
+        txts.append('cd "' + qSandBox_name + '"')
+        txts.append('echo BROWSER=none > .env')
+        txts.append('call npm run start --silent < ../_yes.txt')
         txts.append('exit')
         if (os.name == 'nt'):
             self.txtsWrite(filename=self.sandbox_start, txts=txts, encoding='shift_jis', )
@@ -73,6 +84,8 @@ class sandbox_class:
 
         # react 停止
         txts = []
+        if (os.name == 'nt'):
+            txts.append('taskkill /f /im node.exe')
         txts.append('cd "' + self.abs_path + '"')
         txts.append('cd "' + qSandBox_name + '"')
         txts.append('call npm run stop --silent')
@@ -93,17 +106,30 @@ class sandbox_class:
             if (os.path.isfile(qPath_sandbox + '_yes.txt')):
                 os.remove(qPath_sandbox + '_yes.txt')
 
-            # react 起動 実行
-            if (os.name == 'nt'):
-                self.react_proc = subprocess.Popen(['cmd', '/c', 'start ' + self.sandbox_start], shell=True, )
-            else:
-                self.react_proc = subprocess.Popen([self.sandbox_start])
+        # react 終了
+        hit = False
+        try:
+            if (self.react_proc is not None):
+                if (self.react_proc.poll() is None):
+                    hit = True
+                    # 強制停止
+                    self.react_proc.terminate()
+                    self.react_proc = None
+                    time.sleep(1.00)
+        except:
+            pass
+
+        # react 起動 実行
+        if (os.name == 'nt'):
+            self.react_proc = subprocess.Popen(['cmd', '/c', 'start', '/min', self.sandbox_start], shell=True, )
+        else:
+            self.react_proc = subprocess.Popen([self.sandbox_start])
 
         return True
 
     def react(self, extract_dir='HalloWorld', ):
 
-        # react 準備
+        # フォルダ確認
         if (not os.path.isdir(qPath_sandbox + qSandBox_name)) \
         or (not os.path.isfile(qPath_sandbox + '_yes.txt')):
             res_okng = 'ng'
@@ -135,11 +161,12 @@ class sandbox_class:
 
         # react 準備
         bat_start = qPath_sandbox + extract_dir[:-1] + '_start'
-        bat_build = qPath_sandbox + extract_dir[:-1] + '_build'
+        bat_stop  = qPath_sandbox + extract_dir[:-1] + '_stop'
         if (os.name == 'nt'):
             bat_start = bat_start.replace('/', '\\') + '.bat'
-            bat_build = bat_build.replace('/', '\\') + '.bat'
+            bat_stop  = bat_stop.replace('/', '\\') + '.bat'
 
+        # react 開始
         txts = []
         if (os.name == 'nt'):
             txts.append('taskkill /f /im node.exe')
@@ -148,8 +175,6 @@ class sandbox_class:
         #txts.append('cd "' + qSandBox_name + '"')
         txts.append('cd "' + extract_dir[:-1] + '"')
         txts.append('echo BROWSER=none > .env')
-        #txts.append('start npm run stop')
-        #txts.append('ping localhost -w 1000 -n 15 >nul')
         txts.append('call npm i')
         txts.append('call npm run start --silent < ../_yes.txt')
         txts.append('exit')
@@ -158,48 +183,39 @@ class sandbox_class:
         else:
             self.txtsWrite(filename=bat_start, txts=txts, )
                 
+        # react 停止
         txts = []
         if (os.name == 'nt'):
             txts.append('taskkill /f /im node.exe')
         txts.append('cd "' + self.abs_path + '"')
-        #txts.append('xcopy /e/h/c/i/y ' + extract_dir[:-1] + ' ' + qSandBox_name)
-        #txts.append('cd "' + qSandBox_name + '"')
         txts.append('cd "' + extract_dir[:-1] + '"')
-        txts.append('echo  BROWSER=none > .env')
-        #txts.append('start npm run stop')
-        #txts.append('ping localhost -w 1000 -n 15 >nul')
-        txts.append('call npm i')
-        txts.append('call npm run start --silent < ../_yes.txt')
+        txts.append('call npm run stop --silent')
         txts.append('exit')
         if (os.name == 'nt'):
-            self.txtsWrite(filename=bat_build, txts=txts, encoding='shift_jis', )
+            self.txtsWrite(filename=bat_stop, txts=txts, encoding='shift_jis', )
         else:
-            self.txtsWrite(filename=bat_build, txts=txts, )
+            self.txtsWrite(filename=bat_stop, txts=txts, )
 
-        # react 状態確認
+        # react 終了
         hit = False
         try:
-            if (self.react_proc.poll() is None):
-                hit = True
-
-                # 強制停止
-                self.react_proc.terminate()
-                self.react_proc = None
-                time.sleep(1.00)
-
+            if (self.react_proc is not None):
+                if (self.react_proc.poll() is None):
+                    hit = True
+                    # 強制停止
+                    self.react_proc.terminate()
+                    self.react_proc = None
+                    time.sleep(1.00)
         except:
             pass
 
         # react 起動
-        if (self.react_reset == True):
-            self.react_reset = False
-            print()
-            print(bat_start)
-            self.react_proc = subprocess.Popen([bat_start], shell=True, )
+        print()
+        print(bat_start)
+        if (os.name == 'nt'):
+            self.react_proc = subprocess.Popen(['cmd', '/c', 'start', '/min', bat_start], shell=True, )
         else:
-            print()
-            print(bat_build)
-            self.react_proc = subprocess.Popen([bat_build], shell=True, )
+            self.react_proc = subprocess.Popen([bat_start])
 
         res_okng = 'ok'
         res_msg  = 'react実行中です。'
@@ -356,7 +372,7 @@ class _class:
                     },
                     "browser": {
                         "type": "string",
-                        "description": "ブラウザ表示 yes,no 例) yes"
+                        "description": "ブラウザ表示 auto,yes,no 例) auto"
                     },
                 },
                 "required": ["runMode", "file_path"]
@@ -366,15 +382,30 @@ class _class:
         # 初期設定
         self.runMode = 'assistant'
         self.sandbox = sandbox_class()
+        self.last_reset = 0
         self.func_reset()
 
-    def func_reset(self, ):
+    def func_reset(self, main=None, data=None, addin=None, botFunc=None, ):
+        if (main is not None):
+            self.sandbox.main = main
+        if (data is not None):
+            self.sandbox.data = data
+        if (addin is not None):
+            self.sandbox.addin = addin
+        if (botFunc is not None):
+            self.sandbox.botFunc = botFunc
+
+        # 連続リセットは無視
+        if ((time.time() - self.last_reset) < 60):
+            return True
+
         try:
             if (not os.path.isdir(qPath_sandbox + qSandBox_name)):
                 del self.sandbox
                 self.sandbox = sandbox_class()
-        except:
-            pass
+        except Exception as e:
+            print(e)
+
         self.sandbox.start()
         return True
 
@@ -389,7 +420,7 @@ class _class:
             args_dic = json.loads(json_kwargs)
             runMode   = args_dic.get('runMode')
             file_path = args_dic.get('file_path')
-            browser   = args_dic.get('browser')
+            browser   = args_dic.get('browser', 'auto')
 
         if (runMode is None) or (runMode == ''):
             runMode = self.runMode
@@ -407,15 +438,27 @@ class _class:
 
             # ファイル確認
             file_name   = os.path.basename(file_path)
-            extract_dir = file_name.replace('.zip', '') + '/'
             if (not os.path.isfile(qPath_output + file_name)):
                 pass
             else:
 
+                # html 確認
+                if (file_name[-5:].lower() == '.html'):
+                    # html-sandbox起動中
+                    to_file = qPath_sandbox + 'html-sandbox/public/index.html'
+                    if (os.path.isfile(to_file)):
+                        shutil.copy2(qPath_output + file_name, to_file)
+
+                    else:
+                        # ブラウザ 実行
+                        if (browser != 'no'):
+                            pass
+                            # vscode
+
                 # zip 確認
-                if (file_name[-4:].lower() != '.zip'):
-                    pass
-                else:
+                elif (file_name[-4:].lower() == '.zip'):
+
+                    extract_dir = file_name.replace('.zip', '') + '/'
 
                     # 解凍
                     if (os.path.isdir(qPath_sandbox + extract_dir)):
@@ -474,7 +517,7 @@ class _class:
                             if (res_okng == 'ok'):
                                 time.sleep(5.00)
                                 # ブラウザ 実行
-                                if (browser != 'no'):
+                                if (browser == 'yes'):
                                     res_okng, res_msg = self.sandbox.browser(url='http://localhost:3000/', )
 
                         # html
@@ -509,7 +552,7 @@ class _class:
                             res_okng, res_msg = self.sandbox.python(run_file=run_file, )
                             if (res_okng == 'ok') and (flask_hit == True):
                                 # ブラウザ 実行
-                                if (browser != 'no'):
+                                if (browser == 'yes'):
                                     res_okng, res_msg = self.sandbox.browser(url='http://localhost:5000/', )
 
         # 戻り
@@ -531,12 +574,12 @@ class _class:
 if __name__ == '__main__':
 
     ext = _class()
-    print(ext.func_proc('{ "runMode" : "assistant" }'))
 
     time.sleep(120.00)
 
     print(ext.func_proc('{ ' \
-                      + '"file_path" : "react-sample-halloWorld.zip"' \
+                      + '"runMode" : "assistant",' \
+                      + '"file_path" : "html-sandbox.zip"' \
                       + ' }'))
 
     #print(ext.func_proc('{ ' \

@@ -402,6 +402,7 @@ class _claudeAPI:
 
         # 戻り値
         res_text        = ''
+        res_think       = ''
         res_path        = ''
         res_files       = []
         res_name        = None
@@ -748,13 +749,12 @@ class _claudeAPI:
 
                         # History 追加格納
                         if (c_thinking.strip() != ''):
-                            c_text = "<think>\n" + c_thinking.rstrip() + "\n</think>"
                             if (stream == False):
-                                self.print(session_id, c_text)
-                            res_text += c_text + '\n'
+                                self.print(session_id, c_thinking)
+                            res_think += c_thinking.rstrip() + '\n'
 
                             self.seq += 1
-                            dic = {'seq': self.seq, 'time': time.time(), 'role': 'assistant', 'name': '', 'content': c_text }
+                            dic = {'seq': self.seq, 'time': time.time(), 'role': 'assistant', 'name': '', 'content': c_thinking }
                             res_history.append(dic)
 
                     elif (c_type == 'text'):
@@ -764,7 +764,7 @@ class _claudeAPI:
                         if (c_text.strip() != ''):
                             if (stream == False):
                                 self.print(session_id, c_text)
-                            res_text += c_text + '\n'
+                            res_text += c_text.rstrip() + '\n'
 
                             self.seq += 1
                             dic = {'seq': self.seq, 'time': time.time(), 'role': 'assistant', 'name': '', 'content': c_text }
@@ -852,6 +852,10 @@ class _claudeAPI:
 
             # 正常回答
             if (res_text != ''):
+                if (res_think != ''):
+                    wk_text  = '<think>\n' + res_think.rstrip() + '\n</think>\n'
+                    wk_text += res_text
+                    res_text = wk_text
                 self.print(session_id, f" Claude : { res_name.lower() }, complete.")
             else:
                 self.print(session_id,  ' Claude : Error !')

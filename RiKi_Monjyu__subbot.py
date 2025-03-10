@@ -721,7 +721,10 @@ class ChatClass:
         print()
 
         # pass 1
-        res_text, res_data, res_path, res_files, res_engine, res_name, res_api, history = \
+        req_hit = reqText.find(',', 1, 20)
+        inp_hit = inpText.find(',', 1, 20)
+        if (engine != '') or (req_hit >= 1) or (inp_hit >= 1):
+            res_text, res_data, res_path, res_files, res_engine, res_name, res_api, history = \
                 self.chatBot_sub(   req_mode=req_mode, engine=engine,
                                     chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                     history=history, function_modules=function_modules,
@@ -1788,26 +1791,105 @@ class ChatClass:
             res_text = '!'
             res_data = '!'
         else:
-            st = str('\n' + res_data).find('\n```')
+            data_hit = False
+            wrk_data = '\n' + res_data
+            think_data = ''
+
+            # <think>以外の結果抽出
+            st = wrk_data.find('\n<think>')
             if (st >= 0):
-                en = str('\n' + res_data).rfind('\n```')
+                en = wrk_data.find('\n</think>', st+8)
                 if (en > st):
-                    res_data = str('\n' + res_data)[st+1:en+4]
-            else:
-                if (res_data[:7].lower() == '<think>') \
-                or (model_name.lower().find('deekseek') >= 0) \
-                or (model_name.lower().find('sonar') >= 0):
-                    st = str(res_data).find('<think>')
-                    if (st >= 0):
-                        en = str(res_data).rfind('</think>')
+                    think_data = wrk_data[st+8:en]
+                    res_data = wrk_data[1:st] + wrk_data[en+9:]
+                    wrk_data = wrk_data[:st]  + wrk_data[en+9:]
+                    if (wrk_data[:1] != '\n'):
+                        wrk_data = '\n' + wrk_data
+
+            # res_data中の検索、think中の検索
+            for l in [1, 2]:
+
+                # ２回転目
+                if (l == 2):
+                    if (data_hit == True):
+                        break
+                    if (think_data == ''):
+                        break
+                    else:
+                        wrk_data = '\n' + think_data
+
+                # ３連文字による結果抽出
+                if (data_hit == False):
+                    st = wrk_data.find('\n```')
+                    while (st >= 0):
+                        en = wrk_data.find('\n```', st+8)
                         if (en > st):
-                            res_data = res_data[:st] + res_data[en+8:]
+                            res_data = wrk_data[st+1:en+4]
+                            data_hit = True
+                            wrk_data = wrk_data[en+4:]
+                            if (wrk_data[:1] != '\n'):
+                                wrk_data = '\n' + wrk_data
+                            st = wrk_data.find('\n```')
+                        else:
+                            st = -1
+
+                # <html>による結果抽出
+                if (data_hit == False):
+                    st = wrk_data.find('\n<html')
+                    while (st >= 0):
+                        en = wrk_data.find('\n</html>')
+                        if (en > st):
+                            tmp_data  = "```html\n"
+                            tmp_data += "<!DOCTYPE html>\n"
+                            tmp_data += wrk_data[st+1:en+8] + "\n"
+                            tmp_data += "```\n"
+                            res_data = tmp_data
+                            data_hit = True
+                            wrk_data = wrk_data[en+8:]
+                            if (wrk_data[:1] != '\n'):
+                                wrk_data = '\n' + wrk_data
+                            st = wrk_data.find('\n<html')
+                        else:
+                            st = -1
+
+            # 以外
+            if (data_hit == False):
                 res_data = self.text_replace(text=res_data, )
                 if (res_data.strip() == ''):
                     res_data = '!'
 
         if (res_path is None):
             res_path = ''
+
+        # ソースは、ファイル出力も行う
+        if (res_text != '') and (res_text != '!'):
+            if (res_path == '') and (len(res_files) == 0):
+                if (res_data[:3] == res_data.rstrip()[-3:]):
+                    first_n = res_data.find('\n')
+                    if (first_n >= 1):
+
+                        # ファイル名
+                        file_name = res_data[3:first_n].strip()
+                        if   (file_name.lower() == ''):
+                            file_name = 'source.txt'
+                        elif (file_name.lower() == 'html'):
+                            file_name = 'index.html'
+                        elif (file_name.lower() == 'python'):
+                            file_name = 'main.py'
+
+                        # データ
+                        file_data = res_data.rstrip()[first_n+1:-3]
+
+                        # 書き込み
+                        try:
+                            w = codecs.open(qPath_output + file_name, 'w', 'utf-8')
+                            w.write(file_data)
+                            w.close()
+                            w = None
+                            res_path = qPath_output + file_name
+                            res_files.append(res_path)
+                        except:
+                            pass
 
         # DEBUG
         if (DEBUG_FLAG == True):

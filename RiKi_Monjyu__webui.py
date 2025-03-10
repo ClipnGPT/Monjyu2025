@@ -39,6 +39,7 @@ import chardet
 import threading
 import base64
 import socket
+import subprocess
 qHOSTNAME = socket.gethostname().lower()
 
 # 各種ディレクトリパスの設定
@@ -51,6 +52,10 @@ qPath_reacts    = '_datas/reacts/'
 qPath_templates = '_webui/monjyu'
 qPath_static    = '_webui/monjyu/static'
 DEFAULT_ICON    = qPath_static + '/' + "icon_monjyu.png"
+
+qPath_sandbox = 'temp/sandbox/'
+qSandBox_name = 'react_sandbox'
+win_code_path = 'C:/Program Files/Microsoft VS Code/Code.exe'
 
 # 共通ルーチンのインポートと初期化
 import _v6__qLog
@@ -253,6 +258,8 @@ class WebUiClass:
         self.app.get("/get_url_to_text")(self.get_url_to_text)
         self.app.post("/post_speech_json")(self.post_speech_json)
         self.app.post("/post_set_react")(self.post_set_react)
+        self.app.get("/get_sandbox_update")(self.get_sandbox_update)
+        self.app.post("/post_sandbox_open")(self.post_sandbox_open)
 
         # テンプレートとスタティックファイルのマウント
         self.app.mount("/", StaticFiles(directory=qPath_templates), name="root")
@@ -1243,11 +1250,51 @@ class WebUiClass:
                 addin_func_proc  = addin_module['func_proc']
                 res_json = addin_func_proc( json_dump )
                 #args_dic = json.loads(res_json)
+
+                # 表示更新
+                _, ext = os.path.splitext(filename)
+                if (ext.lower() in ['.zip', '.html']):
+                    self.data.sandbox_update = True
+                    self.data.sandbox_file = filename
+                    if (ext.lower() == '.zip'):
+                        extract_dir = os.path.basename(filename).replace('.zip', '')
+                        filename = qPath_sandbox + extract_dir + '/package.json'
+                        if (os.path.isfile(filename)):
+                            self.data.sandbox_file = filename
+                    if (ext.lower() == '.html'):
+                        filename = qPath_sandbox + 'html-sandbox/public/index.html'
+                        if (os.path.isfile(filename)):
+                            self.data.sandbox_file = filename
+
                 return JSONResponse(content={'message': 'post_set_react successfully'})
 
         except Exception as e:
             print('post_speech_json', e)
         raise HTTPException(status_code=503, detail='post_set_react error')
+
+    async def get_sandbox_update(self):
+        filename = self.data.sandbox_file
+        if (filename is not None):
+            filename = os.path.basename(filename)
+        result = {  "sandbox_update": self.data.sandbox_update,
+                    "sandbox_file": filename,
+                 }
+        self.data.sandbox_update = False
+        return JSONResponse(content=result)
+
+    async def post_sandbox_open(self):
+        try:
+            if (self.data.sandbox_file is None):
+                raise HTTPException(status_code=404, detail='post_sandbox_open error')
+            if (not os.path.isfile(self.data.sandbox_file)):
+                raise HTTPException(status_code=404, detail='post_sandbox_open error')
+
+            print(self.data.sandbox_file)
+            self.code = subprocess.Popen([win_code_path, self.data.sandbox_file, ])
+            return JSONResponse(content={'message': 'post_sandbox_open successfully'})
+        except Exception as e:
+            print('post_sandbox_open', e)
+        raise HTTPException(status_code=503, detail='post_sandbox_open error')
 
     def run(self):
         # サーバー設定と起動

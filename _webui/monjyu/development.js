@@ -128,9 +128,9 @@ async function allHtmlRequest() {
 
     get_source_request('_webui/monjyu/debug_step.html');
     get_source_request('_webui/monjyu/debug_log.html');
+    get_source_request('_webui/monjyu/react.html');
     get_source_request('_webui/monjyu/writing.html');
     get_source_request('_webui/monjyu/development.html');
-    get_source_request('_webui/monjyu/react.html');
     get_source_request('_webui/monjyu/links.html');
 
     // 実行待機
@@ -162,6 +162,7 @@ async function allJsRequest() {
 
     get_source_request('_webui/monjyu/debug_step.js');
     get_source_request('_webui/monjyu/debug_log.js');
+    get_source_request('_webui/monjyu/react.js');
     get_source_request('_webui/monjyu/writing.js');
     get_source_request('_webui/monjyu/development.js');
 
@@ -209,6 +210,9 @@ $(document).ready(function() {
     $('#btnReq_html3').click(function() {
         sendMessageToParent('setRequestText', 'set', $('#req_html3').val() );
     });
+    $('#btnReq_index').click(function() {
+        sendMessageToParent('setRequestText', 'set', $('#req_index').val() );
+    });
     $('#btnReq_react').click(function() {
         sendMessageToParent('setRequestText', 'set', $('#req_react').val() );
     });
@@ -248,9 +252,9 @@ $(document).ready(function() {
         get_source_input('_webui/monjyu/sessions.html');
         get_source_input('_webui/monjyu/debug_step.html');
         get_source_input('_webui/monjyu/debug_log.html');
+        get_source_input('_webui/monjyu/react.html');
         get_source_input('_webui/monjyu/writing.html');
         get_source_input('_webui/monjyu/development.html');
-        get_source_input('_webui/monjyu/react.html');
         get_source_input('_webui/monjyu/links.html');
     });
     $('#btnSource_allHtmlRequest').click(function() {
@@ -277,6 +281,7 @@ $(document).ready(function() {
         get_source_input('_webui/monjyu/sessions.js');
         get_source_input('_webui/monjyu/debug_step.js');
         get_source_input('_webui/monjyu/debug_log.js');
+        get_source_input('_webui/monjyu/react.js');
         get_source_input('_webui/monjyu/writing.js');
         get_source_input('_webui/monjyu/development.js');
     });
@@ -361,6 +366,9 @@ $(document).ready(function() {
     $('#btnSource_debug_log').click(function() {
         get_source_input('_webui/monjyu/debug_log.html');
     });
+    $('#btnSource_react').click(function() {
+        get_source_input('_webui/monjyu/react.html');
+    });
     $('#btnSource_writing').click(function() {
         get_source_input('_webui/monjyu/writing.html');
     });
@@ -422,6 +430,9 @@ $(document).ready(function() {
     });
     $('#btnSource_debug_log_js').click(function() {
         get_source_input('_webui/monjyu/debug_log.js');
+    });
+    $('#btnSource_react_js').click(function() {
+        get_source_input('_webui/monjyu/react.js');
     });
     $('#btnSource_writing_js').click(function() {
         get_source_input('_webui/monjyu/writing.js');

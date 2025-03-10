@@ -266,6 +266,17 @@ if __name__ == '__main__':
             print(msg)
             print()
 
+        # autoSandbox
+        addin_module = addin.addin_modules.get('addin_autoSandbox', None)
+        if (addin_module is not None):
+            try:
+                if (addin_module['onoff'] == 'on'):
+                    func_reset = addin_module['func_reset']
+                    res  = func_reset(main=main, data=data, addin=addin, botFunc=botFunc, )
+                    print('reset', 'addin_autoSandbox')
+            except Exception as e:
+                print(e)
+
         # ClipnMonjyu
         addin_module = addin.addin_modules.get('monjyu_UI_ClipnMonjyu', None)
         if (addin_module is not None):
