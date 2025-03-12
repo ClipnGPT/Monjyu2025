@@ -717,6 +717,29 @@ class ChatClass:
             print('DEBUG', 'subbot.chatBot:reqText', )
             print('DEBUG', reqText, )
 
+        # 認証実行
+
+        if (self.chatgpt_enable is None):
+            self.chatgpt_auth()
+        if (self.assistant_enable is None):
+            self.assistant_auth()
+        if (self.gemini_enable is None):
+            self.gemini_auth()
+        if (self.freeai_enable is None):
+            self.freeai_auth()
+        if (self.claude_enable is None):
+            self.claude_auth()
+        if (self.openrt_enable is None):
+            self.openrt_auth()
+        if (self.perplexity_enable is None):
+            self.perplexity_auth()
+        if (self.grok_enable is None):
+            self.grok_auth()
+        if (self.groq_enable is None):
+            self.groq_auth()
+        if (self.ollama_enable is None):
+            self.ollama_auth()
+
         #qLog.log('info', self.proc_id, 'chatBot start')
         print()
 
@@ -730,16 +753,28 @@ class ChatClass:
                                     history=history, function_modules=function_modules,
                                     sysText=sysText, reqText=reqText, inpText=inpText,
                                     filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+        else:
+            res_text        = ''
+            res_data        = ''
+            res_path        = ''
+            res_files       = []
+            res_engine      = ''
+            res_name        = None
+            res_api         = None
 
         # pass 2 (エンジン指定なし?,エラー? 自動再試行)
         if ((res_text == '') or (res_text == '!')):
             engine2 = ''
             if   (self.freeai_enable == True):
                 engine2 = '[freeai]'
-            elif (self.ollama_enable == True):
-                engine2 = '[ollama]'
+            elif (self.openrt_enable == True):
+                engine2 = '[openrt]'
+            elif (self.gemini_enable == True):
+                engine2 = '[gemini]'
             elif (self.chatgpt_enable == True):
                 engine2 = '[chatgpt]'
+            elif (self.ollama_enable == True):
+                engine2 = '[ollama]'
 
             if (engine2 != ''):
                 # pass 2
@@ -774,32 +809,9 @@ class ChatClass:
         res_path        = ''
         res_files       = []
         res_engine      = ''
-        nick_name       = None
-        model_name      = None
+        res_name        = None
+        res_api         = None
         res_history     = history
-
-        # 認証実行
-
-        if (self.chatgpt_enable is None):
-            self.chatgpt_auth()
-        if (self.assistant_enable is None):
-            self.assistant_auth()
-        if (self.gemini_enable is None):
-            self.gemini_auth()
-        if (self.freeai_enable is None):
-            self.freeai_auth()
-        if (self.claude_enable is None):
-            self.claude_auth()
-        if (self.openrt_enable is None):
-            self.openrt_auth()
-        if (self.perplexity_enable is None):
-            self.perplexity_auth()
-        if (self.grok_enable is None):
-            self.grok_auth()
-        if (self.groq_enable is None):
-            self.groq_auth()
-        if (self.ollama_enable is None):
-            self.ollama_auth()
 
         # chatBot 実行
 
@@ -898,7 +910,7 @@ class ChatClass:
                                                     x_model=self.coreai.chat_class.chatgptAPI.chatgpt_x_model,
                                                     x_use_tools=self.coreai.chat_class.chatgptAPI.chatgpt_x_use_tools, )
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
                         self.chatgptAPI.chatBot(    chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -996,7 +1008,7 @@ class ChatClass:
                                                         x_model=self.coreai.chat_class.assistantAPI.assistant_x_model,
                                                         x_use_tools=self.coreai.chat_class.assistantAPI.assistant_x_use_tools, )
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
                         self.assistantAPI.chatBot(      chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                         history=history, function_modules=function_modules,
                                                         sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -1087,7 +1099,7 @@ class ChatClass:
                                                     x_model=self.coreai.chat_class.geminiAPI.gemini_x_model,
                                                     x_use_tools=self.coreai.chat_class.geminiAPI.gemini_x_use_tools, )
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
                         self.geminiAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -1181,7 +1193,7 @@ class ChatClass:
                                                     x_model=self.coreai.chat_class.claudeAPI.claude_x_model,
                                                     x_use_tools=self.coreai.chat_class.claudeAPI.claude_x_use_tools, )
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
                         self.claudeAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -1272,7 +1284,7 @@ class ChatClass:
                                                     x_model=self.coreai.chat_class.openrtAPI.openrt_x_model,
                                                     x_use_tools=self.coreai.chat_class.openrtAPI.openrt_x_use_tools, )
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
                         self.openrtAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -1370,7 +1382,7 @@ class ChatClass:
                                                         x_model=self.coreai.chat_class.perplexityAPI.perplexity_x_model,
                                                         x_use_tools=self.coreai.chat_class.perplexityAPI.perplexity_x_use_tools, )
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
                         self.perplexityAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                         history=history, function_modules=function_modules,
                                                         sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -1461,7 +1473,7 @@ class ChatClass:
                                                 x_model=self.coreai.chat_class.grokAPI.grok_x_model,
                                                 x_use_tools=self.coreai.chat_class.grokAPI.grok_x_use_tools, )
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
                         self.grokAPI.chatBot(   chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                 history=history, function_modules=function_modules,
                                                 sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -1552,7 +1564,7 @@ class ChatClass:
                                                 x_model=self.coreai.chat_class.groqAPI.groq_x_model,
                                                 x_use_tools=self.coreai.chat_class.groqAPI.groq_x_use_tools, )
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
                         self.groqAPI.chatBot(   chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                 history=history, function_modules=function_modules,
                                                 sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -1650,7 +1662,7 @@ class ChatClass:
                                                     x_model=self.coreai.chat_class.ollamaAPI.ollama_x_model,
                                                     x_use_tools=self.coreai.chat_class.ollamaAPI.ollama_x_use_tools, )
 
-                    res_text, res_path, res_files, nick_name, model_name, res_history = \
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
                         self.ollamaAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                     history=history, function_modules=function_modules,
                                                     sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -1763,7 +1775,7 @@ class ChatClass:
                         else:
                             qLog.log('warning', self.proc_id, f'freeai retry = { n }/{ n_max },')
 
-                        res_text, res_path, res_files, nick_name, model_name, res_history = \
+                        res_text, res_path, res_files, res_name, res_api, res_history = \
                                 self.freeaiAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
                                                             history=history, function_modules=function_modules,
                                                             sysText=sysText, reqText=reqText, inpText=inpText2,
@@ -1898,7 +1910,7 @@ class ChatClass:
             print('DEBUG', 'subbot.chatBot:res_text', )
             print('DEBUG', res_text, )
 
-        return res_text, res_data, res_path, res_files, res_engine, nick_name, model_name, res_history
+        return res_text, res_data, res_path, res_files, res_engine, res_name, res_api, res_history
 
 
 

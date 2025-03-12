@@ -117,6 +117,7 @@ async function allHtmlRequest() {
     get_source_request('_webui/monjyu/setting_other.html');
     get_source_request('_webui/monjyu/chat.html');
     get_source_request('_webui/monjyu/input.html');
+    get_source_request('_webui/monjyu/ocr.html');
     get_source_request('_webui/monjyu/statuses.html');
     get_source_request('_webui/monjyu/output.html');
     get_source_request('_webui/monjyu/histories.html');
@@ -151,6 +152,7 @@ async function allJsRequest() {
     get_source_request('_webui/monjyu/setting_other.js');
     get_source_request('_webui/monjyu/chat.js');
     get_source_request('_webui/monjyu/input.js');
+    get_source_request('_webui/monjyu/ocr.js');
     get_source_request('_webui/monjyu/statuses.js');
     get_source_request('_webui/monjyu/output.js');
     get_source_request('_webui/monjyu/histories.js');
@@ -246,6 +248,7 @@ $(document).ready(function() {
         get_source_input('_webui/monjyu/setting_other.html');
         get_source_input('_webui/monjyu/chat.html');
         get_source_input('_webui/monjyu/input.html');
+        get_source_input('_webui/monjyu/ocr.html');
         get_source_input('_webui/monjyu/statuses.html');
         get_source_input('_webui/monjyu/output.html');
         get_source_input('_webui/monjyu/histories.html');
@@ -275,6 +278,7 @@ $(document).ready(function() {
         get_source_input('_webui/monjyu/setting_other.js');
         get_source_input('_webui/monjyu/chat.js');
         get_source_input('_webui/monjyu/input.js');
+        get_source_input('_webui/monjyu/ocr.js');
         get_source_input('_webui/monjyu/statuses.js');
         get_source_input('_webui/monjyu/output.js');
         get_source_input('_webui/monjyu/histories.js');
@@ -348,6 +352,9 @@ $(document).ready(function() {
     $('#btnSource_input').click(function() {
         get_source_input('_webui/monjyu/input.html');
     });
+    $('#btnSource_ocr').click(function() {
+        get_source_input('_webui/monjyu/ocr.html');
+    });
     $('#btnSource_statuses').click(function() {
         get_source_input('_webui/monjyu/statuses.html');
     });
@@ -412,6 +419,9 @@ $(document).ready(function() {
     });
     $('#btnSource_input_js').click(function() {
         get_source_input('_webui/monjyu/input.js');
+    });
+    $('#btnSource_ocr_js').click(function() {
+        get_source_input('_webui/monjyu/ocr.js');
     });
     $('#btnSource_statuses_js').click(function() {
         get_source_input('_webui/monjyu/statuses.js');

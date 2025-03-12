@@ -996,13 +996,29 @@ Agentic AI Web-Operator(ウェブオペレーター:web_operation_agent) が利�
                     tools.append({"function_declarations": function_declarations })
 
                 # config 設定
-                speech_config = {"voice_config": {"prebuilt_voice_config": {"voice_name": self.live_voice }}}
-                config =    {"generation_config": {
-                                "response_modalities": ["AUDIO"],
-                                "speech_config": speech_config,
-                                },
-                            "system_instruction": instructions,
-                            "tools": tools,
+                #speech_config = {"voice_config": {"prebuilt_voice_config": {"voice_name": self.live_voice }}}
+                #config =    {"generation_config": {
+                #                "response_modalities": ["AUDIO"],
+                #                "speech_config": speech_config,
+                #                },
+                #            "system_instruction": instructions,
+                #            "tools": tools,
+                #            }
+                speech_config = types.LiveConnectConfig(
+                            response_modalities=["AUDIO"],
+                            speech_config=types.SpeechConfig(
+                                voice_config=types.VoiceConfig(
+                                    prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=self.live_voice)
+                                )
+                            ),
+                        )
+                config =    {   "generation_config": speech_config,
+                                "system_instruction": types.Content(
+                                    parts=  [ types.Part(
+                                                text=instructions
+                                            )]
+                                    ),
+                                "tools": tools,
                             }
 
                 # Live 実行

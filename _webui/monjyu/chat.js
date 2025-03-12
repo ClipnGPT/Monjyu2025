@@ -418,24 +418,28 @@ $(document).ready(function() {
 
     // クリアボタンのクリックイベント
     $('#clear-button').click(function() {
-        if (confirm('チャット履歴をクリアしますか？')) {
-            clearChat();
-        }
+        $('#request_text').val('');
+        $('#input_text').val('');
+        // クリア通知をサーバーに送信
+        $.ajax({
+            url: $('#core_endpoint').val() + '/post_clear',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ user_id: $('#user_id').val() }), // ユーザーIDを送信
+            success: function(response) {
+                console.log('post_clear:', response); // レスポンスをログに表示
+            },
+            error: function(xhr, status, error) {
+                console.error('post_clear error:', error); // エラーログを出力
+            }
+        });
     });
 
     // 送信ボタンのクリックイベント
     $('#submit-button').click(function() {
-        const message = $('#request_text').val().trim();
-        if (message) {
-            post_request($('#req_mode').val(), $('#system_text').val(), message, '', '', '');
-        }
-    });
-
-    // EnterキーでのSubmit
-    $('#request_text').keydown(function(event) {
-        if (event.keyCode === 13 && !event.shiftKey && event.ctrlKey) {
-            event.preventDefault();
-            $('#submit-button').click();
+        const req = $('#request_text').val().trim();
+        if (req) {
+            post_request($('#req_mode').val(), $('#system_text').val(), req, '', '', '');
         }
     });
 

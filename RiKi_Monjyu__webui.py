@@ -219,7 +219,8 @@ class WebUiClass:
         self.thread_lock = threading.Lock()
 
         # 送信処理用の初期化
-        self.next_image_file = None
+        self.last_image_file = None
+        self.last_image_time = 0
         self.last_input_files = []
         self.last_output_files = []
 
@@ -872,12 +873,11 @@ class WebUiClass:
     async def get_image_info(self):
         # 次回表示する画像データの取得
         image_data = None
-        if (self.next_image_file is not None):
-            if (self.next_image_file != ''):
-                image_data = self._get_image_data(self.next_image_file)
-            else:
-                image_data = self._get_image_data(DEFAULT_ICON)
-            self.next_image_file = None
+        if ((time.time() - self.last_image_time) > 60):
+            self.last_image_file = None
+            self.last_image_time = 0
+        if (self.last_image_file is not None):
+            image_data = self._get_image_data(self.last_image_file)
         return JSONResponse(content={"image_data": image_data})
 
     def _get_image_data(self, image_path):
@@ -939,7 +939,8 @@ class WebUiClass:
         
         if self.last_input_files != input_files:
             self.last_input_files = input_files
-            self.next_image_file = image_file
+            self.last_image_file = image_file
+            self.last_image_time = time.time()
         return JSONResponse(content={"files": input_files})
 
     async def get_output_list(self):
@@ -972,7 +973,8 @@ class WebUiClass:
         
         if (self.last_output_files != output_files):
             self.last_output_files = output_files
-            self.next_image_file = image_file
+            self.last_image_file = image_file
+            self.last_image_time = time.time()
         return JSONResponse(content={"files": output_files})
 
     async def post_drop_files(self, files: List[UploadFile] = File(...)):

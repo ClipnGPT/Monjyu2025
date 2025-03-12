@@ -5,6 +5,9 @@ function sendMessageToParent(action, method, data) {
     window.parent.postMessage({ action: action, method: method, data: data }, '*');
 }
 
+// 前回受信した画像データを保持する変数
+let last_image_data = null; 
+
 // 現在出力されているファイルの配列を保持する変数
 let currentOutputFiles = [];
 
@@ -31,10 +34,17 @@ function get_image_info() {
         url: '/get_image_info',
         method: 'GET',
         success: function(data) {
-            // 画像データが存在する場合
-            if (data.image_data) {
-                // 画像情報を更新
-                $('#image_img').attr('src', data.image_data);
+            if (data.image_data !== last_image_data) {
+                // 画像データが存在する場合
+                if (data.image_data) {
+                        // 画像情報を更新
+                    $('#image_img').attr('src', data.image_data);
+                } else {
+                    // 画像データがnullまたは空の場合は、デフォルト画像を取得
+                    get_default_image();
+                }
+                // 最新の画像データを保持
+                last_image_data = data.image_data;
             }
         },
         error: function(xhr, status, error) {
