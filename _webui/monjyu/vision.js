@@ -1,4 +1,4 @@
-// ocr.js
+// vision.js
 
 // 入力ファイルのリストを保持する配列
 let currentInputFiles = []; 
@@ -74,6 +74,38 @@ function updateInputFileList(files) {
 
 }
 
+// イメージ情報を取得する関数
+function get_image_info() {
+    // サーバーからイメージ情報を取得するAJAXリクエスト
+    $.ajax({
+        url: '/get_image_info',
+        method: 'GET',
+        success: function(data) {
+            if (data.image_data !== last_image_data) {
+                // 画像データが存在する場合
+                if (data.image_data) {
+                    $('#drop_message').hide();
+                    $('#image_img').attr('src', data.image_data);
+                    $('#image_img').show();
+                } else {
+                    $('#image_img').hide();
+                    $('#drop_message').show();
+                }
+                // 画像を2秒間点滅させる
+                $('#image_info').addClass('blink-border');
+                setTimeout(() => {
+                    $('#image_info').removeClass('blink-border');
+                }, 2000);
+                // 最新の画像データを保持
+                last_image_data = data.image_data;
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('get_image_info error:', error);
+        }
+    });
+}
+
 // リクエストをサーバーに送信する共通関数
 function post_request(req_mode, system_text, request_text, input_text, result_savepath, result_schema) {
     var file_names = [];
@@ -109,56 +141,46 @@ function post_request(req_mode, system_text, request_text, input_text, result_sa
     });
 }
 
-// イメージ情報を取得する関数
-function get_image_info() {
-    // サーバーからイメージ情報を取得するAJAXリクエスト
+// ユーザーの出力履歴を取得し、出力テキストエリアを更新する関数
+let lastOutputData = {};
+function get_output_log_user() {
+    // サーバーからユーザーの出力履歴を取得するAJAXリクエスト
     $.ajax({
-        url: '/get_image_info',
-        method: 'GET',
+        url: $('#core_endpoint').val() + '/get_output_log_user',
+        type: 'GET',
+        data: { user_id: $('#user_id').val() },
         success: function(data) {
-            if (data.image_data !== last_image_data) {
-                // 画像データが存在する場合
-                if (data.image_data) {
-                    $('#drop_message').hide();
-                    $('#image_img').attr('src', data.image_data);
-                    $('#image_img').show();
-                } else {
-                    $('#image_img').hide();
-                    $('#drop_message').show();
+            // データが存在する場合
+            if (data !== null) {
+                // 受信データと前回データが異なる場合
+                if(JSON.stringify(data) !== JSON.stringify(lastOutputData)) {
+
+                    // テキストエリアの内容を更新
+                    $('#output_data').val(data.output_data);
+
+                    // アニメーションを追加
+                    $('#output_data').addClass('blink-border');
+
+                    // アニメーション終了後にクラスを削除
+                    setTimeout(() => {
+                        $('#output_data').removeClass('blink-border');
+                    }, 2000); // 2秒間アニメーション
+
                 }
-                // 最新の画像データを保持
-                last_image_data = data.image_data;
+                // 最新のデータを保持
+                lastOutputData = data;
             }
         },
-        error: function(xhr, status, error) {
-            console.error('get_image_info error:', error);
-        }
-    });
-}
-
-// subai コンボ設定
-function get_subai_info_all() {
-    $.ajax({
-        url: $('#core_endpoint').val() + '/get_subai_info_all',
-        method: 'GET',
-        async: false,
-        success: function(data) {
-            $.each(data, function(port, info) {
-                $('#to_port').append(`<option value="${port}">${port} (${info.nick_name})</option>`);
-            });
-        },
-        error: function(xhr, status, error) {
-            console.error('get_subai_info_all error:', error);
+        error: function(xhr, status, error) { // パラメータを追加
+            console.error('get_output_log_user error:', error); // コロンを追加
         }
     });
 }
 
 // ドキュメントが読み込まれた時に実行される処理
 $(document).ready(function() {
-    // subai コンボ設定
-    get_subai_info_all();
-
-    // 初期表示では画像は表示せず、ドロップメッセージを表示
+    // 初期表示
+    $('#input_files').hide();
     $('#image_img').hide();
     $('#drop_message').show();
 
@@ -167,23 +189,21 @@ $(document).ready(function() {
     setInterval(get_image_info, 3000); // 3秒ごとにイメージ情報を更新
     //get_input_list();
     setInterval(get_input_list, 3000); // 3秒ごとに入力ファイルリストを更新
+    //get_output_log_user();
+    setInterval(get_output_log_user, 2000); // 2秒ごとに出力履歴を更新
 
     // ページ遷移時にlocalStorageから復元
-    const storedData = JSON.parse(localStorage.getItem('ocr_formData'));
+    const storedData = JSON.parse(localStorage.getItem('vision_formData'));
     if (storedData) {
-        $('#req_mode').val(storedData.req_mode || 'chat');
-        $('#to_port').val(storedData.to_port || '');
-        $('#ocr_request').val(storedData.ocr_request || '');
+        $('#vision_request').val(storedData.vision_request || '');
     }
 
     // ページ遷移時にlocalStorageに保存
     window.onbeforeunload = function() {
         var formData = {
-            req_mode: $('#req_mode').val(),
-            to_port: $('#to_port').val(),
-            ocr_request: $('#ocr_request').val(),
+            vision_request: $('#vision_request').val(),
         };
-        localStorage.setItem('ocr_formData', JSON.stringify(formData));
+        localStorage.setItem('vision_formData', JSON.stringify(formData));
     };
 
     // ドラッグ&ドロップ機能のセットアップ
@@ -218,6 +238,13 @@ $(document).ready(function() {
         
         const files = e.dataTransfer.files;
         if (files.length > 0) {
+            // 結果表示をクリア
+            $('#output_data').val('');
+            // 画像を2秒間点滅させる
+            $('#output_data').addClass('blink-border');
+            setTimeout(() => {
+                $('#output_data').removeClass('blink-border');
+            }, 2000);
             // ドロップされたファイルをサーバーに送信
             post_drop_files(files);
             // 入力ファイルリストを更新
@@ -227,7 +254,7 @@ $(document).ready(function() {
 
     // クリアボタンのクリックイベント
     $('#clear-button').click(function() {
-        $('#ocr_request').val('');
+        $('#vision_request').val('');
         // クリア通知をサーバーに送信
         $.ajax({
             url: $('#core_endpoint').val() + '/post_clear',
@@ -245,21 +272,37 @@ $(document).ready(function() {
 
     // 送信ボタンのクリックイベント
     $('#submit-button').click(function() {
-        const req = $('#ocr_request').val().trim();
+        const req = $('#vision_request').val().trim();
         if (req) {
+            // 結果表示をクリア
+            $('#output_data').val('');
+            // 画像を2秒間点滅させる
+            $('#output_data').addClass('blink-border');
+            setTimeout(() => {
+                $('#output_data').removeClass('blink-border');
+            }, 2000);
+            // リクエスト送信
             post_request($('#req_mode').val(), $('#system_text').val(), req, '', '', '');
         }
     });
 
     // 画像クリックでExec実行する機能を追加
     $('#image_img').click(function() {
-        const req = $('#ocr_request').val().trim();
+        const req = $('#vision_request').val().trim();
         if (req) {
             // 画像を2秒間点滅させる
             $('#image_info').addClass('blink-border');
             setTimeout(() => {
                 $('#image_info').removeClass('blink-border');
             }, 2000);
+            // 結果表示をクリア
+            $('#output_data').val('');
+            // 画像を2秒間点滅させる
+            $('#output_data').addClass('blink-border');
+            setTimeout(() => {
+                $('#output_data').removeClass('blink-border');
+            }, 2000);
+            // リクエスト送信
             post_request($('#req_mode').val(), $('#system_text').val(), req, '', '', '');
         }
     });

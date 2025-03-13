@@ -38,6 +38,7 @@ qHOSTNAME = socket.gethostname().lower()
 # パスの設定
 qPath_temp    = 'temp/'
 qPath_log     = 'temp/_log/'
+qPath_input   = 'temp/input/'
 qPath_output  = 'temp/output/'
 qPath_tts     = 'temp/s6_5tts_txt/'
 qPath_sandbox = 'temp/sandbox/'
@@ -859,13 +860,20 @@ class CoreAiClass:
             if (self.botFunc is not None):
                 function_modules = self.botFunc.function_modules
 
+        # ファイル設定
+        filePath = []
+        for fname in file_names:
+            fpath = qPath_input + os.path.basename(fname)
+            if (os.path.isfile(fpath)):
+                filePath.append(fpath)
+
         # chatBot処理
         res_text, res_data, res_path, res_files, res_engine, res_name, res_api, self.history = \
             self.chat_class.chatBot(    req_mode=req_mode, engine=req_engine,
                                         chat_class='auto', model_select='auto', session_id=self.self_port, 
                                         history=self.history, function_modules=function_modules,
                                         sysText=system_text, reqText=request_text, inpText=input_text,
-                                        filePath=file_names, inpLang='ja', outLang='ja', )
+                                        filePath=filePath, inpLang='ja', outLang='ja', )
 
         output_text = ''
         output_text += f"[{ res_engine }] ({ self.self_port }:{ res_api }) \n"
@@ -1120,7 +1128,7 @@ class CoreAiClass:
                             "out_time": now_time, "out_text": output_text, "out_data": output_data,
                             "status": status,
                             "upd_time": now_time, "dsp_time": None, }
-                    #if (req_mode in ['chat', 'websearch', 'serial', 'parallel']):
+                    #if (req_mode in ['chat', 'vision', 'websearch', 'serial', 'parallel']):
                     if (req_mode != 'session'):
                         self.data.subai_output_log_key += 1
                         self.data.subai_output_log_all[self.data.subai_output_log_key] = {

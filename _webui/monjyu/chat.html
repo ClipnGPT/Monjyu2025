@@ -147,17 +147,19 @@
             cursor: pointer;
         }
         
-        /* テキストエリアの外枠を点滅させるアニメーション */
+        /* 外枠を点滅させるアニメーション */
         .blink-border {
             animation: blink-border 1s linear infinite;
+            border-width: 2px;
+            border-style: solid;
         }
         
         /* アニメーションの定義 */
         @keyframes blink-border {
-            0% { border: 2px solid blue; }
-            50% { border: 2px solid transparent; }
-            100% { border: 2px solid blue; }
-        }
+            0% { border-color: blue; }
+            50% { border-color: transparent; }
+            100% { border-color: blue; }
+        }       
     </style>
 </head>
 <body>
@@ -212,6 +214,7 @@
                                 Mode (モード):
                                 <select id="req_mode" name="req_mode" style="height: 30px;">
                                     <option value="chat">Chat (会話)</option>
+                                    <option value="vision">Vision (画像認識)</option>
                                     <option value="websearch">WebSearch (Web検索)</option>
                                     <option value="serial">Serial (順次処理)</option>
                                     <option value="parallel">Parallel (並列処理)</option>

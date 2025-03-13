@@ -137,14 +137,8 @@ class _data_class:
             "check_proc": "none,", "check_engine": ""
         }
 
-        self.mode_setting['websearch'] = {
-            "req_engine": "",
-            "req_functions": "", "req_reset": "",
-            "max_retry": "0", "max_ai_count": "0",
-            "before_proc": "none,", "before_engine": "",
-            "after_proc": "none,", "after_engine": "",
-            "check_proc": "none,", "check_engine": ""
-        }
+        self.mode_setting['vision'] = self.mode_setting['chat']
+        self.mode_setting['websearch'] = self.mode_setting['chat']
 
         self.mode_setting['serial'] = {
             "req_engine": "", 
@@ -155,41 +149,11 @@ class _data_class:
             "check_proc": "", "check_engine": ""
         }
 
-        self.mode_setting['parallel'] = {
-            "req_engine": "", 
-            "req_functions": "", "req_reset": "",
-            "max_retry": "", "max_ai_count": "",
-            "before_proc": "", "before_engine": "",
-            "after_proc": "", "after_engine": "",
-            "check_proc": "", "check_engine": ""
-        }
+        self.mode_setting['parallel'] = self.mode_setting['serial']
 
-        self.mode_setting['session'] = {
-            "req_engine": "",
-            "req_functions": "", "req_reset": "",
-            "max_retry": "0", "max_ai_count": "0",
-            "before_proc": "none,", "before_engine": "",
-            "after_proc": "none,", "after_engine": "",
-            "check_proc": "none,", "check_engine": ""
-        }
-
-        self.mode_setting['clip'] = {
-            "req_engine": "",
-            "req_functions": "", "req_reset": "",
-            "max_retry": "0", "max_ai_count": "0",
-            "before_proc": "none,", "before_engine": "",
-            "after_proc": "none,", "after_engine": "",
-            "check_proc": "none,", "check_engine": ""
-        }
-
-        self.mode_setting['voice'] = {
-            "req_engine": "",
-            "req_functions": "", "req_reset": "",
-            "max_retry": "0", "max_ai_count": "0",
-            "before_proc": "none,", "before_engine": "",
-            "after_proc": "none,", "after_engine": "",
-            "check_proc": "none,", "check_engine": ""
-        }
+        self.mode_setting['session'] = self.mode_setting['chat']
+        self.mode_setting['clip'] = self.mode_setting['chat']
+        self.mode_setting['voice'] = self.mode_setting['chat']
 
         # engineの設定
         self.engine_setting['chatgpt'] = {

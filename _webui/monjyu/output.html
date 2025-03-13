@@ -40,7 +40,7 @@
 
         /* 出力ファイルエリアのスタイル */
         #output_files {
-            border: 1px solid #ccc;
+            border: 2px solid #ccc;
             width: 100%;
             height: 35vh;
             overflow-y: auto; 
@@ -100,17 +100,19 @@
             object-fit: contain; 
         }
         
-        /* テキストエリアの外枠を赤色でフラッシュ */
+        /* 外枠を点滅させるアニメーション */
         .blink-border {
-            animation: blink-border 1s linear infinite; 
+            animation: blink-border 1s linear infinite;
+            border-width: 2px;
+            border-style: solid;
         }
         
-        /* アニメーション定義 */
+        /* アニメーションの定義 */
         @keyframes blink-border {
-            0% { border: 2px solid blue; } 
-            50% { border: 2px solid transparent; } 
-            100% { border: 2px solid blue; } 
-        }
+            0% { border-color: blue; }
+            50% { border-color: transparent; }
+            100% { border-color: blue; }
+        }       
     </style>
 </head>
 <body>

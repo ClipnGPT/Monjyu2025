@@ -83,6 +83,7 @@
             <div class="tab-header">
                 <button data-target="reset">Reset</button>
                 <button data-target="chat">Chat</button>
+                <button data-target="vision">Vision</button>
                 <button data-target="websearch">WebSearch</button>
                 <button data-target="serial">Serial</button>
                 <button data-target="parallel">Parallel</button>
@@ -106,7 +107,7 @@
                     <tr><td align="right">　</td><td>　</td></tr>
                     <tr>
                         <td align="right">
-                            Chat,WebSearch (AI) 一括設定 :
+                            Chat,V..,Web (AI) 一括設定 :
                         </td>
                         <td>
                             <button type="button" id="chat-auto">Auto (自動設定)</button>
@@ -233,6 +234,107 @@
                         <td align="right">Engine (エンジン):</td>
                         <td>
                             <select id="chat_check_engine" name="chat_check_engine">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Visionタブ -->
+            <div class="tab-content" id="vision" style="justify-content: center;">
+                <table>
+                    <tr><td align="right">　</td><td>　</td><td align="right">　</td><td>　</td></tr>
+                    <tr>
+                        <td align="right">Vision</td>
+                        <td>(bot)設定</td>
+                        <td align="right">Engine (エンジン):</td>
+                        <td>
+                            <select id="vision_req_engine" name="vision_req_engine">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr><td align="right">　</td><td>　</td><td align="right">　</td><td>　</td></tr>
+                    <tr>
+                        <td align="right">Functions (拡張):</td>
+                        <td>
+                            <select id="vision_req_functions" name="vision_req_functions">
+                                <option value="">Auto (自動)</option>
+                                <option value="no,">No (利用無)</option>
+                                <option value="yes,">Yes (利用有)</option>
+                            </select>
+                        </td>
+                        <td align="right">Reset History (会話):</td>
+                        <td>
+                            <select id="vision_req_reset" name="vision_req_reset">
+                                <option value="">Auto (自動)</option>
+                                <option value="yes,">Yes (消去)</option>
+                                <option value="no,">No (継続)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Retry (再試行):</td>
+                        <td>
+                            <select id="vision_max_retry" name="vision_max_retry">
+                                <option value="">Auto (自動)</option>
+                                <option value="0">No Retry (無)</option>
+                            </select>
+                        </td>
+                        <td align="right">Num AIs (利用AI数):</td>
+                        <td>
+                            <input type="hidden" id="vision_max_ai_count" name="vision_max_ai_count" value="">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Before (前処理):</td>
+                        <td>
+                            <select id="vision_before_proc" name="vision_before_proc">
+                                <option value="">Auto (自動)</option>
+                                <option value="none,">None (無)</option>
+                                <option value="prompt,">prompt,</option>
+                                <option value="profile,">profile,</option>
+                                <option value="profile,prompt,">profile,prompt,</option>
+                            </select>
+                        </td>
+                        <td align="right">Engine (エンジン):</td>
+                        <td>
+                            <select id="vision_before_engine" name="vision_before_engine">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">After (後処理):</td>
+                        <td>
+                            <select id="vision_after_proc" name="vision_after_proc">
+                                <option value="">Auto (自動)</option>
+                                <option value="none,">None (無)</option>
+                                <option value="all,">all,</option>
+                                <option value="code,">code,</option>
+                                <option value="summary,">summary,</option>
+                            </select>
+                        </td>
+                        <td align="right">Engine (エンジン):</td>
+                        <td>
+                            <select id="vision_after_engine" name="vision_after_engine">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">Check (検証):</td>
+                        <td>
+                            <select id="vision_check_proc" name="vision_check_proc">
+                                <option value="">Auto (自動)</option>
+                                <option value="none,">None (無)</option>
+                                <option value="yes,">yes,</option>
+                            </select>
+                        </td>
+                        <td align="right">Engine (エンジン):</td>
+                        <td>
+                            <select id="vision_check_engine" name="vision_check_engine">
                                 <option value="">Auto (自動)</option>
                             </select>
                         </td>

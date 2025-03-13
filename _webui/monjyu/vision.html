@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OCR</title>
+    <title>Vision</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
 
@@ -25,9 +25,8 @@
 
         /* 画像情報エリアのスタイル */
         #image_info {
-            border: 1px solid #ccc;
+            border: 2px solid #ccc;
             width: 100%;
-            height: 35vh;
             display: flex;
             justify-content: center; 
             align-items: center; 
@@ -53,45 +52,24 @@
             white-space: pre;
         }
        
-        /* ファイルアップロードエリアのスタイル */
-        #input_files {
-            border: 1px solid #ccc;
-            width: 100%;
-            height: 20vh;
-            overflow-y: auto;
-            overflow-x: auto;
-            padding: 10px;
-            box-sizing: border-box;
-            background-color: white;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-        /* ファイルアップロードリストのスタイル */
-        #input_files_list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            width: 100%;
-            overflow-x: auto; 
-            overflow-y: auto; 
-        }
-        /* ファイルアップロードリストの項目のスタイル */
-        #input_files_list li {
-            margin-bottom: 5px;
-            text-align: left;
+        /* ドラッグオーバー時のスタイル */
+        .drag-over {
+            border: 2px dashed #4a90e2 !important;
+            background-color: rgba(74, 144, 226, 0.1);
         }
 
-        /* テキストエリアの外枠を点滅させるアニメーション */
+        /* 外枠を点滅させるアニメーション */
         .blink-border {
             animation: blink-border 1s linear infinite;
+            border-width: 2px;
+            border-style: solid;
         }
         
         /* アニメーションの定義 */
         @keyframes blink-border {
-            0% { border: 2px solid blue; }
-            50% { border: 2px solid transparent; }
-            100% { border: 2px solid blue; }
+            0% { border-color: blue; }
+            50% { border-color: transparent; }
+            100% { border-color: blue; }
         }       
     </style>
 </head>
@@ -101,17 +79,16 @@
         
     <!-- 入力エリア -->
     <div class="input-container">
-        <h2>【 OCR 】</h2>
+        <h2>【 Vision 】</h2>
 
         <form id="process-form">
             <input type="hidden" id="system_text" name="system_text" value="あなたは美しい日本語を話す賢いアシスタントです。">
+            <input type="hidden" id="req_mode" name="req_mode" value="vision">
+            <input type="hidden" id="to_port" name="to_port" value="8000">
             <table width="100%">
                 <tr>
-                    <td width="5%" align="right" valign="top">
-                        Img:
-                    </td>
                     <td width="95%">
-                        <div id="image_info" data-drop-target="image">
+                        <div id="image_info" data-drop-target="image" style="height: 200px;">
                             <div id="drop_message">Drop File...</div>
                             <img id="image_img" src="" alt="画像" style="display: none;">
                         </div>
@@ -123,10 +100,10 @@
                     <td width="5%" align="right" valign="top">
                         Req:
                     </td>
-                    <td width="65%">
-                        <textarea id="ocr_request" name="ocr_request" placeholder="OCR指示を入力してください" required style="height: 20vh;" data-drop-target="ocr_request"></textarea>
+                    <td width="94%">
+                        <textarea id="vision_request" name="vision_request" placeholder="指示を入力してください" required style="height: 150px;"></textarea>
                     </td>
-                    <td width="30%">
+                    <td width="1%">
                         <div id="input_files">
                             <ul id="input_files_list">
                                 <!-- アップロードされたファイルの一覧を表示 -->
@@ -146,38 +123,31 @@
                             <td align="left">
                                 <button type="button" id="clear-button" style="width: 160px; height: 30px;">Clear (クリア)</button>
                             </td>
-                            <td align="center">
-                                Mode (モード):
-                                <select id="req_mode" name="req_mode" style="height: 30px;">
-                                    <option value="chat">Chat (会話)</option>
-                                    <option value="websearch">WebSearch (Web検索)</option>
-                                    <option value="serial">Serial (順次処理)</option>
-                                    <option value="parallel">Parallel (並列処理)</option>
-                                    <option value="clip">Clip (CoreAI利用)</option>
-                                </select>
-                            </td>
                             <td align="right">
                                 <button type="button" id="submit-button" style="width: 160px; height: 30px;">Exec (送信/実行)</button>
                             </td>
                         </tr>
-                        <tr>
-                            <td align="left"></td>
-                            <td align="center">
-                                Target AI (依頼AI):
-                                <select id="to_port" name="to_port">
-                                    <option value="">Auto (自動)</option>
-                                </select>
-                            </td>
-                            <td align="right"></td>
-                        </tr>
                     </table>
+                </td>
+            </tr>
+        </table>
+
+        <h2>【 Result (結果) 】</h2>
+
+        <table width="100%">
+            <tr>
+                <td width="5%" align="right" valign="top">
+                    Data:
+                </td>
+                <td width="95%">
+                    <textarea id="output_data" style="height: 150px;"></textarea>
                 </td>
             </tr>
         </table>
     </div>
 
     <script>
-        var js = 'ocr.js';
+        var js = 'vision.js';
         var script = document.createElement('script');
         script.src = js + '?v=' + Math.random();
         document.head.appendChild(script);

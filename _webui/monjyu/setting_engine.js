@@ -68,7 +68,7 @@ function get_models() {
             console.error('get_models (parallel) error:', error);
         }
     });
-    // chat, websearch, clip, voice
+    // chat, vision, websearch, clip, voice
     $.ajax({
         url: $('#core_endpoint').val() + '/get_models',
         method: 'GET',
@@ -82,6 +82,10 @@ function get_models() {
                 $('#chat_before_engine').append(`<option value="${key}">${value}</option>`);
                 $('#chat_after_engine').append(`<option value="${key}">${value}</option>`);
                 $('#chat_check_engine').append(`<option value="${key}">${value}</option>`);
+                $('#vision_req_engine').append(`<option value="${key}">${value}</option>`);
+                $('#vision_before_engine').append(`<option value="${key}">${value}</option>`);
+                $('#vision_after_engine').append(`<option value="${key}">${value}</option>`);
+                $('#vision_check_engine').append(`<option value="${key}">${value}</option>`);
                 $('#websearch_req_engine').append(`<option value="${key}">${value}</option>`);
                 $('#websearch_before_engine').append(`<option value="${key}">${value}</option>`);
                 $('#websearch_after_engine').append(`<option value="${key}">${value}</option>`);
@@ -106,6 +110,7 @@ function get_models() {
 function set_max_retry() {
     for (var j = 1; j <= 3; j++) {
         $('#chat_max_retry').append(`<option value="${j}">${j}</option>`);
+        $('#vision_max_retry').append(`<option value="${j}">${j}</option>`);
         $('#websearch_max_retry').append(`<option value="${j}">${j}</option>`);
         $('#serial_max_retry').append(`<option value="${j}">${j}</option>`);
         $('#parallel_max_retry').append(`<option value="${j}">${j}</option>`);
@@ -118,6 +123,7 @@ function set_max_retry() {
 // 最後の設定値を保持するオブジェクト
 let last_mode_setting = {
     chat: null,
+    vision: null,
     websearch: null,
     serial: null,
     parallel: null,
@@ -129,6 +135,7 @@ let last_mode_setting = {
 // サーバーから設定値を取得する関数
 function get_mode_setting_all() {
     get_mode_setting('chat');
+    get_mode_setting('vision');
     get_mode_setting('websearch');
     get_mode_setting('serial');
     get_mode_setting('parallel');
@@ -162,6 +169,24 @@ function get_mode_setting(req_mode) {
                     $('#chat_check_proc').val(data.check_proc || '');
                     $('#chat_check_engine').val(data.check_engine || '');
                     last_mode_setting.chat = JSON.stringify(data);
+                }    
+            }
+
+            // vision
+            if (req_mode === 'vision') {
+                if (JSON.stringify(data) !== last_mode_setting.vision) {
+                    $('#vision_req_engine').val(data.req_engine || '');
+                    $('#vision_req_functions').val(data.req_functions || '');
+                    $('#vision_req_reset').val(data.req_reset || '');
+                    $('#vision_max_retry').val(data.max_retry || '');
+                    $('#vision_max_ai_count').val(data.max_ai_count || '');
+                    $('#vision_before_proc').val(data.before_proc || '');
+                    $('#vision_before_engine').val(data.before_engine || '');
+                    $('#vision_after_proc').val(data.after_proc || '');
+                    $('#vision_after_engine').val(data.after_engine || '');
+                    $('#vision_check_proc').val(data.check_proc || '');
+                    $('#vision_check_engine').val(data.check_engine || '');
+                    last_mode_setting.vision = JSON.stringify(data);
                 }    
             }
 
@@ -302,6 +327,24 @@ function post_mode_setting(req_mode) {
         };
     }
 
+    // vision
+    if (req_mode === 'vision') {
+        formData = {
+            req_mode: req_mode,
+            req_engine: $('#vision_req_engine').val(),
+            req_functions: $('#vision_req_functions').val(),
+            req_reset: $('#vision_req_reset').val(),
+            max_retry: $('#vision_max_retry').val(),
+            max_ai_count: $('#vision_max_ai_count').val(),
+            before_proc: $('#vision_before_proc').val(),
+            before_engine: $('#vision_before_engine').val(),
+            after_proc: $('#vision_after_proc').val(),
+            after_engine: $('#vision_after_engine').val(),
+            check_proc: $('#vision_check_proc').val(),
+            check_engine: $('#vision_check_engine').val(),
+        };
+    }
+
     // websearch
     if (req_mode === 'websearch') {
         formData = {
@@ -432,6 +475,11 @@ function chat_set_engine(engine) {
     $('#chat_after_engine').val(engine);
     $('#chat_check_engine').val(engine);
     post_mode_setting('chat');
+    $('#vision_req_engine').val(engine);
+    $('#vision_before_engine').val(engine);
+    $('#vision_after_engine').val(engine);
+    $('#vision_check_engine').val(engine);
+    post_mode_setting('vision');
     $('#websearch_req_engine').val(engine);
     $('#websearch_before_engine').val(engine);
     $('#websearch_after_engine').val(engine);
@@ -514,6 +562,12 @@ $(document).ready(function() {
     });
     $('#chat_before_proc, #chat_before_engine, #chat_after_proc, #chat_after_engine, #chat_check_proc, #chat_check_engine').change(function() {
         post_mode_setting('chat');
+    });
+    $('#vision_req_engine, #vision_req_functions, #vision_req_reset, #vision_max_retry, #vision_max_ai_count').change(function() {
+        post_mode_setting('vision');
+    });
+    $('#vision_before_proc, #vision_before_engine, #vision_after_proc, #vision_after_engine, #vision_check_proc, #vision_check_engine').change(function() {
+        post_mode_setting('vision');
     });
     $('#websearch_req_engine, #websearch_req_functions, #websearch_req_reset, #websearch_max_retry, #websearch_max_ai_count').change(function() {
         post_mode_setting('websearch');
