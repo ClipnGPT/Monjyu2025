@@ -87,11 +87,19 @@
             <input type="hidden" id="to_port" name="to_port" value="8000">
             <table width="100%">
                 <tr>
-                    <td width="95%">
+                    <td>
                         <div id="image_info" data-drop-target="image" style="height: 200px;">
-                            <div id="drop_message">Drop File...</div>
-                            <img id="image_img" src="" alt="画像" style="display: none;">
+                            <div id="image_none">Drop File...</div>
+                            <img id="image_img" src="" style="display: none;">
+                            <video id="stream_img" style="display: none; max-width: 100%; max-height: 100%;"></video>
                         </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <button type="button" id="cam-button">Cam</button>
+                        <button type="button" id="desktop-button">Desktop</button>
+                        <button type="button" id="stop-button">Stop</button>
                     </td>
                 </tr>
             </table>

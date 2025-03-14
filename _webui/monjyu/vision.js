@@ -6,6 +6,13 @@ let currentInputFiles = [];
 // 前回受信した画像データを保持する変数
 let last_image_data = null; 
 
+// グローバル変数
+let streamInterval = null; // ストリーミング用インターバルID
+let currentDeviceNumber = 'auto'; // 現在のデバイス番号
+let currentScreenNumber = 'auto'; // 現在のスクリーン番号
+let isStreaming = false; // ストリーミング状態
+let mediaStream = null; // メディアストリームを保持する変数
+
 // 日時文字列を時刻のみの文字列に変換する関数
 function formatDateTime(dateTimeStr) {
     var date = new Date(dateTimeStr);
@@ -76,6 +83,11 @@ function updateInputFileList(files) {
 
 // イメージ情報を取得する関数
 function get_image_info() {
+    // ストリーミング中は実行しない
+    if (isStreaming) {
+        return;
+    }
+    
     // サーバーからイメージ情報を取得するAJAXリクエスト
     $.ajax({
         url: '/get_image_info',
@@ -84,12 +96,14 @@ function get_image_info() {
             if (data.image_data !== last_image_data) {
                 // 画像データが存在する場合
                 if (data.image_data) {
-                    $('#drop_message').hide();
+                    $('#stream_img').hide();
+                    $('#image_none').hide();
                     $('#image_img').attr('src', data.image_data);
                     $('#image_img').show();
                 } else {
+                    $('#stream_img').hide();
                     $('#image_img').hide();
-                    $('#drop_message').show();
+                    $('#image_none').show();
                 }
                 // 画像を2秒間点滅させる
                 $('#image_info').addClass('blink-border');
@@ -177,12 +191,251 @@ function get_output_log_user() {
     });
 }
 
+// 利用可能なカメラデバイスのリストを取得する関数
+async function getVideoDevices() {
+    try {
+        // メディアデバイスの一覧を取得
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        // ビデオ入力デバイス（カメラ）のみをフィルタリング
+        return devices.filter(device => device.kind === 'videoinput');
+    } catch (error) {
+        console.error('Error getting video devices:', error);
+        return [];
+    }
+}
+
+// カメラデバイスを選択するダイアログを表示する関数
+async function selectCameraDevice() {
+    const videoDevices = await getVideoDevices();
+    
+    // デバイスが見つからない場合
+    if (videoDevices.length === 0) {
+        alert('カメラデバイスが見つかりません。');
+        return null;
+    }
+    
+    // デバイスが1つしかない場合は、そのデバイスを自動選択
+    if (videoDevices.length === 1) {
+        return videoDevices[0].deviceId;
+    }
+    
+    // 複数のデバイスがある場合は選択ダイアログを表示
+    const deviceSelect = document.createElement('select');
+    deviceSelect.id = 'camera-device-select';
+    
+    videoDevices.forEach((device, index) => {
+        const option = document.createElement('option');
+        option.value = device.deviceId;
+        option.text = device.label || `カメラ ${index + 1}`;
+        deviceSelect.appendChild(option);
+    });
+    
+    // モーダルダイアログの作成
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.left = '0';
+    modal.style.top = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '1000';
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.backgroundColor = '#fff';
+    modalContent.style.padding = '20px';
+    modalContent.style.borderRadius = '5px';
+    modalContent.style.width = '300px';
+    
+    const title = document.createElement('h3');
+    title.textContent = 'カメラを選択してください';
+    
+    const selectButton = document.createElement('button');
+    selectButton.textContent = '選択';
+    selectButton.style.marginTop = '10px';
+    selectButton.style.marginRight = '10px';
+    
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'キャンセル';
+    cancelButton.style.marginTop = '10px';
+    
+    modalContent.appendChild(title);
+    modalContent.appendChild(deviceSelect);
+    modalContent.appendChild(document.createElement('br'));
+    modalContent.appendChild(selectButton);
+    modalContent.appendChild(cancelButton);
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Promise を返して選択結果を取得
+    return new Promise((resolve) => {
+        selectButton.onclick = () => {
+            const selectedDeviceId = deviceSelect.value;
+            document.body.removeChild(modal);
+            resolve(selectedDeviceId);
+        };
+        
+        cancelButton.onclick = () => {
+            document.body.removeChild(modal);
+            resolve(null);
+        };
+    });
+}
+
+// カメラストリームの開始
+async function startCameraStream(deviceId) {
+    try {
+        // ストリームが既に存在する場合は停止
+        if (mediaStream) {
+            stopStreaming();
+        }
+        
+        // カメラのメディアストリームを取得
+        const constraints = {
+            video: deviceId ? { deviceId: { exact: deviceId } } : true
+        };
+        
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // ストリーミングの状態を更新
+        isStreaming = true;
+                
+        // ストリームをvideoタグに設定
+        const streamImg = document.getElementById('stream_img');
+        streamImg.srcObject = mediaStream;
+        streamImg.onloadedmetadata = () => {
+            streamImg.play();
+        };
+        
+        // 画像表示状態を更新
+        $('#image_none').hide();
+        $('#image_img').hide();
+        $('#stream_img').show();
+        $('#cam-button').hide();
+        $('#desktop-button').hide();
+        $('#stop-button').show();
+        
+        // 現在のデバイス番号を更新
+        currentDeviceNumber = deviceId || 'auto';
+        
+    } catch (error) {
+        console.error('Error starting camera stream:', error);
+        alert('カメラストリームの開始に失敗しました: ' + error.message);
+        stopStreaming();
+    }
+}
+
+// 利用可能なディスプレイ情報を取得する関数
+async function getDisplayMedia() {
+    try {
+        // ディスプレイキャプチャのオプション
+        const options = {
+            video: {
+                cursor: "always"
+            },
+            audio: false
+        };
+        
+        // ディスプレイキャプチャを取得
+        return await navigator.mediaDevices.getDisplayMedia(options);
+    } catch (error) {
+        console.error('Error getting display media:', error);
+        throw error;
+    }
+}
+
+// デスクトップストリームの開始
+async function startDesktopStream() {
+    try {
+        // ストリームが既に存在する場合は停止
+        if (mediaStream) {
+            stopStreaming();
+        }
+        
+        // デスクトップ画面のメディアストリームを取得
+        mediaStream = await getDisplayMedia();
+        
+        // ストリーミングの状態を更新
+        isStreaming = true;
+                
+        // ストリームをvideoタグに設定
+        const streamImg = document.getElementById('stream_img');
+        streamImg.srcObject = mediaStream;
+        streamImg.onloadedmetadata = () => {
+            streamImg.play();
+        };
+        
+        // 画像表示状態を更新
+        $('#image_none').hide();
+        $('#image_img').hide();
+        $('#stream_img').show();
+        $('#cam-button').hide();
+        $('#desktop-button').hide();
+        $('#stop-button').show();
+        
+        // ストリームが終了した時の処理
+        mediaStream.getVideoTracks()[0].onended = () => {
+            stopStreaming();
+        };
+        
+        // 現在のスクリーン番号を更新
+        currentScreenNumber = 'auto';
+        
+    } catch (error) {
+        console.error('Error starting desktop stream:', error);
+        if (error.name !== 'NotAllowedError') {
+            alert('デスクトップストリームの開始に失敗しました: ' + error.message);
+        }
+        stopStreaming();
+    }
+}
+
+// ストリーミングの停止
+function stopStreaming() {
+    // インターバルがある場合はクリア
+    if (streamInterval) {
+        clearInterval(streamInterval);
+        streamInterval = null;
+    }
+    
+    // メディアストリームがある場合は停止
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => {
+            track.stop();
+        });
+        mediaStream = null;
+    }
+    
+    // ストリーミング状態を更新
+    isStreaming = false;
+    
+    // 画像表示状態を更新
+    $('#stream_img').hide();
+    $('#stream_img').attr('srcObject', null);
+    $('#image_img').hide();
+    $('#image_none').show();
+    $('#cam-button').show();
+    $('#desktop-button').show();
+    $('#stop-button').hide();
+}
+
 // ドキュメントが読み込まれた時に実行される処理
 $(document).ready(function() {
     // 初期表示
     $('#input_files').hide();
     $('#image_img').hide();
-    $('#drop_message').show();
+    $('#stream_img').hide();
+    $('#image_none').show();
+    $('#stop-button').hide();
+
+    // ストリーム用のvideoタグに属性を追加
+    $('#stream_img').attr({
+        'autoplay': true,
+        'playsinline': true
+    });
 
     // 画像情報の初期表示と定期更新
     //get_image_info();
@@ -307,5 +560,91 @@ $(document).ready(function() {
         }
     });
 
-});
+    // ストリームビデオクリックでキャプチャする機能を追加
+    $('#stream_img').click(function() {
+        if (isStreaming && mediaStream) {
+            // ビデオフレームをキャンバスにキャプチャ
+            const canvas = document.createElement('canvas');
+            const video = document.getElementById('stream_img');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // キャンバスから画像データを取得
+            canvas.toBlob(function(blob) {
+                // Blobからファイルを作成
+                const file = new File([blob], "frame.png", { type: "image/png" });
+                
+                // post_drop_filesを使って画像を送信
+                post_drop_files([file]);
+                
+                // ストリーミングを停止
+                stopStreaming();
+            }, 'image/png');
+        }
+    });
 
+    // CAMボタンのクリックイベント
+    $('#cam-button').click(async function() {
+        if (isStreaming) {
+            stopStreaming();
+        }
+        
+        try {
+            // カメラへのアクセス許可を求める前に、利用可能なデバイスを確認
+            const devices = await getVideoDevices();
+            
+            if (devices.length === 0) {
+                alert('カメラデバイスが見つかりません。');
+                return;
+            }
+            
+            // 1つだけの場合はそのまま使用、複数ある場合は選択ダイアログを表示
+            let deviceId = null;
+            if (devices.length === 1) {
+                deviceId = devices[0].deviceId;
+            } else {
+                deviceId = await selectCameraDevice();
+                if (!deviceId) return; // キャンセルされた場合
+            }
+            
+            // 選択されたカメラでストリームを開始
+            startCameraStream(deviceId);
+            
+            $('#cam-button').hide();
+            $('#desktop-button').hide();
+            $('#stop-button').show();
+        } catch (error) {
+            console.error('カメラの起動に失敗しました:', error);
+            alert('カメラの起動に失敗しました: ' + error.message);
+        }
+    });
+
+    // Desktopボタンのクリックイベント
+    $('#desktop-button').click(async function() {
+        if (isStreaming) {
+            stopStreaming();
+        }
+        
+        try {
+            // デスクトップストリームを開始
+            startDesktopStream();
+
+            $('#cam-button').hide();
+            $('#desktop-button').hide();
+            $('#stop-button').show();
+        } catch (error) {
+            console.error('デスクトップキャプチャの起動に失敗しました:', error);
+            if (error.name !== 'NotAllowedError') {
+                alert('デスクトップキャプチャの起動に失敗しました: ' + error.message);
+            }
+        }
+    });
+
+    // Stopボタンのクリックイベント
+    $('#stop-button').click(function() {
+        stopStreaming();
+    });
+
+});
