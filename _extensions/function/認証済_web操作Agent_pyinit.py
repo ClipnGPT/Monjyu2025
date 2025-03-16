@@ -25,6 +25,8 @@ qText_complete    = 'Web-Operator function complete!'
 qIO_func2py       = 'temp/web操作Agent_func2py.txt'
 qIO_py2func       = 'temp/web操作Agent_py2func.txt'
 
+B_USE_VERSION     = '0.1.37'
+
 
 
 def io_text_read(filename=''):
@@ -115,7 +117,11 @@ if __name__ == '__main__':
         pip_install('langchain-anthropic')
         pip_install('langchain-google-genai')
         #pip_install('browser-use')
-        pip_install('browser-use', '0.1.37')
+        pip_install('browser-use', B_USE_VERSION)
+        if (os.name == 'nt'):
+            print('')
+            pipshow_proc = subprocess.Popen(['cmd', '/c', 'pip show browser-use'], shell=True, )
+            print('')
 
         print('playwright install ...')
         if (os.name == 'nt'):

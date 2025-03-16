@@ -332,14 +332,23 @@ class WebUiClass:
                                                                          + str(self.coreai.chat_class.chatgptAPI.models[key]["token"]) + ", " \
                                                                          + self.coreai.chat_class.chatgptAPI.models[key]["modality"] + ", "
 
-                elif (engine == 'assistant'):
-                    if (len(self.data.engine_models['assistant']) != len(self.coreai.chat_class.assistantAPI.models)):
-                        self.data.engine_models['assistant'] = {}
-                        for key,value in self.coreai.chat_class.assistantAPI.models.items():
-                            self.data.engine_models['assistant'][key]      = self.coreai.chat_class.assistantAPI.models[key]["date"] + " : " \
-                                                                           + self.coreai.chat_class.assistantAPI.models[key]["id"] + ", " \
-                                                                           + str(self.coreai.chat_class.assistantAPI.models[key]["token"]) + ", " \
-                                                                           + self.coreai.chat_class.assistantAPI.models[key]["modality"] + ", "
+                elif (engine == 'assist'):
+                    if (len(self.data.engine_models['assist']) != len(self.coreai.chat_class.assistAPI.models)):
+                        self.data.engine_models['assist'] = {}
+                        for key,value in self.coreai.chat_class.assistAPI.models.items():
+                            self.data.engine_models['assist'][key]      = self.coreai.chat_class.assistAPI.models[key]["date"] + " : " \
+                                                                        + self.coreai.chat_class.assistAPI.models[key]["id"] + ", " \
+                                                                        + str(self.coreai.chat_class.assistAPI.models[key]["token"]) + ", " \
+                                                                        + self.coreai.chat_class.assistAPI.models[key]["modality"] + ", "
+
+                elif (engine == 'respo'):
+                    if (len(self.data.engine_models['respo']) != len(self.coreai.chat_class.respoAPI.models)):
+                        self.data.engine_models['respo'] = {}
+                        for key,value in self.coreai.chat_class.respoAPI.models.items():
+                            self.data.engine_models['respo'][key]      = self.coreai.chat_class.respoAPI.models[key]["date"] + " : " \
+                                                                        + self.coreai.chat_class.respoAPI.models[key]["id"] + ", " \
+                                                                        + str(self.coreai.chat_class.respoAPI.models[key]["token"]) + ", " \
+                                                                        + self.coreai.chat_class.respoAPI.models[key]["modality"] + ", "
 
                 elif (engine == 'gemini'):
                     if (len(self.data.engine_models['gemini']) != len(self.coreai.chat_class.geminiAPI.models)):
@@ -445,21 +454,38 @@ class WebUiClass:
                         "x_use_tools": self.coreai.chat_class.chatgptAPI.chatgpt_x_use_tools,
                     }
 
-                elif (engine == 'assistant'):
-                    self.data.engine_setting['assistant'] = {
-                        "a_nick_name": self.coreai.chat_class.assistantAPI.assistant_a_nick_name,
-                        "b_nick_name": self.coreai.chat_class.assistantAPI.assistant_b_nick_name,
-                        "v_nick_name": self.coreai.chat_class.assistantAPI.assistant_v_nick_name,
-                        "x_nick_name": self.coreai.chat_class.assistantAPI.assistant_x_nick_name,
-                        "max_wait_sec": str(self.coreai.chat_class.assistantAPI.assistant_max_wait_sec),
-                        "a_model": self.coreai.chat_class.assistantAPI.assistant_a_model,
-                        "a_use_tools": self.coreai.chat_class.assistantAPI.assistant_a_use_tools,
-                        "b_model": self.coreai.chat_class.assistantAPI.assistant_b_model,
-                        "b_use_tools": self.coreai.chat_class.assistantAPI.assistant_b_use_tools,
-                        "v_model": self.coreai.chat_class.assistantAPI.assistant_v_model,
-                        "v_use_tools": self.coreai.chat_class.assistantAPI.assistant_v_use_tools,
-                        "x_model": self.coreai.chat_class.assistantAPI.assistant_x_model,
-                        "x_use_tools": self.coreai.chat_class.assistantAPI.assistant_x_use_tools,
+                elif (engine == 'assist'):
+                    self.data.engine_setting['assist'] = {
+                        "a_nick_name": self.coreai.chat_class.assistAPI.assist_a_nick_name,
+                        "b_nick_name": self.coreai.chat_class.assistAPI.assist_b_nick_name,
+                        "v_nick_name": self.coreai.chat_class.assistAPI.assist_v_nick_name,
+                        "x_nick_name": self.coreai.chat_class.assistAPI.assist_x_nick_name,
+                        "max_wait_sec": str(self.coreai.chat_class.assistAPI.assist_max_wait_sec),
+                        "a_model": self.coreai.chat_class.assistAPI.assist_a_model,
+                        "a_use_tools": self.coreai.chat_class.assistAPI.assist_a_use_tools,
+                        "b_model": self.coreai.chat_class.assistAPI.assist_b_model,
+                        "b_use_tools": self.coreai.chat_class.assistAPI.assist_b_use_tools,
+                        "v_model": self.coreai.chat_class.assistAPI.assist_v_model,
+                        "v_use_tools": self.coreai.chat_class.assistAPI.assist_v_use_tools,
+                        "x_model": self.coreai.chat_class.assistAPI.assist_x_model,
+                        "x_use_tools": self.coreai.chat_class.assistAPI.assist_x_use_tools,
+                    }
+
+                elif (engine == 'respo'):
+                    self.data.engine_setting['respo'] = {
+                        "a_nick_name": self.coreai.chat_class.respoAPI.respo_a_nick_name,
+                        "b_nick_name": self.coreai.chat_class.respoAPI.respo_b_nick_name,
+                        "v_nick_name": self.coreai.chat_class.respoAPI.respo_v_nick_name,
+                        "x_nick_name": self.coreai.chat_class.respoAPI.respo_x_nick_name,
+                        "max_wait_sec": str(self.coreai.chat_class.respoAPI.respo_max_wait_sec),
+                        "a_model": self.coreai.chat_class.respoAPI.respo_a_model,
+                        "a_use_tools": self.coreai.chat_class.respoAPI.respo_a_use_tools,
+                        "b_model": self.coreai.chat_class.respoAPI.respo_b_model,
+                        "b_use_tools": self.coreai.chat_class.respoAPI.respo_b_use_tools,
+                        "v_model": self.coreai.chat_class.respoAPI.respo_v_model,
+                        "v_use_tools": self.coreai.chat_class.respoAPI.respo_v_use_tools,
+                        "x_model": self.coreai.chat_class.respoAPI.respo_x_model,
+                        "x_use_tools": self.coreai.chat_class.respoAPI.respo_x_use_tools,
                     }
 
                 elif (engine == 'gemini'):
@@ -636,9 +662,17 @@ class WebUiClass:
                             daemon=True, )
                         engine_set_thread.start()
 
-                    elif (engine == 'assistant'):
+                    elif (engine == 'assist'):
                         engine_set_thread = threading.Thread(
-                            target=self.coreai.chat_class.assistantAPI.set_models,
+                            target=self.coreai.chat_class.assistAPI.set_models,
+                            args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
+                                                v_model, v_use_tools, x_model, x_use_tools, ),
+                            daemon=True, )
+                        engine_set_thread.start()
+
+                    elif (engine == 'respo'):
+                        engine_set_thread = threading.Thread(
+                            target=self.coreai.chat_class.respoAPI.set_models,
                             args=(max_wait_sec, a_model, a_use_tools, b_model, b_use_tools,
                                                 v_model, v_use_tools, x_model, x_use_tools, ),
                             daemon=True, )

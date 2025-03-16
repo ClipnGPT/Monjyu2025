@@ -32,7 +32,7 @@ qPath_chat_work      = 'temp/chat_work/'
 # assistant チャットボット
 import openai
 
-import speech_bot_assistant_key  as assistant_key
+import speech_bot_assist_key  as assist_key
 
 
 
@@ -43,68 +43,68 @@ def base64_encode(file_path):
 
 
 
-class _assistantAPI:
+class _assistAPI:
 
     def __init__(self, ):
-        self.log_queue                  = None
-        self.bot_auth                   = None
+        self.log_queue              = None
+        self.bot_auth               = None
 
-        self.temperature                = 0.8
+        self.temperature            = 0.8
 
-        self.assistant_api_type         = 'openai'
-        self.assistant_default_gpt      = 'auto'
-        self.assistant_default_class    = 'auto'
-        self.assistant_auto_continue    = 3
-        self.assistant_max_step         = 10
-        self.assistant_max_session      = 5
-        self.assistant_max_wait_sec     = 120
+        self.assist_api_type        = 'openai'
+        self.assist_default_gpt     = 'auto'
+        self.assist_default_class   = 'auto'
+        self.assist_auto_continue   = 3
+        self.assist_max_step        = 10
+        self.assist_max_session     = 5
+        self.assist_max_wait_sec    = 120
        
-        self.openai_organization        = None
-        self.openai_key_id              = None
-        self.azure_endpoint             = None
-        self.azure_version              = None
-        self.azure_key_id               = None
+        self.openai_organization    = None
+        self.openai_key_id          = None
+        self.azure_endpoint         = None
+        self.azure_version          = None
+        self.azure_key_id           = None
 
-        self.assistant_a_enable         = False
-        self.assistant_a_nick_name      = ''
-        self.assistant_a_model          = None
-        self.assistant_a_token          = 0
-        self.assistant_a_use_tools      = 'no'
+        self.assist_a_enable        = False
+        self.assist_a_nick_name     = ''
+        self.assist_a_model         = None
+        self.assist_a_token         = 0
+        self.assist_a_use_tools     = 'no'
 
-        self.assistant_b_enable         = False
-        self.assistant_b_nick_name      = ''
-        self.assistant_b_model          = None
-        self.assistant_b_token          = 0
-        self.assistant_b_use_tools      = 'no'
+        self.assist_b_enable        = False
+        self.assist_b_nick_name     = ''
+        self.assist_b_model         = None
+        self.assist_b_token         = 0
+        self.assist_b_use_tools     = 'no'
 
-        self.assistant_v_enable         = False
-        self.assistant_v_nick_name      = ''
-        self.assistant_v_model          = None
-        self.assistant_v_token          = 0
-        self.assistant_v_use_tools      = 'no'
+        self.assist_v_enable        = False
+        self.assist_v_nick_name     = ''
+        self.assist_v_model         = None
+        self.assist_v_token         = 0
+        self.assist_v_use_tools     = 'no'
 
-        self.assistant_x_enable         = False
-        self.assistant_x_nick_name      = ''
-        self.assistant_x_model          = None
-        self.assistant_x_token          = 0
-        self.assistant_x_use_tools      = 'no'
+        self.assist_x_enable        = False
+        self.assist_x_nick_name     = ''
+        self.assist_x_model         = None
+        self.assist_x_token         = 0
+        self.assist_x_use_tools     = 'no'
 
-        self.models                     = {}
-        self.history                    = []
+        self.models                 = {}
+        self.history                = []
 
-        self.seq                        = 0
+        self.seq                    = 0
         self.reset()
 
-        self.assistant_name             = qHOSTNAME
-        self.assistant_id               = {}
-        self.thread_id                  = {}
+        self.assistant_name         = qHOSTNAME
+        self.assistant_id           = {}
+        self.thread_id              = {}
 
     def init(self, log_queue=None, ):
         self.log_queue = log_queue
         return True
 
     def reset(self, ):
-        self.history                    = []
+        self.history                = []
         return True
 
     def print(self, session_id='admin', text='', ):
@@ -124,38 +124,38 @@ class _assistantAPI:
                 pass
 
     def authenticate(self, api,
-                     assistant_api_type,
-                     assistant_default_gpt, assistant_default_class,
-                     assistant_auto_continue,
-                     assistant_max_step, assistant_max_session,
-                     assistant_max_wait_sec,
+                     assist_api_type,
+                     assist_default_gpt, assist_default_class,
+                     assist_auto_continue,
+                     assist_max_step, assist_max_session,
+                     assist_max_wait_sec,
 
                      openai_organization, openai_key_id,
                      azure_endpoint, azure_version, azure_key_id,
 
-                     assistant_a_nick_name, assistant_a_model, assistant_a_token, 
-                     assistant_a_use_tools, 
-                     assistant_b_nick_name, assistant_b_model, assistant_b_token, 
-                     assistant_b_use_tools, 
-                     assistant_v_nick_name, assistant_v_model, assistant_v_token, 
-                     assistant_v_use_tools, 
-                     assistant_x_nick_name, assistant_x_model, assistant_x_token, 
-                     assistant_x_use_tools, 
+                     assist_a_nick_name, assist_a_model, assist_a_token, 
+                     assist_a_use_tools, 
+                     assist_b_nick_name, assist_b_model, assist_b_token, 
+                     assist_b_use_tools, 
+                     assist_v_nick_name, assist_v_model, assist_v_token, 
+                     assist_v_use_tools, 
+                     assist_x_nick_name, assist_x_model, assist_x_token, 
+                     assist_x_use_tools, 
                     ):
 
         # 認証
-        self.bot_auth                   = None
-        self.assistant_api_type         = assistant_api_type
-        self.openai_organization        = openai_organization
-        self.openai_key_id              = openai_key_id
-        self.azure_endpoint             = azure_endpoint
-        self.azure_version              = azure_version
-        self.azure_key_id               = azure_key_id
+        self.bot_auth               = None
+        self.assist_api_type        = assist_api_type
+        self.openai_organization    = openai_organization
+        self.openai_key_id          = openai_key_id
+        self.azure_endpoint         = azure_endpoint
+        self.azure_version          = azure_version
+        self.azure_key_id           = azure_key_id
 
         self.client = None
         try:
             # openai
-            if (assistant_api_type != 'azure'):
+            if (assist_api_type != 'azure'):
                 if (openai_key_id[:1] == '<'):
                     return False
                 else:
@@ -174,83 +174,83 @@ class _assistantAPI:
             return False
 
         # 設定
-        self.assistant_default_gpt          = assistant_default_gpt
-        self.assistant_default_class        = assistant_default_class
-        if (str(assistant_auto_continue)  not in ['', 'auto']):
-            self.assistant_auto_continue    = int(assistant_auto_continue)
-        if (str(assistant_max_step)       not in ['', 'auto']):
-            self.assistant_max_step         = int(assistant_max_step)
-        if (str(assistant_max_session)    not in ['', 'auto']):
-            self.assistant_max_session      = int(assistant_max_session)
-        if (str(assistant_max_wait_sec)   not in ['', 'auto']):
-            self.assistant_max_wait_sec     = int(assistant_max_wait_sec)
+        self.assist_default_gpt         = assist_default_gpt
+        self.assist_default_class       = assist_default_class
+        if (str(assist_auto_continue)   not in ['', 'auto']):
+            self.assist_auto_continue   = int(assist_auto_continue)
+        if (str(assist_max_step)        not in ['', 'auto']):
+            self.assist_max_step        = int(assist_max_step)
+        if (str(assist_max_session)     not in ['', 'auto']):
+            self.assist_max_session     = int(assist_max_session)
+        if (str(assist_max_wait_sec)    not in ['', 'auto']):
+            self.assist_max_wait_sec    = int(assist_max_wait_sec)
 
         # モデル取得
-        self.models                         = {}
+        self.models                     = {}
         self.get_models()
 
         #ymd = datetime.date.today().strftime('%Y/%m/%d')
         ymd = 'default'
 
         # assistant チャットボット
-        if (assistant_a_nick_name != ''):
-            self.assistant_a_enable           = False
-            self.assistant_a_nick_name        = assistant_a_nick_name
-            self.assistant_a_model            = assistant_a_model
-            self.assistant_a_token            = int(assistant_a_token)
-            self.assistant_a_use_tools        = assistant_a_use_tools
-            if (assistant_a_model not in self.models):
-                self.models[assistant_a_model] = {"id": assistant_a_model, "token": str(assistant_a_token), "modality": "text?", "date": ymd, }
+        if (assist_a_nick_name != ''):
+            self.assist_a_enable        = False
+            self.assist_a_nick_name     = assist_a_nick_name
+            self.assist_a_model         = assist_a_model
+            self.assist_a_token         = int(assist_a_token)
+            self.assist_a_use_tools     = assist_a_use_tools
+            if (assist_a_model not in self.models):
+                self.models[assist_a_model] = {"id": assist_a_model, "token": str(assist_a_token), "modality": "text?", "date": ymd, }
             #else:
-            #    self.models[assistant_a_model]['date'] = ymd
+            #    self.models[assist_a_model]['date'] = ymd
 
-        if (assistant_b_nick_name != ''):
-            self.assistant_b_enable           = False
-            self.assistant_b_nick_name        = assistant_b_nick_name
-            self.assistant_b_model            = assistant_b_model
-            self.assistant_b_token            = int(assistant_b_token)
-            self.assistant_b_use_tools        = assistant_b_use_tools
-            if (assistant_b_model not in self.models):
-                self.models[assistant_b_model] = {"id": assistant_b_model, "token": str(assistant_b_token), "modality": "text?", "date": ymd, }
+        if (assist_b_nick_name != ''):
+            self.assist_b_enable        = False
+            self.assist_b_nick_name     = assist_b_nick_name
+            self.assist_b_model         = assist_b_model
+            self.assist_b_token         = int(assist_b_token)
+            self.assist_b_use_tools     = assist_b_use_tools
+            if (assist_b_model not in self.models):
+                self.models[assist_b_model] = {"id": assist_b_model, "token": str(assist_b_token), "modality": "text?", "date": ymd, }
             #else:
-            #    self.models[assistant_b_model]['date'] = ymd
+            #    self.models[assist_b_model]['date'] = ymd
 
-        if (assistant_v_nick_name != ''):
-            self.assistant_v_enable           = False
-            self.assistant_v_nick_name        = assistant_v_nick_name
-            self.assistant_v_model            = assistant_v_model
-            self.assistant_v_token            = int(assistant_v_token)
-            self.assistant_v_use_tools        = assistant_v_use_tools
-            if (assistant_v_model not in self.models):
-                self.models[assistant_v_model] = {"id": assistant_v_model, "token": str(assistant_v_token), "modality": "text+image?", "date": ymd, }
+        if (assist_v_nick_name != ''):
+            self.assist_v_enable        = False
+            self.assist_v_nick_name     = assist_v_nick_name
+            self.assist_v_model         = assist_v_model
+            self.assist_v_token         = int(assist_v_token)
+            self.assist_v_use_tools     = assist_v_use_tools
+            if (assist_v_model not in self.models):
+                self.models[assist_v_model] = {"id": assist_v_model, "token": str(assist_v_token), "modality": "text+image?", "date": ymd, }
             else:
-                #self.models[assistant_v_model]['date'] = ymd
-                self.models[assistant_v_model]['modality'] = "text+image?"
+                #self.models[assist_v_model]['date'] = ymd
+                self.models[assist_v_model]['modality'] = "text+image?"
 
-        if (assistant_x_nick_name != ''):
-            self.assistant_x_enable           = False
-            self.assistant_x_nick_name        = assistant_x_nick_name
-            self.assistant_x_model            = assistant_x_model
-            self.assistant_x_token            = int(assistant_x_token)
-            self.assistant_x_use_tools        = assistant_x_use_tools
-            if (assistant_x_model not in self.models):
-                self.models[assistant_x_model] = {"id": assistant_x_model, "token": str(assistant_x_token), "modality": "text+image?", "date": ymd, }
+        if (assist_x_nick_name != ''):
+            self.assist_x_enable        = False
+            self.assist_x_nick_name     = assist_x_nick_name
+            self.assist_x_model         = assist_x_model
+            self.assist_x_token         = int(assist_x_token)
+            self.assist_x_use_tools     = assist_x_use_tools
+            if (assist_x_model not in self.models):
+                self.models[assist_x_model] = {"id": assist_x_model, "token": str(assist_x_token), "modality": "text+image?", "date": ymd, }
             #else:
-            #    self.models[assistant_x_model]['date'] = ymd
+            #    self.models[assist_x_model]['date'] = ymd
 
         # モデル
         hit = False
-        if (self.assistant_a_model != ''):
-            self.assistant_a_enable = True
+        if (self.assist_a_model != ''):
+            self.assist_a_enable = True
             hit = True
-        if (self.assistant_b_model != ''):
-            self.assistant_b_enable = True
+        if (self.assist_b_model != ''):
+            self.assist_b_enable = True
             hit = True
-        if (self.assistant_v_model != ''):
-            self.assistant_v_enable = True
+        if (self.assist_v_model != ''):
+            self.assist_v_enable = True
             hit = True
-        if (self.assistant_x_model != ''):
-            self.assistant_x_enable = True
+        if (self.assist_x_model != ''):
+            self.assist_x_enable = True
             hit = True
 
         if (hit == True):
@@ -284,36 +284,36 @@ class _assistantAPI:
                          x_model='', x_use_tools='', ):
         try:
             if (max_wait_sec not in ['', 'auto']):
-                if (str(max_wait_sec) != str(self.assistant_max_wait_sec)):
-                    self.assistant_max_wait_sec = int(max_wait_sec)
+                if (str(max_wait_sec) != str(self.assist_max_wait_sec)):
+                    self.assist_max_wait_sec = int(max_wait_sec)
             if (a_model != ''):
-                if (a_model != self.assistant_a_model) and (a_model in self.models):
-                    self.assistant_a_enable = True
-                    self.assistant_a_model = a_model
-                    self.assistant_a_token = int(self.models[a_model]['token'])
+                if (a_model != self.assist_a_model) and (a_model in self.models):
+                    self.assist_a_enable = True
+                    self.assist_a_model = a_model
+                    self.assist_a_token = int(self.models[a_model]['token'])
             if (a_use_tools != ''):
-                self.assistant_a_use_tools = a_use_tools
+                self.assist_a_use_tools = a_use_tools
             if (b_model != ''):
-                if (b_model != self.assistant_b_model) and (b_model in self.models):
-                    self.assistant_b_enable = True
-                    self.assistant_b_model = b_model
-                    self.assistant_b_token = int(self.models[b_model]['token'])
+                if (b_model != self.assist_b_model) and (b_model in self.models):
+                    self.assist_b_enable = True
+                    self.assist_b_model = b_model
+                    self.assist_b_token = int(self.models[b_model]['token'])
             if (b_use_tools != ''):
-                self.assistant_b_use_tools = b_use_tools
+                self.assist_b_use_tools = b_use_tools
             if (v_model != ''):
-                if (v_model != self.assistant_v_model) and (v_model in self.models):
-                    self.assistant_v_enable = True
-                    self.assistant_v_model = v_model
-                    self.assistant_v_token = int(self.models[v_model]['token'])
+                if (v_model != self.assist_v_model) and (v_model in self.models):
+                    self.assist_v_enable = True
+                    self.assist_v_model = v_model
+                    self.assist_v_token = int(self.models[v_model]['token'])
             if (v_use_tools != ''):
-                self.assistant_v_use_tools = v_use_tools
+                self.assist_v_use_tools = v_use_tools
             if (x_model != ''):
-                if (x_model != self.assistant_x_model) and (x_model in self.models):
-                    self.assistant_x_enable = True
-                    self.assistant_x_model = x_model
-                    self.assistant_x_token = int(self.models[x_model]['token'])
+                if (x_model != self.assist_x_model) and (x_model in self.models):
+                    self.assist_x_enable = True
+                    self.assist_x_model = x_model
+                    self.assist_x_token = int(self.models[x_model]['token'])
             if (x_use_tools != ''):
-                self.assistant_x_use_tools = x_use_tools
+                self.assist_x_use_tools = x_use_tools
         except Exception as e:
             print(e)
             return False
@@ -404,23 +404,23 @@ class _assistantAPI:
     def vectorStore_del(self, session_id='admin', assistant_id=None, assistant_name='', ):
 
         # 2024/04/21時点 azure 未対応
-        if (self.assistant_api_type == 'azure'):
+        if (self.assist_api_type == 'azure'):
             return False
 
         # vector store 削除
-        vector_stores = self.client.beta.vector_stores.list()
+        vector_stores = self.client.vector_stores.list()
         for v in range(len(vector_stores.data)):
             vs_id   = vector_stores.data[v].id
             vs_name = vector_stores.data[v].name
             if (vs_name == assistant_name):
 
-                vs_files = self.client.beta.vector_stores.files.list(vector_store_id=vs_id)
+                vs_files = self.client.vector_stores.files.list(vector_store_id=vs_id)
 
                 for f in range(len(vs_files.data)):
                     file_id   = vs_files.data[f].id
                     self.client.files.delete(file_id=file_id, )
                 self.print(session_id, f"  vector store delete! ('{ vs_name }')")
-                self.client.beta.vector_stores.delete(vector_store_id=vs_id)
+                self.client.vector_stores.delete(vector_store_id=vs_id)
 
                 break
         
@@ -430,7 +430,7 @@ class _assistantAPI:
         vectorStore_ids = []
 
         # 2024/04/21時点 azure 未対応
-        if (self.assistant_api_type == 'azure'):
+        if (self.assist_api_type == 'azure'):
             return vectorStore_ids
 
         # ファイル一覧
@@ -442,17 +442,17 @@ class _assistantAPI:
                 proc_files.append(os.path.basename(f))
 
         # マッチング検査 違いがあれば vector store 削除
-        vector_stores = self.client.beta.vector_stores.list()
+        vector_stores = self.client.vector_stores.list()
         for v in range(len(vector_stores.data)):
             vs_id   = vector_stores.data[v].id
             vs_name = vector_stores.data[v].name
             # bug?
             if (vs_id in ['vs_67a9cb0bdd748191aa1a2892c6612d68']):
-                #self.client.beta.vector_stores.delete(vector_store_id=vs_id)
+                #self.client.vector_stores.delete(vector_store_id=vs_id)
                 pass
             else:
                 if (vs_name == assistant_name):
-                    vs_files = self.client.beta.vector_stores.files.list(vector_store_id=vs_id)
+                    vs_files = self.client.vector_stores.files.list(vector_store_id=vs_id)
 
                     vectorStore_ids = [vs_id]
                     if (len(proc_files) != len(vs_files.data)):
@@ -470,8 +470,8 @@ class _assistantAPI:
                         for f in range(len(vs_files.data)):
                             file_id   = vs_files.data[f].id
                             self.client.files.delete(file_id=file_id, )
-                        self.print(session_id, f" Assistant : Delete vector store = '{ vs_name }', ")
-                        self.client.beta.vector_stores.delete(vector_store_id=vs_id)
+                        self.print(session_id, f" Assist : Delete vector store = '{ vs_name }', ")
+                        self.client.vector_stores.delete(vector_store_id=vs_id)
 
                     break
 
@@ -490,11 +490,11 @@ class _assistantAPI:
 
                     # アップロード済み確認
                     file_id = None
-                    assistant_files_list = self.client.files.list()
-                    for n in range(len(assistant_files_list.data)):
-                        if (proc_file == assistant_files_list.data[n].filename):
-                            file_id   = assistant_files_list.data[n].id
-                            print(f" Assistant : Hit file_name = '{ proc_file }', { file_id }")
+                    assist_files_list = self.client.files.list()
+                    for n in range(len(assist_files_list.data)):
+                        if (proc_file == assist_files_list.data[n].filename):
+                            file_id   = assist_files_list.data[n].id
+                            print(f" Assist : Hit file_name = '{ proc_file }', { file_id }")
                             break
 
                     # アップロード
@@ -506,7 +506,7 @@ class _assistantAPI:
                                         file    = file,
                                         purpose = 'assistants', )
                             file_id = upload.id
-                            print(f" Assistant : Upload file_name = '{ proc_file }', { file_id }")
+                            print(f" Assist : Upload file_name = '{ proc_file }', { file_id }")
                         except Exception as e:
                             print(e)
 
@@ -517,7 +517,7 @@ class _assistantAPI:
             if (len(upload_ids) > 0):
                 try:
 
-                    vector_store = self.client.beta.vector_stores.create(
+                    vector_store = self.client.vector_stores.create(
                                         name = assistant_name,
                                         # 2025/02/01現在、1GByteまで無料
                                         #expires_after = {
@@ -526,12 +526,12 @@ class _assistantAPI:
                                         #}
                                     )
 
-                    file_batch = self.client.beta.vector_stores.file_batches.create_and_poll(
+                    file_batch = self.client.vector_stores.file_batches.create_and_poll(
                                         vector_store_id = vector_store.id,
                                         file_ids        = upload_ids,
                                     )
 
-                    self.print(session_id, f" Assistant : { file_batch.status }")
+                    self.print(session_id, f" Assist : { file_batch.status }")
 
                     vectorStore_ids = [vector_store.id]
 
@@ -540,13 +540,13 @@ class _assistantAPI:
 
         # デバッグ用 アップロード確認
         if False:
-            vector_stores = self.client.beta.vector_stores.list()
+            vector_stores = self.client.vector_stores.list()
             for v in range(len(vector_stores.data)):
                 vs_id   = vector_stores.data[v].id
                 vs_name = vector_stores.data[v].name
                 if (vs_name == assistant_name):
                     self.print(session_id, vs_name)
-                    vs_files = self.client.beta.vector_stores.files.list(vector_store_id=vs_id)
+                    vs_files = self.client.vector_stores.files.list(vector_store_id=vs_id)
                     for f in range(len(vs_files.data)):
                         file_id   = vs_files.data[f].id
                         file_info = self.client.files.retrieve(
@@ -559,13 +559,13 @@ class _assistantAPI:
     def threadFile_del(self, session_id='admin', assistant_id=None, assistant_name='', ):
 
         # 2024/04/21時点 azure 未対応
-        if (self.assistant_api_type == 'azure'):
+        if (self.assist_api_type == 'azure'):
             return False
 
-        assistant_files_list = self.client.files.list()
-        for f in range(len(assistant_files_list.data)):
-            file_id   = assistant_files_list.data[f].id
-            file_name = assistant_files_list.data[f].filename
+        assist_files_list = self.client.files.list()
+        for f in range(len(assist_files_list.data)):
+            file_id   = assist_files_list.data[f].id
+            file_name = assist_files_list.data[f].filename
 
             x = len(assistant_name)
             if (file_name[:x] == assistant_name):
@@ -578,7 +578,7 @@ class _assistantAPI:
         upload_ids = []
 
         # 2024/04/21時点 azure 未対応
-        if (self.assistant_api_type == 'azure'):
+        if (self.assist_api_type == 'azure'):
             return upload_ids
 
         if (not os.path.isdir(qPath_chat_work)):
@@ -590,10 +590,10 @@ class _assistantAPI:
             shutil.copy(upload_file, upload_work)
 
             # 既に存在なら、置換えの為、削除
-            assistant_files_list = self.client.files.list()
-            for f in range(len(assistant_files_list.data)):
-                file_id   = assistant_files_list.data[f].id
-                file_name = assistant_files_list.data[f].filename
+            assist_files_list = self.client.files.list()
+            for f in range(len(assist_files_list.data)):
+                file_id   = assist_files_list.data[f].id
+                file_name = assist_files_list.data[f].filename
                 if (file_name == work_name):
                     res = self.client.files.delete(
                         file_id=file_id, )
@@ -604,7 +604,7 @@ class _assistantAPI:
                 purpose='assistants', )
             upload_ids.append(upload.id)
 
-            self.print(session_id, f" Assistant : Upload ... { upload.id }, { base_name },")
+            self.print(session_id, f" Assist : Upload ... { upload.id }, { base_name },")
 
             # proc? wait
             #time.sleep(0.50)
@@ -614,7 +614,7 @@ class _assistantAPI:
     def threadFile_reset(self, session_id='admin', upload_ids=[], assistant_id=None, assistant_name='', ):
 
         # 2024/04/21時点 azure 未対応
-        if (self.assistant_api_type == 'azure'):
+        if (self.assist_api_type == 'azure'):
             return False
 
         # 削除
@@ -622,7 +622,7 @@ class _assistantAPI:
             try:
                 res = self.client.files.delete(
                     file_id=upload_id, )
-                self.print(session_id, f" Assistant : Delete ... { upload_id },")
+                self.print(session_id, f" Assist : Delete ... { upload_id },")
             except:
                 pass
 
@@ -664,29 +664,29 @@ class _assistantAPI:
             change_flag = False
             if (model_name      != assistant.model):
                 change_flag = True
-                self.print(session_id, f" Assistant : Change model, { model_name },")
+                self.print(session_id, f" Assist : Change model, { model_name },")
             if (instructions    != assistant.instructions):
                 change_flag = True
-                self.print(session_id, f" Assistant : Change instructions ...")
+                self.print(session_id, f" Assist : Change instructions ...")
             if (len(tools)      != len(assistant.tools)):
                 change_flag = True
-                self.print(session_id, f" Assistant : Change tools ...")
+                self.print(session_id, f" Assist : Change tools ...")
                 #self.print(tools, )
                 #self.print(assistant.tools, )
             if (vectorStore_ids != as_vector_ids):
                 change_flag = True
-                self.print(session_id, f" Assistant : Change vector store ids ...")
+                self.print(session_id, f" Assist : Change vector store ids ...")
             if (upload_ids      != as_file_ids):
                 change_flag = True
-                self.print(session_id, f" Assistant : Change file ids ...")
+                self.print(session_id, f" Assist : Change file ids ...")
 
             if (change_flag != True):
                 return False
             else:
-                self.print(session_id, f" Assistant : Update assistant ( name='{ my_assistant_name }', model={ model_name }, ) ")
+                self.print(session_id, f" Assist : Update assistant ( name='{ my_assistant_name }', model={ model_name }, ) ")
 
                 # OPENAI
-                if (self.assistant_api_type != 'azure'):
+                if (self.assist_api_type != 'azure'):
 
                     tool_resources = {}
                     if (model_name[:1].lower() != 'o'): # o1, o3, ... 以外
@@ -700,7 +700,7 @@ class _assistantAPI:
                                         model        = model_name,
                                         instructions = instructions,
                                         tools        = tools,
-                                        timeout      = self.assistant_max_wait_sec,
+                                        timeout      = self.assist_max_wait_sec,
                                         tool_resources = tool_resources,
                                     )
 
@@ -712,7 +712,7 @@ class _assistantAPI:
                                         model        = model_name,
                                         instructions = instructions,
                                         tools        = tools,
-                                        timeout      = self.assistant_max_wait_sec,
+                                        timeout      = self.assist_max_wait_sec,
 
                                         # 2024/04/21時点 azure 未対応
                                         #tool_resources = {
@@ -730,7 +730,7 @@ class _assistantAPI:
             return False
         return True
 
-    def run_assistant(self, chat_class='assistant', model_select='auto',
+    def run_assist(self, chat_class='assist', model_select='auto',
                       nick_name=None, model_name=None,
                       session_id='admin', history=[], function_modules={},
                       sysText=None, reqText=None, inpText='こんにちは',
@@ -750,20 +750,20 @@ class _assistantAPI:
         res_history     = history
 
         if (self.bot_auth is None):
-            self.print(session_id, ' Assistant : Not Authenticate Error !')
+            self.print(session_id, ' Assist : Not Authenticate Error !')
             return res_text, res_path, res_files, res_name, res_api, res_history
 
         # モデル 設定
-        res_name  = self.assistant_a_nick_name
-        res_api   = self.assistant_a_model
-        use_tools = self.assistant_a_use_tools
-        if  (chat_class == 'assistant'):
-            if (self.assistant_b_enable == True):
-                res_name  = self.assistant_b_nick_name
-                res_api   = self.assistant_b_model
-                use_tools = self.assistant_b_use_tools
+        res_name  = self.assist_a_nick_name
+        res_api   = self.assist_a_model
+        use_tools = self.assist_a_use_tools
+        if  (chat_class == 'assist'):
+            if (self.assist_b_enable == True):
+                res_name  = self.assist_b_nick_name
+                res_api   = self.assist_b_model
+                use_tools = self.assist_b_use_tools
 
-        # モデル 補正 (assistant)
+        # モデル 補正 (assist)
         if ((chat_class == 'assistant') \
         or  (chat_class == 'コード生成') \
         or  (chat_class == 'コード実行') \
@@ -771,84 +771,88 @@ class _assistantAPI:
         or  (chat_class == '複雑な会話') \
         or  (chat_class == 'アシスタント') \
         or  (model_select == 'x')):
-            if (self.assistant_x_enable == True):
-                res_name  = self.assistant_x_nick_name
-                res_api   = self.assistant_x_model
-                use_tools = self.assistant_x_use_tools
+            if (self.assist_x_enable == True):
+                res_name  = self.assist_x_nick_name
+                res_api   = self.assist_x_model
+                use_tools = self.assist_x_use_tools
 
         # model 指定
-        if (self.assistant_a_nick_name != ''):
-            if (inpText.strip()[:len(self.assistant_a_nick_name)+1].lower() == (self.assistant_a_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.assistant_a_nick_name)+1:]
-        if (self.assistant_b_nick_name != ''):
-            if (inpText.strip()[:len(self.assistant_b_nick_name)+1].lower() == (self.assistant_b_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.assistant_b_nick_name)+1:]
-                if   (self.assistant_b_enable == True):
-                        res_name  = self.assistant_b_nick_name
-                        res_api   = self.assistant_b_model
-                        use_tools = self.assistant_b_use_tools
-        if (self.assistant_v_nick_name != ''):
-            if (inpText.strip()[:len(self.assistant_v_nick_name)+1].lower() == (self.assistant_v_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.assistant_v_nick_name)+1:]
-                if   (self.assistant_v_enable == True):
+        if (self.assist_a_nick_name != ''):
+            if (inpText.strip()[:len(self.assist_a_nick_name)+1].lower() == (self.assist_a_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.assist_a_nick_name)+1:]
+        if (self.assist_b_nick_name != ''):
+            if (inpText.strip()[:len(self.assist_b_nick_name)+1].lower() == (self.assist_b_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.assist_b_nick_name)+1:]
+                if   (self.assist_b_enable == True):
+                        res_name  = self.assist_b_nick_name
+                        res_api   = self.assist_b_model
+                        use_tools = self.assist_b_use_tools
+        if (self.assist_v_nick_name != ''):
+            if (inpText.strip()[:len(self.assist_v_nick_name)+1].lower() == (self.assist_v_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.assist_v_nick_name)+1:]
+                if   (self.assist_v_enable == True):
                     if  (len(image_urls) > 0) \
                     and (len(image_urls) == len(upload_files)):
-                        res_name  = self.assistant_v_nick_name
-                        res_api   = self.assistant_v_model
-                        use_tools = self.assistant_v_use_tools
-                elif (self.assistant_x_enable == True):
-                        res_name  = self.assistant_x_nick_name
-                        res_api   = self.assistant_x_model
-                        use_tools = self.assistant_x_use_tools
-        if (self.assistant_x_nick_name != ''):
-            if (inpText.strip()[:len(self.assistant_x_nick_name)+1].lower() == (self.assistant_x_nick_name.lower() + ',')):
-                inpText = inpText.strip()[len(self.assistant_x_nick_name)+1:]
-                if   (self.assistant_x_enable == True):
-                        res_name  = self.assistant_x_nick_name
-                        res_api   = self.assistant_x_model
-                        use_tools = self.assistant_x_use_tools
-                elif (self.assistant_b_enable == True):
-                        res_name  = self.assistant_b_nick_name
-                        res_api   = self.assistant_b_model
-                        use_tools = self.assistant_b_use_tools
+                        res_name  = self.assist_v_nick_name
+                        res_api   = self.assist_v_model
+                        use_tools = self.assist_v_use_tools
+                elif (self.assist_x_enable == True):
+                        res_name  = self.assist_x_nick_name
+                        res_api   = self.assist_x_model
+                        use_tools = self.assist_x_use_tools
+        if (self.assist_x_nick_name != ''):
+            if (inpText.strip()[:len(self.assist_x_nick_name)+1].lower() == (self.assist_x_nick_name.lower() + ',')):
+                inpText = inpText.strip()[len(self.assist_x_nick_name)+1:]
+                if   (self.assist_x_enable == True):
+                        res_name  = self.assist_x_nick_name
+                        res_api   = self.assist_x_model
+                        use_tools = self.assist_x_use_tools
+                elif (self.assist_b_enable == True):
+                        res_name  = self.assist_b_nick_name
+                        res_api   = self.assist_b_model
+                        use_tools = self.assist_b_use_tools
         if   (inpText.strip()[:5].lower() == ('riki,')):
             inpText = inpText.strip()[5:]
-            if   (self.assistant_x_enable == True):
-                        res_name  = self.assistant_x_nick_name
-                        res_api   = self.assistant_x_model
-                        use_tools = self.assistant_x_use_tools
-            elif (self.assistant_b_enable == True):
-                        res_name  = self.assistant_b_nick_name
-                        res_api   = self.assistant_b_model
-                        use_tools = self.assistant_b_use_tools
+            if   (self.assist_x_enable == True):
+                        res_name  = self.assist_x_nick_name
+                        res_api   = self.assist_x_model
+                        use_tools = self.assist_x_use_tools
+            elif (self.assist_b_enable == True):
+                        res_name  = self.assist_b_nick_name
+                        res_api   = self.assist_b_model
+                        use_tools = self.assist_b_use_tools
         elif (inpText.strip()[:7].lower() == ('vision,')):
             inpText = inpText.strip()[7:]
-            if   (self.assistant_v_enable == True):
+            if   (self.assist_v_enable == True):
                 if  (len(image_urls) > 0) \
                 and (len(image_urls) == len(upload_files)):
-                        res_name  = self.assistant_v_nick_name
-                        res_api   = self.assistant_v_model
-                        use_tools = self.assistant_v_use_tools
-            elif (self.assistant_x_enable == True):
-                        res_name  = self.assistant_x_nick_name
-                        res_api   = self.assistant_x_model
-                        use_tools = self.assistant_x_use_tools
+                        res_name  = self.assist_v_nick_name
+                        res_api   = self.assist_v_model
+                        use_tools = self.assist_v_use_tools
+            elif (self.assist_x_enable == True):
+                        res_name  = self.assist_x_nick_name
+                        res_api   = self.assist_x_model
+                        use_tools = self.assist_x_use_tools
         elif (inpText.strip()[:10].lower() == ('assistant,')):
             inpText = inpText.strip()[10:]
-            if   (self.assistant_x_enable == True):
-                        res_name  = self.assistant_x_nick_name
-                        res_api   = self.assistant_x_model
-                        use_tools = self.assistant_x_use_tools
-            elif (self.assistant_b_enable == True):
-                        res_name  = self.assistant_b_nick_name
-                        res_api   = self.assistant_b_model
-                        use_tools = self.assistant_b_use_tools
+            if   (self.assist_x_enable == True):
+                        res_name  = self.assist_x_nick_name
+                        res_api   = self.assist_x_model
+                        use_tools = self.assist_x_use_tools
+            elif (self.assist_b_enable == True):
+                        res_name  = self.assist_b_nick_name
+                        res_api   = self.assist_b_model
+                        use_tools = self.assist_b_use_tools
         elif (inpText.strip()[:7].lower() == ('openai,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+        elif (inpText.strip()[:8].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[8:]
+        elif (inpText.strip()[:7].lower() == ('assist,')):
             inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:6].lower() == ('respo,')):
+            inpText = inpText.strip()[6:]
         elif (inpText.strip()[:7].lower() == ('gemini,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:7].lower() == ('freeai,')):
@@ -907,11 +911,11 @@ class _assistantAPI:
         # モデルの変更時は削除
         if (my_assistant_id is not None):
             if (res_api != assistant.model):
-                self.print(session_id, f" Assistant : Change model, { res_api },")
+                self.print(session_id, f" Assist : Change model, { res_api },")
 
                 for assistant in assistants.data:
                     if (assistant.name == my_assistant_name):
-                        self.print(session_id, f" Assistant : Delete assistant ( name='{ assistant.name }', ) ")
+                        self.print(session_id, f" Assist : Delete assistant ( name='{ assistant.name }', ) ")
 
                         # アシスタント削除
                         try:
@@ -930,18 +934,18 @@ class _assistantAPI:
                 limit = "100", )
 
             # (最大セッション以上の)アシスタント削除
-            if (self.assistant_max_session > 0) and (len(assistants.data) > 0):
-                for a in range(self.assistant_max_session -1 , len(assistants.data)):
+            if (self.assist_max_session > 0) and (len(assistants.data) > 0):
+                for a in range(self.assist_max_session -1 , len(assistants.data)):
                     assistant = assistants.data[a]
-                    self.print(session_id, f" Assistant : Delete assistant ( name='{ assistant.name }', ) ")
+                    self.print(session_id, f" Assist : Delete assistant ( name='{ assistant.name }', ) ")
 
                     # vector store 削除
-                    res = self.vectorStore_del( session_id     = session_id,
+                    res = self.vectorStore_del( session_id  = session_id,
                                                 assistant_id   = my_assistant_id, 
                                                 assistant_name = my_assistant_name, )
 
                     # ファイル 削除
-                    res = self.threadFile_del(  session_id     = session_id,
+                    res = self.threadFile_del(  session_id  = session_id,
                                                 assistant_id   = my_assistant_id,
                                                 assistant_name = my_assistant_name, )
 
@@ -952,7 +956,7 @@ class _assistantAPI:
                         pass
 
             # アシスタント生成
-            self.print(session_id, f" Assistant : Create assistant ( name='{ my_assistant_name }', model={ res_api }, ) ")
+            self.print(session_id, f" Assist : Create assistant ( name='{ my_assistant_name }', model={ res_api }, ) ")
             assistant = self.client.beta.assistants.create(
                     name     = my_assistant_name,
                     model    = res_api,
@@ -965,22 +969,22 @@ class _assistantAPI:
         if (my_assistant_id is not None):
 
             # vector store 作成
-            vectorStore_ids = self.vectorStore_set(     session_id          = session_id,
+            vectorStore_ids = self.vectorStore_set(     session_id      = session_id,
                                                         retrievalFiles_path = '_extensions/retrieval_files/',
-                                                        assistant_id        = my_assistant_id, 
-                                                        assistant_name      = my_assistant_name, )
+                                                        assistant_id       = my_assistant_id, 
+                                                        assistant_name     = my_assistant_name, )
 
             # ファイルアップロード
-            upload_ids = self.threadFile_set(           session_id     = session_id,
-                                                        upload_files   = upload_files,
-                                                        assistant_id   = my_assistant_id,
-                                                        assistant_name = my_assistant_name, )
+            upload_ids = self.threadFile_set(           session_id      = session_id,
+                                                        upload_files    = upload_files,
+                                                        assistant_id       = my_assistant_id,
+                                                        assistant_name     = my_assistant_name, )
             #self.print(session_id, f"##{ upload_ids }##")
             # proc? wait
             #if (len(upload_files) > 0):
             #    time.sleep(1.00 * len(upload_files))
 
-            res = self.my_assistant_update(             session_id        = session_id,
+            res = self.my_assistant_update(                session_id        = session_id,
                                                         my_assistant_id   = my_assistant_id,
                                                         my_assistant_name = my_assistant_name,
                                                         model_name        = res_api, 
@@ -995,7 +999,7 @@ class _assistantAPI:
         if (my_thread_id is None):
 
             # スレッド生成
-            self.print(session_id, f" Assistant : Create thread    ( name='{ my_assistant_name }', ) ")
+            self.print(session_id, f" Assist : Create thread    ( name='{ my_assistant_name }', ) ")
             thread = self.client.beta.threads.create(
                 metadata = {'assistant_name': my_assistant_name}, )
             my_thread_id = thread.id
@@ -1035,7 +1039,7 @@ class _assistantAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             #stream = True
-            print(' Assistant : stream=False, ')
+            print(' Assist : stream=False, ')
             stream = False
         else:
             stream = False
@@ -1061,7 +1065,7 @@ class _assistantAPI:
             last_message  = None
             
             chkTime       = time.time()
-            while (exit_status is None) and ((time.time() - chkTime) < self.assistant_max_wait_sec):
+            while (exit_status is None) and ((time.time() - chkTime) < self.assist_max_wait_sec):
 
                 # ステータス
                 run = self.client.beta.threads.runs.retrieve(
@@ -1070,7 +1074,7 @@ class _assistantAPI:
                 if (run.status != last_status):
                     last_status = run.status
                     chkTime     = time.time()
-                    self.print(session_id, f" Assistant : { last_status }")
+                    self.print(session_id, f" Assist : { last_status }")
 
                 # 完了時は少し待機
                 #if (last_status == 'completed'):
@@ -1086,7 +1090,7 @@ class _assistantAPI:
                     for r in range(count_run_step, len(run_steps.data)):
                         step_details_type = run_steps.data[r].step_details.type
                         if (step_details_type != 'tool_calls'):
-                            self.print(session_id, f" Assistant : ({ step_details_type })")
+                            self.print(session_id, f" Assist : ({ step_details_type })")
                         else:
                             #self.print(session_id, run_steps.data[r].step_details)
                             step_details_tool_type = None
@@ -1099,9 +1103,9 @@ class _assistantAPI:
                                 except:
                                     pass
                             if (step_details_tool_type is not None):
-                                self.print(session_id, f" Assistant : ({ step_details_tool_type }...)")
+                                self.print(session_id, f" Assist : ({ step_details_tool_type }...)")
                             else:
-                                self.print(session_id, f" Assistant : ({ step_details_type })")
+                                self.print(session_id, f" Assist : ({ step_details_type })")
 
                         if (step_details_type == 'message_creation'):
                             message_id = run_steps.data[r].step_details.message_creation.message_id
@@ -1123,10 +1127,10 @@ class _assistantAPI:
                     count_run_step = len(run_steps.data)
 
                 # 最大ステップ  10step x (3auto+1) / 2 = 20
-                limit_step = int((int(max_step) * (int(self.assistant_auto_continue)+1)) / 2)
+                limit_step = int((int(max_step) * (int(self.assist_auto_continue)+1)) / 2)
                 if (count_run_step > limit_step):
                     exit_status = 'overstep'
-                    self.print(session_id, f" Assistant : overstep! (n={ count_run_step }!)")
+                    self.print(session_id, f" Assist : overstep! (n={ count_run_step }!)")
                     break
 
                 # 実行メッセージ確認
@@ -1144,7 +1148,7 @@ class _assistantAPI:
                             #    file_type   = content_type
                             #    file_id     = messages.data[m].content[c].image_file.file_id
                             #    if (file_id is not None):
-                            #        self.print(session_id, f" Assistant : ( { file_type }, { file_id } )")
+                            #        self.print(session_id, f" Assist : ( { file_type }, { file_id } )")
 
                             if (content_type == 'text'):
                                 content_value = messages.data[m].content[c].text.value
@@ -1174,13 +1178,13 @@ class _assistantAPI:
                                             file.write(data_bytes)
 
                                         res_path = qPath_output + filename
-                                        self.print(session_id, f" Assistant : Download ... { file_text }")
+                                        self.print(session_id, f" Assist : Download ... { file_text }")
                                     except:
                                         pass
 
                 # 処理中
                 if   (last_status is None):
-                    self.print(session_id, ' Assistant : status is None ???')
+                    self.print(session_id, ' Assist : status is None ???')
 
                 elif (last_status == 'in_progress') \
                 or   (last_status == 'queued') \
@@ -1200,7 +1204,7 @@ class _assistantAPI:
 
                     # その他終了
                     else:
-                        self.print(session_id, ' Assistant : !')
+                        self.print(session_id, ' Assist : !')
                         break
 
                 # ファンクション
@@ -1219,8 +1223,8 @@ class _assistantAPI:
                         for module_dic in function_modules.values():
                             if (function_name == module_dic['func_name']):
                                 hit = True
-                                self.print(session_id, f" Assistant :   function_call '{ module_dic['script'] }' ({  function_name })")
-                                self.print(session_id, f" Assistant :   → { json_kwargs }")
+                                self.print(session_id, f" Assist :   function_call '{ module_dic['script'] }' ({  function_name })")
+                                self.print(session_id, f" Assist :   → { json_kwargs }")
 
                                 chkTime     = time.time()
 
@@ -1271,7 +1275,7 @@ class _assistantAPI:
                                     print(e)
 
                         if (hit == False):
-                            self.print(session_id, f" Assistant :   function_call Error ! ({ function_name })")
+                            self.print(session_id, f" Assist :   function_call Error ! ({ function_name })")
                             self.print(session_id, json_kwargs, )
 
                             dic = {}
@@ -1279,7 +1283,7 @@ class _assistantAPI:
                             res_json = json.dumps(dic, ensure_ascii=False, )
 
                         # tool_result
-                        self.print(session_id, f" Assistant :   → { res_json }")
+                        self.print(session_id, f" Assist :   → { res_json }")
                         self.print(session_id, )
                         tool_result.append({"tool_call_id": tool_call_id, "output": res_json})
 
@@ -1311,8 +1315,8 @@ class _assistantAPI:
 
         if (exit_status is None):
             exit_status = 'timeout'
-            self.print(session_id, f" Assistant : timeout! ({ self.assistant_max_wait_sec }s)")
-            #raise RuntimeError('assistant run timeout !')
+            self.print(session_id, f" Assist : timeout! ({ self.assist_max_wait_sec }s)")
+            #raise RuntimeError('assist run timeout !')
             
         # 結果確認
         if (exit_status == 'completed'):
@@ -1332,7 +1336,7 @@ class _assistantAPI:
 
             # History 追加格納
             self.seq += 1
-            dic = {'seq': self.seq, 'time': time.time(), 'role': 'assistant', 'name': '', 'content': exit_status }
+            dic = {'seq': self.seq, 'time': time.time(), 'role': 'assist', 'name': '', 'content': exit_status }
             res_history.append(dic)
 
         # 実行キャンセル
@@ -1350,7 +1354,7 @@ class _assistantAPI:
                     run = self.client.beta.threads.runs.cancel(
                         thread_id = my_thread_id, 
                         run_id    = run_id, )
-                    self.print(session_id, f" Assistant : run cancel ... { run_id }")
+                    self.print(session_id, f" Assist : run cancel ... { run_id }")
                 except:
                     pass
 
@@ -1389,7 +1393,7 @@ class _assistantAPI:
             reqText = None
 
         if (self.bot_auth is None):
-            self.print(session_id, ' Assistant : Not Authenticate Error !')
+            self.print(session_id, ' Assist : Not Authenticate Error !')
             return res_text, res_path, res_files, nick_name, model_name, res_history
 
         # ファイル分離
@@ -1404,9 +1408,9 @@ class _assistantAPI:
         #nick_name  = 'auto'
         #model_name = 'auto'
 
-        # assistant
+        # assist
         res_text, res_path, res_files, nick_name, model_name, res_history = \
-        self.run_assistant( chat_class=chat_class, model_select=model_select,
+        self.run_assist( chat_class=chat_class, model_select=model_select,
                             nick_name=nick_name, model_name=model_name,
                             session_id=session_id, history=res_history, function_modules=function_modules,
                             sysText=sysText, reqText=reqText, inpText=inpText,
@@ -1431,36 +1435,36 @@ class _assistantAPI:
 
 if __name__ == '__main__':
 
-        #assistantAPI = speech_bot_assistant._assistantAPI()
-        assistantAPI = _assistantAPI()
+        #assistAPI = speech_bot_assist._assistAPI()
+        assistAPI = _assistAPI()
 
-        api_type = assistant_key.getkey('assistant','assistant_api_type')
+        api_type = assist_key.getkey('assist','assist_api_type')
         print(api_type)
 
         log_queue = queue.Queue()
-        res = assistantAPI.init(log_queue=log_queue, )
+        res = assistAPI.init(log_queue=log_queue, )
 
-        res = assistantAPI.authenticate('assistant',
+        res = assistAPI.authenticate('assist',
                             api_type,
-                            assistant_key.getkey('assistant','assistant_default_gpt'), assistant_key.getkey('assistant','assistant_default_class'),
-                            assistant_key.getkey('assistant','assistant_auto_continue'),
-                            assistant_key.getkey('assistant','assistant_max_step'), assistant_key.getkey('assistant','assistant_max_session'),
-                            assistant_key.getkey('assistant','assistant_max_wait_sec'),
+                            assist_key.getkey('assist','assist_default_gpt'), assist_key.getkey('assist','assist_default_class'),
+                            assist_key.getkey('assist','assist_auto_continue'),
+                            assist_key.getkey('assist','assist_max_step'), assist_key.getkey('assist','assist_max_session'),
+                            assist_key.getkey('assist','assist_max_wait_sec'),
 
-                            assistant_key.getkey('assistant','openai_organization'), 
-                            assistant_key.getkey('assistant','openai_key_id'),
-                            assistant_key.getkey('assistant','azure_endpoint'), 
-                            assistant_key.getkey('assistant','azure_version'), 
-                            assistant_key.getkey('assistant','azure_key_id'),
+                            assist_key.getkey('assist','openai_organization'), 
+                            assist_key.getkey('assist','openai_key_id'),
+                            assist_key.getkey('assist','azure_endpoint'), 
+                            assist_key.getkey('assist','azure_version'), 
+                            assist_key.getkey('assist','azure_key_id'),
 
-                            assistant_key.getkey('assistant','assistant_a_nick_name'), assistant_key.getkey('assistant','assistant_a_model'), assistant_key.getkey('assistant','assistant_a_token'),
-                            assistant_key.getkey('assistant','assistant_a_use_tools'),
-                            assistant_key.getkey('assistant','assistant_b_nick_name'), assistant_key.getkey('assistant','assistant_b_model'), assistant_key.getkey('assistant','assistant_b_token'),
-                            assistant_key.getkey('assistant','assistant_b_use_tools'),
-                            assistant_key.getkey('assistant','assistant_v_nick_name'), assistant_key.getkey('assistant','assistant_v_model'), assistant_key.getkey('assistant','assistant_v_token'),
-                            assistant_key.getkey('assistant','assistant_v_use_tools'),
-                            assistant_key.getkey('assistant','assistant_x_nick_name'), assistant_key.getkey('assistant','assistant_x_model'), assistant_key.getkey('assistant','assistant_x_token'),
-                            assistant_key.getkey('assistant','assistant_x_use_tools'),
+                            assist_key.getkey('assist','assist_a_nick_name'), assist_key.getkey('assist','assist_a_model'), assist_key.getkey('assist','assist_a_token'),
+                            assist_key.getkey('assist','assist_a_use_tools'),
+                            assist_key.getkey('assist','assist_b_nick_name'), assist_key.getkey('assist','assist_b_model'), assist_key.getkey('assist','assist_b_token'),
+                            assist_key.getkey('assist','assist_b_use_tools'),
+                            assist_key.getkey('assist','assist_v_nick_name'), assist_key.getkey('assist','assist_v_model'), assist_key.getkey('assist','assist_v_token'),
+                            assist_key.getkey('assist','assist_v_use_tools'),
+                            assist_key.getkey('assist','assist_x_nick_name'), assist_key.getkey('assist','assist_x_model'), assist_key.getkey('assist','assist_x_token'),
+                            assist_key.getkey('assist','assist_x_use_tools'),
                             )
         print('authenticate:', res, )
         if (res == True):
@@ -1491,9 +1495,9 @@ if __name__ == '__main__':
                 print('[Request]')
                 print(reqText, inpText )
                 print()
-                res_text, res_path, res_files, res_name, res_api, assistantAPI.history = \
-                    assistantAPI.chatBot(   chat_class='auto', model_select='auto', 
-                                            session_id=session_id, history=assistantAPI.history, function_modules=function_modules,
+                res_text, res_path, res_files, res_name, res_api, assistAPI.history = \
+                    assistAPI.chatBot(   chat_class='auto', model_select='auto', 
+                                            session_id=session_id, history=assistAPI.history, function_modules=function_modules,
                                             sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
                                             inpLang='ja', outLang='ja', )
                 print()
@@ -1504,14 +1508,14 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'assistant-b,toolsで兵庫県三木市の天気を調べて'
+                inpText = 'assist-b,toolsで兵庫県三木市の天気を調べて'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
                 print()
-                res_text, res_path, res_files, res_name, res_api, assistantAPI.history = \
-                    assistantAPI.chatBot(   chat_class='auto', model_select='auto', 
-                                            session_id=session_id, history=assistantAPI.history, function_modules=function_modules,
+                res_text, res_path, res_files, res_name, res_api, assistAPI.history = \
+                    assistAPI.chatBot(   chat_class='auto', model_select='auto', 
+                                            session_id=session_id, history=assistAPI.history, function_modules=function_modules,
                                             sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
                                             inpLang='ja', outLang='ja', )
                 print()
@@ -1529,9 +1533,9 @@ if __name__ == '__main__':
                 print('[Request]')
                 print(reqText, inpText )
                 print()
-                res_text, res_path, res_files, res_name, res_api, assistantAPI.history = \
-                    assistantAPI.chatBot(   chat_class='auto', model_select='auto', 
-                                            session_id=session_id, history=assistantAPI.history, function_modules=function_modules,
+                res_text, res_path, res_files, res_name, res_api, assistAPI.history = \
+                    assistAPI.chatBot(   chat_class='auto', model_select='auto', 
+                                            session_id=session_id, history=assistAPI.history, function_modules=function_modules,
                                             sysText=sysText, reqText=reqText, inpText=inpText, filePath=filePath,
                                             inpLang='ja', outLang='ja', )
                 print()
@@ -1541,9 +1545,9 @@ if __name__ == '__main__':
 
             if False:
                 print('[History]')
-                for h in range(len(assistantAPI.history)):
-                    print(assistantAPI.history[h])
-                assistantAPI.history = []
+                for h in range(len(assistAPI.history)):
+                    print(assistAPI.history[h])
+                assistAPI.history = []
 
 
 

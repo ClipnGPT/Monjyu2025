@@ -513,8 +513,12 @@ class _geminiAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+        elif (inpText.strip()[:8].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[8:]
+        elif (inpText.strip()[:7].lower() == ('assist,')):
             inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:6].lower() == ('respo,')):
+            inpText = inpText.strip()[6:]
         elif (inpText.strip()[:7].lower() == ('gemini,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:7].lower() == ('freeai,')):
@@ -620,7 +624,7 @@ class _geminiAPI:
                 for module_dic in function_modules.values():
                     func_dic = module_dic['function']
                     func_str = json.dumps(func_dic, ensure_ascii=False, )
-                    func_str = func_str.replace('"type"', '"type_"')
+                    #func_str = func_str.replace('"type"', '"type_"')
                     func_str = func_str.replace('"object"', '"OBJECT"')
                     func_str = func_str.replace('"string"', '"STRING"')
                     func     = json.loads(func_str)
@@ -628,13 +632,25 @@ class _geminiAPI:
 
         # gemini 設定
         if (jsonSchema is None) or (jsonSchema == ''):
-            generation_config_normal = {
-                "temperature": temperature,
-                "top_p": 0.95,
-                "top_k": 32,
-                "max_output_tokens": 8192,
-                "response_mime_type": "text/plain",
-            }
+            # 通常
+            if (res_api.find('image-gen') < 0):
+                generation_config_normal = {
+                    "temperature": temperature,
+                    "top_p": 0.95,
+                    "top_k": 32,
+                    "max_output_tokens": 8192,
+                    "response_mime_type": "text/plain",
+                }
+            # イメージ生成
+            else:
+                generation_config_normal = {
+                    "temperature": temperature,
+                    "top_p": 0.95,
+                    "top_k": 32,
+                    "max_output_tokens": 8192,
+                    "response_modalities": ["image", "text"],
+                    "response_mime_type": "text/plain",
+                }
             gemini = genai.GenerativeModel(
                             model_name=res_api,
                             generation_config=generation_config_normal,
@@ -673,7 +689,8 @@ class _geminiAPI:
         # ストリーム実行?
         if (session_id == 'admin'):
             stream = True
-            if (res_api.find('think') >= 0):
+            if (res_api.find('think') >= 0) \
+            or (res_api.find('image-gen') >= 0):
                 print(' Gemini : stream=False, ')
                 stream = False
         else:
@@ -718,6 +735,12 @@ class _geminiAPI:
                                 if (delta_text != ''):
                                     self.stream(session_id, delta_text)
                                     content_text += delta_text
+                            else:
+                                inline_data = chunk.candidates[0].content.parts[p].inline_data
+                                if (inline_data is not None):
+                                    data      = inline_data.data
+                                    mime_type = inline_data.mime_type
+                                    print(mime_type)
 
                         if (content_text == ''):
                             content_parts = chunk.candidates[0].content.parts
@@ -740,6 +763,12 @@ class _geminiAPI:
                                     if (content_text != ''):
                                         content_text += '\n'
                                     content_text += chunk_text
+                            else:
+                                inline_data = response.candidates[0].content.parts[p].inline_data
+                                if (inline_data is not None):
+                                    data      = inline_data.data
+                                    mime_type = inline_data.mime_type
+                                    print(mime_type)
 
                         if (content_text == ''):
                             content_parts = response.candidates[0].content.parts
@@ -987,7 +1016,8 @@ if __name__ == '__main__':
                     print()
 
                 for key, module_dic in botFunc.function_modules.items():
-                    if (module_dic['onoff'] == 'on'):
+                    #if (module_dic['onoff'] == 'on'):
+                    if (module_dic['func_name'].find('weather') >= 0):
                         function_modules[key] = module_dic
 
             if True:
@@ -1011,7 +1041,8 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'flash,toolsで兵庫県三木市の天気を調べて'
+                inpText = 'free-b,toolsで兵庫県三木市の天気を調べて'
+                #inpText = 'free-b,toolsで日本の３大都市の天気を調べて'
                 print()
                 print('[Request]')
                 print(reqText, inpText )
@@ -1030,8 +1061,8 @@ if __name__ == '__main__':
                 sysText = None
                 reqText = ''
                 inpText = '添付画像を説明してください。'
-                filePath = ['_icons/dog.jpg']
-                #filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
+                #filePath = ['_icons/dog.jpg']
+                filePath = ['_icons/dog.jpg', '_icons/kyoto.png']
                 print()
                 print('[Request]')
                 print(reqText, inpText )

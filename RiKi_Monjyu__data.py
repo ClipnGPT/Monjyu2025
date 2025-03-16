@@ -95,7 +95,8 @@ class _data_class:
         self.mode_setting   = {}
         self.engine_models  = {}
         self.engine_models['chatgpt']       = {}
-        self.engine_models['assistant']     = {}
+        self.engine_models['assist']        = {}
+        self.engine_models['respo']         = {}
         self.engine_models['gemini']        = {}
         self.engine_models['freeai']        = {}
         self.engine_models['claude']        = {}
@@ -171,7 +172,8 @@ class _data_class:
             "x_model": "",
             "x_use_tools": ""
         }
-        self.engine_setting['assistant'] = self.engine_setting['chatgpt']
+        self.engine_setting['assist'] = self.engine_setting['chatgpt']
+        self.engine_setting['respo']  = self.engine_setting['chatgpt']
         self.engine_setting['gemini'] = self.engine_setting['chatgpt']
         self.engine_setting['freeai'] = self.engine_setting['chatgpt']
         self.engine_setting['claude'] = self.engine_setting['chatgpt']

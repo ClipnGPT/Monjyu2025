@@ -4,7 +4,8 @@
 let last_addins_setting = null;
 let last_engine_models = {
     chatgpt: null,
-    assistant: null,
+    assist: null,
+    respo: null,
     gemini: null,
     freeai: null,
     claude: null,
@@ -16,7 +17,8 @@ let last_engine_models = {
 };
 let last_engine_setting = {
     chatgpt: null,
-    assistant: null,
+    assist: null,
+    respo: null,
     gemini: null,
     freeai: null,
     claude: null,
@@ -40,6 +42,7 @@ function add_wait_sec_all() {
 function add_wait_sec(key, value) {
     $('#gpt_max_wait_sec').append(`<option value="${key}">${value}</option>`);
     $('#asst_max_wait_sec').append(`<option value="${key}">${value}</option>`);
+    $('#resp_max_wait_sec').append(`<option value="${key}">${value}</option>`);
     $('#gemn_max_wait_sec').append(`<option value="${key}">${value}</option>`);
     $('#free_max_wait_sec').append(`<option value="${key}">${value}</option>`);
     $('#clad_max_wait_sec').append(`<option value="${key}">${value}</option>`);
@@ -89,9 +92,9 @@ function get_engine_models(engine) {
                 }
             }
 
-            // assistant
-            if (engine === 'assistant') {
-                if (JSON.stringify(data) !== last_engine_models.assistant) {
+            // assist
+            if (engine === 'assist') {
+                if (JSON.stringify(data) !== last_engine_models.assist) {
                     // 既存の選択肢を削除
                     $('#asst_a_model').empty();
                     $('#asst_b_model').empty();
@@ -109,7 +112,31 @@ function get_engine_models(engine) {
                         $('#asst_v_model').append(`<option value="${key}">${value}</option>`);
                         $('#asst_x_model').append(`<option value="${key}">${value}</option>`);
                     });
-                    last_engine_models.assistant = JSON.stringify(data);
+                    last_engine_models.assist = JSON.stringify(data);
+                }
+            }
+
+            // respo
+            if (engine === 'respo') {
+                if (JSON.stringify(data) !== last_engine_models.respo) {
+                    // 既存の選択肢を削除
+                    $('#resp_a_model').empty();
+                    $('#resp_b_model').empty();
+                    $('#resp_v_model').empty();
+                    $('#resp_x_model').empty();
+                    // 取得した選択肢を設定
+                    $('#resp_a_model').append(`<option value="">Auto (自動)</option>`);
+                    $('#resp_b_model').append(`<option value="">Auto (自動)</option>`);
+                    $('#resp_v_model').append(`<option value="">Auto (自動)</option>`);
+                    $('#resp_x_model').append(`<option value="">Auto (自動)</option>`);
+                    //for (var [key, value] of Object.entries(data)) {
+                    sortedEntries.forEach(([key, value]) => {
+                        $('#resp_a_model').append(`<option value="${key}">${value}</option>`);
+                        $('#resp_b_model').append(`<option value="${key}">${value}</option>`);
+                        $('#resp_v_model').append(`<option value="${key}">${value}</option>`);
+                        $('#resp_x_model').append(`<option value="${key}">${value}</option>`);
+                    });
+                    last_engine_models.respo = JSON.stringify(data);
                 }
             }
 
@@ -315,7 +342,8 @@ function get_engine_models(engine) {
 // サーバーからエンジンの設定値を取得する関数
 function get_engine_setting_all(engine) {
     get_engine_setting('chatgpt');
-    get_engine_setting('assistant');
+    get_engine_setting('assist');
+    get_engine_setting('respo');
     get_engine_setting('gemini');
     get_engine_setting('freeai');
     get_engine_setting('claude');
@@ -355,9 +383,9 @@ function get_engine_setting(engine) {
                 }
             }
 
-            // assistant
-            if (engine === 'assistant') {
-                if (JSON.stringify(data) !== last_engine_setting.assistant) {
+            // assist
+            if (engine === 'assist') {
+                if (JSON.stringify(data) !== last_engine_setting.assist) {
                     $('#asst_a_nick_name').text(data.a_nick_name || '');
                     $('#asst_b_nick_name').text(data.b_nick_name || '');
                     $('#asst_v_nick_name').text(data.v_nick_name || '');
@@ -371,7 +399,27 @@ function get_engine_setting(engine) {
                     $('#asst_v_use_tools').val(data.v_use_tools || '');
                     $('#asst_x_model').val(data.x_model || '');
                     $('#asst_x_use_tools').val(data.x_use_tools || '');
-                    last_engine_setting.assistant = JSON.stringify(data);
+                    last_engine_setting.assist = JSON.stringify(data);
+                }
+            }
+
+            // respo
+            if (engine === 'respo') {
+                if (JSON.stringify(data) !== last_engine_setting.respo) {
+                    $('#resp_a_nick_name').text(data.a_nick_name || '');
+                    $('#resp_b_nick_name').text(data.b_nick_name || '');
+                    $('#resp_v_nick_name').text(data.v_nick_name || '');
+                    $('#resp_x_nick_name').text(data.x_nick_name || '');
+                    $('#resp_max_wait_sec').val(data.max_wait_sec || '');
+                    $('#resp_a_model').val(data.a_model || '');
+                    $('#resp_a_use_tools').val(data.a_use_tools || '');
+                    $('#resp_b_model').val(data.b_model || '');
+                    $('#resp_b_use_tools').val(data.b_use_tools || '');
+                    $('#resp_v_model').val(data.v_model || '');
+                    $('#resp_v_use_tools').val(data.v_use_tools || '');
+                    $('#resp_x_model').val(data.x_model || '');
+                    $('#resp_x_use_tools').val(data.x_use_tools || '');
+                    last_engine_setting.respo = JSON.stringify(data);
                 }
             }
 
@@ -562,10 +610,10 @@ function post_engine_setting(engine) {
         }
     }
 
-    // assistant
-    if (engine === 'assistant') {
+    // assist
+    if (engine === 'assist') {
         formData = {
-            engine: 'assistant',
+            engine: 'assist',
             max_wait_sec: $('#asst_max_wait_sec').val(),
             a_model: $('#asst_a_model').val(),
             a_use_tools: $('#asst_a_use_tools').val(),
@@ -575,6 +623,22 @@ function post_engine_setting(engine) {
             v_use_tools: $('#asst_v_use_tools').val(),
             x_model: $('#asst_x_model').val(),
             x_use_tools: $('#asst_x_use_tools').val(),
+        }
+    }
+
+    // respo
+    if (engine === 'respo') {
+        formData = {
+            engine: 'respo',
+            max_wait_sec: $('#resp_max_wait_sec').val(),
+            a_model: $('#resp_a_model').val(),
+            a_use_tools: $('#resp_a_use_tools').val(),
+            b_model: $('#resp_b_model').val(),
+            b_use_tools: $('#resp_b_use_tools').val(),
+            v_model: $('#resp_v_model').val(),
+            v_use_tools: $('#resp_v_use_tools').val(),
+            x_model: $('#resp_x_model').val(),
+            x_use_tools: $('#resp_x_use_tools').val(),
         }
     }
 
@@ -749,7 +813,8 @@ $(document).ready(function() {
 
     // エンジンのmodels設定を取得
     get_engine_models('chatgpt');
-    get_engine_models('assistant');
+    get_engine_models('assist');
+    get_engine_models('respo');
     get_engine_models('gemini');
     get_engine_models('freeai');
     get_engine_models('claude');
@@ -776,7 +841,7 @@ $(document).ready(function() {
     });
 
     $('#asst_max_wait_sec, #asst_a_model, #asst_a_use_tools, #asst_b_model, #asst_b_use_tools, #asst_v_model, #asst_v_use_tools, #asst_x_model, #asst_x_use_tools').change(function() {
-        post_engine_setting('assistant');
+        post_engine_setting('assist');
     });
     $('#asst-a2bvx-button').click(function() {
         $('#asst_b_model').val( $('#asst_a_model').val() );
@@ -785,7 +850,20 @@ $(document).ready(function() {
         $('#asst_v_use_tools').val( $('#asst_a_use_tools').val() );
         $('#asst_x_model').val( $('#asst_a_model').val() );
         $('#asst_x_use_tools').val( $('#asst_a_use_tools').val() );
-        post_engine_setting('assistant');
+        post_engine_setting('assist');
+    });
+
+    $('#resp_max_wait_sec, #resp_a_model, #resp_a_use_tools, #resp_b_model, #resp_b_use_tools, #resp_v_model, #resp_v_use_tools, #resp_x_model, #resp_x_use_tools').change(function() {
+        post_engine_setting('respo');
+    });
+    $('#resp-a2bvx-button').click(function() {
+        $('#resp_b_model').val( $('#resp_a_model').val() );
+        $('#resp_b_use_tools').val( $('#resp_a_use_tools').val() );
+        $('#resp_v_model').val( $('#resp_a_model').val() );
+        $('#resp_v_use_tools').val( $('#resp_a_use_tools').val() );
+        $('#resp_x_model').val( $('#resp_a_model').val() );
+        $('#resp_x_use_tools').val( $('#resp_a_use_tools').val() );
+        post_engine_setting('respo');
     });
 
     $('#gemn_max_wait_sec, #gemn_a_model, #gemn_a_use_tools, #gemn_b_model, #gemn_b_use_tools, #gemn_v_model, #gemn_v_use_tools, #gemn_x_model, #gemn_x_use_tools').change(function() {

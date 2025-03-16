@@ -1456,19 +1456,19 @@ class ChatBotAPI:
             return False
 
         # vector store 削除
-        vector_stores = self.client_x.beta.vector_stores.list()
+        vector_stores = self.client_x.vector_stores.list()
         for v in range(len(vector_stores.data)):
             vs_id   = vector_stores.data[v].id
             vs_name = vector_stores.data[v].name
             if (vs_name == assistant_name):
 
-                vs_files = self.client_x.beta.vector_stores.files.list(vector_store_id=vs_id)
+                vs_files = self.client_x.vector_stores.files.list(vector_store_id=vs_id)
 
                 for f in range(len(vs_files.data)):
                     file_id   = vs_files.data[f].id
                     self.client_x.files.delete(file_id=file_id, )
                 self.print(session_id, f"  vector store delete! ('{ vs_name }')")
-                self.client_x.beta.vector_stores.delete(vector_store_id=vs_id)
+                self.client_x.vector_stores.delete(vector_store_id=vs_id)
 
                 break
         
@@ -1490,12 +1490,12 @@ class ChatBotAPI:
                 proc_files.append(os.path.basename(f))
 
         # マッチング検査 違いがあれば vector store 削除
-        vector_stores = self.client_x.beta.vector_stores.list()
+        vector_stores = self.client_x.vector_stores.list()
         for v in range(len(vector_stores.data)):
             vs_id   = vector_stores.data[v].id
             vs_name = vector_stores.data[v].name
             if (vs_name == assistant_name):
-                vs_files = self.client_x.beta.vector_stores.files.list(vector_store_id=vs_id)
+                vs_files = self.client_x.vector_stores.files.list(vector_store_id=vs_id)
 
                 vectorStore_ids = [vs_id]
                 if (len(proc_files) != len(vs_files.data)):
@@ -1514,7 +1514,7 @@ class ChatBotAPI:
                         file_id   = vs_files.data[f].id
                         self.client_x.files.delete(file_id=file_id, )
                     self.print(session_id, f" Assistant : Delete vector store = '{ vs_name }', ")
-                    self.client_x.beta.vector_stores.delete(vector_store_id=vs_id)
+                    self.client_x.vector_stores.delete(vector_store_id=vs_id)
 
                 break
 
@@ -1560,7 +1560,7 @@ class ChatBotAPI:
             if (len(upload_ids) > 0):
                 try:
 
-                    vector_store = self.client_x.beta.vector_stores.create(
+                    vector_store = self.client_x.vector_stores.create(
                                         name = assistant_name,
                                         #expires_after = {
                                         #"anchor": "last_active_at",
@@ -1568,7 +1568,7 @@ class ChatBotAPI:
                                         #}
                                     )
 
-                    file_batch = self.client_x.beta.vector_stores.file_batches.create_and_poll(
+                    file_batch = self.client_x.vector_stores.file_batches.create_and_poll(
                                         vector_store_id = vector_store.id,
                                         file_ids        = upload_ids,
                                     )
@@ -1582,13 +1582,13 @@ class ChatBotAPI:
 
         # デバッグ用 アップロード確認
         if False:
-            vector_stores = self.client_x.beta.vector_stores.list()
+            vector_stores = self.client_x.vector_stores.list()
             for v in range(len(vector_stores.data)):
                 vs_id   = vector_stores.data[v].id
                 vs_name = vector_stores.data[v].name
                 if (vs_name == assistant_name):
                     self.print(session_id, vs_name)
-                    vs_files = self.client_x.beta.vector_stores.files.list(vector_store_id=vs_id)
+                    vs_files = self.client_x.vector_stores.files.list(vector_store_id=vs_id)
                     for f in range(len(vs_files.data)):
                         file_id   = vs_files.data[f].id
                         file_info = self.client_x.files.retrieve(

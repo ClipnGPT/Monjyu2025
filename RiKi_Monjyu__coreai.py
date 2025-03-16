@@ -296,22 +296,39 @@ class CoreAiClass:
                 if self.chat_class.chatgptAPI.chatgpt_x_nick_name:
                     models[self.chat_class.chatgptAPI.chatgpt_x_nick_name.lower()] = ' ' + self.chat_class.chatgptAPI.chatgpt_x_nick_name
 
-        # Assistant
-        if self.chat_class.assistant_enable is None:
-            self.chat_class.assistant_auth()
-            if self.chat_class.assistant_enable:
-                qLog.log('info', self.proc_id, f" Assistant  : Ready, (Models count={ len(self.chat_class.assistantAPI.models) })")
-        if self.chat_class.assistant_enable:
+        # Assist
+        if self.chat_class.assist_enable is None:
+            self.chat_class.assist_auth()
+            if self.chat_class.assist_enable:
+                qLog.log('info', self.proc_id, f" Assist     : Ready, (Models count={ len(self.chat_class.assistAPI.models) })")
+        if self.chat_class.assist_enable:
             if (req_mode == 'chat'):
-                models['[assistant]'] = '[Assistant]'
-                if self.chat_class.assistantAPI.assistant_a_nick_name:
-                    models[self.chat_class.assistantAPI.assistant_a_nick_name.lower()] = ' ' + self.chat_class.assistantAPI.assistant_a_nick_name
-                if self.chat_class.assistantAPI.assistant_b_nick_name:
-                    models[self.chat_class.assistantAPI.assistant_b_nick_name.lower()] = ' ' + self.chat_class.assistantAPI.assistant_b_nick_name
-                if self.chat_class.assistantAPI.assistant_v_nick_name:
-                    models[self.chat_class.assistantAPI.assistant_v_nick_name.lower()] = ' ' + self.chat_class.assistantAPI.assistant_v_nick_name
-                if self.chat_class.assistantAPI.assistant_x_nick_name:
-                    models[self.chat_class.assistantAPI.assistant_x_nick_name.lower()] = ' ' + self.chat_class.assistantAPI.assistant_x_nick_name
+                models['[assist]'] = '[Assist]'
+                if self.chat_class.assistAPI.assist_a_nick_name:
+                    models[self.chat_class.assistAPI.assist_a_nick_name.lower()] = ' ' + self.chat_class.assistAPI.assist_a_nick_name
+                if self.chat_class.assistAPI.assist_b_nick_name:
+                    models[self.chat_class.assistAPI.assist_b_nick_name.lower()] = ' ' + self.chat_class.assistAPI.assist_b_nick_name
+                if self.chat_class.assistAPI.assist_v_nick_name:
+                    models[self.chat_class.assistAPI.assist_v_nick_name.lower()] = ' ' + self.chat_class.assistAPI.assist_v_nick_name
+                if self.chat_class.assistAPI.assist_x_nick_name:
+                    models[self.chat_class.assistAPI.assist_x_nick_name.lower()] = ' ' + self.chat_class.assistAPI.assist_x_nick_name
+
+        # Respo
+        if self.chat_class.respo_enable is None:
+            self.chat_class.respo_auth()
+            if self.chat_class.respo_enable:
+                qLog.log('info', self.proc_id, f" Respo      : Ready, (Models count={ len(self.chat_class.respoAPI.models) })")
+        if self.chat_class.respo_enable:
+            if (req_mode == 'chat'):
+                models['[respo]'] = '[Respo]'
+                if self.chat_class.respoAPI.respo_a_nick_name:
+                    models[self.chat_class.respoAPI.respo_a_nick_name.lower()] = ' ' + self.chat_class.respoAPI.respo_a_nick_name
+                if self.chat_class.respoAPI.respo_b_nick_name:
+                    models[self.chat_class.respoAPI.respo_b_nick_name.lower()] = ' ' + self.chat_class.respoAPI.respo_b_nick_name
+                if self.chat_class.respoAPI.respo_v_nick_name:
+                    models[self.chat_class.respoAPI.respo_v_nick_name.lower()] = ' ' + self.chat_class.respoAPI.respo_v_nick_name
+                if self.chat_class.respoAPI.respo_x_nick_name:
+                    models[self.chat_class.respoAPI.respo_x_nick_name.lower()] = ' ' + self.chat_class.respoAPI.respo_x_nick_name
 
         # Gemini
         if self.chat_class.gemini_enable is None:
@@ -476,15 +493,25 @@ class CoreAiClass:
                         self.chat_class.chatgptAPI.models[modelx]['modality'] = str(modality)
                         #self.chat_class.chatgptAPI.models[modelx]['date'] = str(date_ymd)
 
-                    # assistant
-                    if (model in self.chat_class.assistantAPI.models):
-                        self.chat_class.assistantAPI.models[model]['token'] = str(token)
-                        self.chat_class.assistantAPI.models[model]['modality'] = str(modality)
-                        #self.chat_class.assistantAPI.models[model]['date'] = str(date_ymd)
-                    if (modelx in self.chat_class.assistantAPI.models):
-                        self.chat_class.assistantAPI.models[modelx]['token'] = str(token)
-                        self.chat_class.assistantAPI.models[modelx]['modality'] = str(modality)
-                        #self.chat_class.assistantAPI.models[modelx]['date'] = str(date_ymd)
+                    # assist
+                    if (model in self.chat_class.assistAPI.models):
+                        self.chat_class.assistAPI.models[model]['token'] = str(token)
+                        self.chat_class.assistAPI.models[model]['modality'] = str(modality)
+                        #self.chat_class.assistAPI.models[model]['date'] = str(date_ymd)
+                    if (modelx in self.chat_class.assistAPI.models):
+                        self.chat_class.assistAPI.models[modelx]['token'] = str(token)
+                        self.chat_class.assistAPI.models[modelx]['modality'] = str(modality)
+                        #self.chat_class.assistAPI.models[modelx]['date'] = str(date_ymd)
+
+                    # respo
+                    if (model in self.chat_class.respoAPI.models):
+                        self.chat_class.respoAPI.models[model]['token'] = str(token)
+                        self.chat_class.respoAPI.models[model]['modality'] = str(modality)
+                        #self.chat_class.respoAPI.models[model]['date'] = str(date_ymd)
+                    if (modelx in self.chat_class.respoAPI.models):
+                        self.chat_class.respoAPI.models[modelx]['token'] = str(token)
+                        self.chat_class.respoAPI.models[modelx]['modality'] = str(modality)
+                        #self.chat_class.respoAPI.models[modelx]['date'] = str(date_ymd)
 
                     # gemini
                     modelx = model

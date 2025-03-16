@@ -45,8 +45,10 @@ DEBUG_FLAG = False
 import speech_bot_function
 import speech_bot_chatgpt
 import speech_bot_chatgpt_key as chatgpt_key
-import speech_bot_assistant
-import speech_bot_assistant_key as assistant_key
+import speech_bot_assist
+import speech_bot_assist_key as assist_key
+import speech_bot_respo
+import speech_bot_respo_key as respo_key
 import speech_bot_gemini
 import speech_bot_gemini_key as gemini_key
 import speech_bot_freeai
@@ -115,7 +117,8 @@ class ChatClass:
         # bot 定義
         self.history            = []
         self.chatgpt_enable     = None
-        self.assistant_enable   = None
+        self.assist_enable      = None
+        self.respo_enable       = None
         self.gemini_enable      = None
         self.freeai_enable      = None
         self.claude_enable      = None
@@ -222,22 +225,22 @@ class ChatClass:
 
         return self.chatgpt_enable
 
-    def assistant_auth(self):
+    def assist_auth(self):
         """
-        assistant 認証
+        assist 認証
         """
 
-        # chatgpt 定義
-        self.assistantAPI = speech_bot_assistant._assistantAPI()
-        self.assistantAPI.init(log_queue=None)
+        # assist 定義
+        self.assistAPI = speech_bot_assist._assistAPI()
+        self.assistAPI.init(log_queue=None)
 
-        # chatgpt 認証情報
-        api_type      	= assistant_key.getkey('assistant','openai_api_type')
-        organization  	= assistant_key.getkey('assistant','openai_organization')
-        openai_key_id 	= assistant_key.getkey('assistant','openai_key_id')
-        endpoint      	= assistant_key.getkey('assistant','azure_endpoint')
-        version       	= assistant_key.getkey('assistant','azure_version')
-        azure_key_id  	= assistant_key.getkey('assistant','azure_key_id'),
+        # assist 認証情報
+        api_type      	= assist_key.getkey('assist','openai_api_type')
+        organization  	= assist_key.getkey('assist','openai_organization')
+        openai_key_id 	= assist_key.getkey('assist','openai_key_id')
+        endpoint      	= assist_key.getkey('assist','azure_endpoint')
+        version       	= assist_key.getkey('assist','azure_version')
+        azure_key_id  	= assist_key.getkey('assist','azure_key_id'),
         if (self.conf.openai_api_type != ''):
             api_type = self.conf.openai_api_type
         if (self.conf.openai_organization not in ['', '< your openai organization >']):
@@ -251,33 +254,90 @@ class ChatClass:
         if (self.conf.azure_key_id not in ['', '< your azure key >']):
             azure_key_id = self.conf.azure_key_id
 
-        # assistant 認証実行
-        res = self.assistantAPI.authenticate('assistant',
+        # assist 認証実行
+        res = self.assistAPI.authenticate('assist',
                             api_type,
-                            assistant_key.getkey('assistant','assistant_default_gpt'), assistant_key.getkey('assistant','assistant_default_class'),
-                            assistant_key.getkey('assistant','assistant_auto_continue'),
-                            assistant_key.getkey('assistant','assistant_max_step'), assistant_key.getkey('assistant','assistant_max_session'),
-                            assistant_key.getkey('assistant','assistant_max_wait_sec'),
+                            assist_key.getkey('assist','assist_default_gpt'), assist_key.getkey('assist','assist_default_class'),
+                            assist_key.getkey('assist','assist_auto_continue'),
+                            assist_key.getkey('assist','assist_max_step'), assist_key.getkey('assist','assist_max_session'),
+                            assist_key.getkey('assist','assist_max_wait_sec'),
                             organization, openai_key_id,
                             endpoint, version, azure_key_id,
-                            assistant_key.getkey('assistant','assistant_a_nick_name'), assistant_key.getkey('assistant','assistant_a_model'), assistant_key.getkey('assistant','assistant_a_token'),
-                            assistant_key.getkey('assistant','assistant_a_use_tools'),
-                            assistant_key.getkey('assistant','assistant_b_nick_name'), assistant_key.getkey('assistant','assistant_b_model'), assistant_key.getkey('assistant','assistant_b_token'),
-                            assistant_key.getkey('assistant','assistant_b_use_tools'),
-                            assistant_key.getkey('assistant','assistant_v_nick_name'), assistant_key.getkey('assistant','assistant_v_model'), assistant_key.getkey('assistant','assistant_v_token'),
-                            assistant_key.getkey('assistant','assistant_v_use_tools'),
-                            assistant_key.getkey('assistant','assistant_x_nick_name'), assistant_key.getkey('assistant','assistant_x_model'), assistant_key.getkey('assistant','assistant_x_token'),
-                            assistant_key.getkey('assistant','assistant_x_use_tools'),
+                            assist_key.getkey('assist','assist_a_nick_name'), assist_key.getkey('assist','assist_a_model'), assist_key.getkey('assist','assist_a_token'),
+                            assist_key.getkey('assist','assist_a_use_tools'),
+                            assist_key.getkey('assist','assist_b_nick_name'), assist_key.getkey('assist','assist_b_model'), assist_key.getkey('assist','assist_b_token'),
+                            assist_key.getkey('assist','assist_b_use_tools'),
+                            assist_key.getkey('assist','assist_v_nick_name'), assist_key.getkey('assist','assist_v_model'), assist_key.getkey('assist','assist_v_token'),
+                            assist_key.getkey('assist','assist_v_use_tools'),
+                            assist_key.getkey('assist','assist_x_nick_name'), assist_key.getkey('assist','assist_x_model'), assist_key.getkey('assist','assist_x_token'),
+                            assist_key.getkey('assist','assist_x_use_tools'),
                             )
 
         if res == True:
-            self.assistant_enable = True
-            #qLog.log('info', self.proc_id, 'assistant authenticate OK!')
+            self.assist_enable = True
+            #qLog.log('info', self.proc_id, 'assist authenticate OK!')
         else:
-            self.assistant_enable = False
-            qLog.log('error', self.proc_id, 'assistant authenticate NG!')
+            self.assist_enable = False
+            qLog.log('error', self.proc_id, 'assist authenticate NG!')
 
-        return self.assistant_enable
+        return self.assist_enable
+
+    def respo_auth(self):
+        """
+        respo 認証
+        """
+
+        # respo 定義
+        self.respoAPI = speech_bot_respo._respoAPI()
+        self.respoAPI.init(log_queue=None)
+
+        # respo 認証情報
+        api_type      	= respo_key.getkey('respo','openai_api_type')
+        organization  	= respo_key.getkey('respo','openai_organization')
+        openai_key_id 	= respo_key.getkey('respo','openai_key_id')
+        endpoint      	= respo_key.getkey('respo','azure_endpoint')
+        version       	= respo_key.getkey('respo','azure_version')
+        azure_key_id  	= respo_key.getkey('respo','azure_key_id'),
+        if (self.conf.openai_api_type != ''):
+            api_type = self.conf.openai_api_type
+        if (self.conf.openai_organization not in ['', '< your openai organization >']):
+            organization = self.conf.openai_organization
+        if (self.conf.openai_key_id not in ['', '< your openai key >']):
+            openai_key_id = self.conf.openai_key_id
+        if (self.conf.azure_endpoint not in ['', '< your azure endpoint base >']):
+            endpoint = self.conf.azure_endpoint
+        if (self.conf.azure_version not in ['', 'yyyy-mm-dd']):
+            version = self.conf.azure_version
+        if (self.conf.azure_key_id not in ['', '< your azure key >']):
+            azure_key_id = self.conf.azure_key_id
+
+        # respo 認証実行
+        res = self.respoAPI.authenticate('respo',
+                            api_type,
+                            respo_key.getkey('respo','respo_default_gpt'), respo_key.getkey('respo','respo_default_class'),
+                            respo_key.getkey('respo','respo_auto_continue'),
+                            respo_key.getkey('respo','respo_max_step'), respo_key.getkey('respo','respo_max_session'),
+                            respo_key.getkey('respo','respo_max_wait_sec'),
+                            organization, openai_key_id,
+                            endpoint, version, azure_key_id,
+                            respo_key.getkey('respo','respo_a_nick_name'), respo_key.getkey('respo','respo_a_model'), respo_key.getkey('respo','respo_a_token'),
+                            respo_key.getkey('respo','respo_a_use_tools'),
+                            respo_key.getkey('respo','respo_b_nick_name'), respo_key.getkey('respo','respo_b_model'), respo_key.getkey('respo','respo_b_token'),
+                            respo_key.getkey('respo','respo_b_use_tools'),
+                            respo_key.getkey('respo','respo_v_nick_name'), respo_key.getkey('respo','respo_v_model'), respo_key.getkey('respo','respo_v_token'),
+                            respo_key.getkey('respo','respo_v_use_tools'),
+                            respo_key.getkey('respo','respo_x_nick_name'), respo_key.getkey('respo','respo_x_model'), respo_key.getkey('respo','respo_x_token'),
+                            respo_key.getkey('respo','respo_x_use_tools'),
+                            )
+
+        if res == True:
+            self.respo_enable = True
+            #qLog.log('info', self.proc_id, 'respo authenticate OK!')
+        else:
+            self.respo_enable = False
+            qLog.log('error', self.proc_id, 'respo authenticate NG!')
+
+        return self.respo_enable
 
     def gemini_auth(self):
         """
@@ -721,8 +781,10 @@ class ChatClass:
 
         if (self.chatgpt_enable is None):
             self.chatgpt_auth()
-        if (self.assistant_enable is None):
-            self.assistant_auth()
+        if (self.assist_enable is None):
+            self.assist_auth()
+        if (self.respo_enable is None):
+            self.respo_auth()
         if (self.gemini_enable is None):
             self.gemini_auth()
         if (self.freeai_enable is None):
@@ -921,25 +983,119 @@ class ChatClass:
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))
 
-        # assistant
+        # assist
         if  ((res_text == '') or (res_text == '!')) \
-        and (self.assistant_enable == True):
+        and (self.assist_enable == True):
 
             # DEBUG
             if (DEBUG_FLAG == True):
                 if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
-                    print('DEBUG', 'assistant, reqText and inpText not nick_name !!!', inpText, )
+                    print('DEBUG', 'assist, reqText and inpText not nick_name !!!', inpText, )
 
             engine_text = ''
-            if (engine == '[assistant]'):
-                engine_text = self.assistantAPI.assistant_b_nick_name.lower() + ',\n'
+            if (engine == '[assist]'):
+                engine_text = self.assistAPI.assist_b_nick_name.lower() + ',\n'
             else:
-                model_nick_name1 = 'assistant'
+                model_nick_name = 'assist'
+                a_nick_name = self.assistAPI.assist_a_nick_name.lower()
+                b_nick_name = self.assistAPI.assist_b_nick_name.lower()
+                v_nick_name = self.assistAPI.assist_v_nick_name.lower()
+                x_nick_name = self.assistAPI.assist_x_nick_name.lower()
+                if (engine != ''):
+                    if   ((len(a_nick_name) != 0) and (engine.lower() == a_nick_name)):
+                        engine_text = a_nick_name + ',\n'
+                    elif ((len(b_nick_name) != 0) and (engine.lower() == b_nick_name)):
+                        engine_text = b_nick_name + ',\n'
+                    elif ((len(v_nick_name) != 0) and (engine.lower() == v_nick_name)):
+                        engine_text = v_nick_name + ',\n'
+                    elif ((len(x_nick_name) != 0) and (engine.lower() == x_nick_name)):
+                        engine_text = x_nick_name + ',\n'
+                if (engine_text == '') and (reqText.find(',') >= 1):
+                    req_nick_name = reqText[:reqText.find(',')].lower()
+                    if   (req_nick_name == model_nick_name):
+                        engine_text = model_nick_name + ',\n'
+                        reqText = reqText[len(model_nick_name)+1:].strip()
+                    elif (len(a_nick_name) != 0) and (req_nick_name == a_nick_name):
+                        engine_text = a_nick_name + ',\n'
+                        reqText = reqText[len(a_nick_name)+1:].strip()
+                    elif (len(b_nick_name) != 0) and (req_nick_name == b_nick_name):
+                        engine_text = b_nick_name + ',\n'
+                        reqText = reqText[len(b_nick_name)+1:].strip()
+                    elif (len(v_nick_name) != 0) and (req_nick_name == v_nick_name):
+                        engine_text = v_nick_name + ',\n'
+                        reqText = reqText[len(v_nick_name)+1:].strip()
+                    elif (len(x_nick_name) != 0) and (req_nick_name == x_nick_name):
+                        engine_text = x_nick_name + ',\n'
+                        reqText = reqText[len(x_nick_name)+1:].strip()
+                if (engine_text == '') and (inpText.find(',') >= 1):
+                    inp_nick_name = inpText[:inpText.find(',')].lower()
+                    if   (inp_nick_name == model_nick_name1):
+                        engine_text = model_nick_name1 + ',\n'
+                        inpText = inpText[len(model_nick_name1)+1:].strip()
+                    elif (inp_nick_name == model_nick_name2):
+                        engine_text = model_nick_name2 + ',\n'
+                        inpText = inpText[len(model_nick_name2)+1:].strip()
+                    elif (len(a_nick_name) != 0) and (inp_nick_name == a_nick_name):
+                        engine_text = a_nick_name + ',\n'
+                        inpText = inpText[len(a_nick_name)+1:].strip()
+                    elif (len(b_nick_name) != 0) and (inp_nick_name == b_nick_name):
+                        engine_text = b_nick_name + ',\n'
+                        inpText = inpText[len(b_nick_name)+1:].strip()
+                    elif (len(v_nick_name) != 0) and (inp_nick_name == v_nick_name):
+                        engine_text = v_nick_name + ',\n'
+                        inpText = inpText[len(v_nick_name)+1:].strip()
+                    elif (len(x_nick_name) != 0) and (inp_nick_name == x_nick_name):
+                        engine_text = x_nick_name + ',\n'
+                        inpText = inpText[len(x_nick_name)+1:].strip()
+
+            if (engine_text != ''):
+                inpText2 = engine_text + inpText
+                engine_text = ''
+
+                try:
+                    qLog.log('info', self.proc_id, '### Assist ###')
+
+                    if (self.coreai is not None):
+                        self.assistAPI.set_models(  max_wait_sec=self.coreai.chat_class.assistAPI.assist_max_wait_sec,
+                                                    a_model=self.coreai.chat_class.assistAPI.assist_a_model,
+                                                    a_use_tools=self.coreai.chat_class.assistAPI.assist_a_use_tools,
+                                                    b_model=self.coreai.chat_class.assistAPI.assist_b_model,
+                                                    b_use_tools=self.coreai.chat_class.assistAPI.assist_b_use_tools,
+                                                    v_model=self.coreai.chat_class.assistAPI.assist_v_model,
+                                                    v_use_tools=self.coreai.chat_class.assistAPI.assist_v_use_tools,
+                                                    x_model=self.coreai.chat_class.assistAPI.assist_x_model,
+                                                    x_use_tools=self.coreai.chat_class.assistAPI.assist_x_use_tools, )
+
+                    res_text, res_path, res_files, res_name, res_api, res_history = \
+                        self.assistAPI.chatBot(     chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                    history=history, function_modules=function_modules,
+                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                    if ((res_text != '') and (res_text != '!')):
+                        res_engine = 'Assist'
+                        res_data = res_text
+                except Exception as e:
+                    qLog.log('error', self.proc_id, str(e))
+
+        # respo
+        if  ((res_text == '') or (res_text == '!')) \
+        and (self.respo_enable == True):
+
+            # DEBUG
+            if (DEBUG_FLAG == True):
+                if (engine == '') and (reqText.find(',') < 1) and (inpText.find(',') < 1):
+                    print('DEBUG', 'respo, reqText and inpText not nick_name !!!', inpText, )
+
+            engine_text = ''
+            if (engine == '[respo]'):
+                engine_text = self.respoAPI.respo_b_nick_name.lower() + ',\n'
+            else:
+                model_nick_name1 = 'respo'
                 model_nick_name2 = 'vision'
-                a_nick_name = self.assistantAPI.assistant_a_nick_name.lower()
-                b_nick_name = self.assistantAPI.assistant_b_nick_name.lower()
-                v_nick_name = self.assistantAPI.assistant_v_nick_name.lower()
-                x_nick_name = self.assistantAPI.assistant_x_nick_name.lower()
+                a_nick_name = self.respoAPI.respo_a_nick_name.lower()
+                b_nick_name = self.respoAPI.respo_b_nick_name.lower()
+                v_nick_name = self.respoAPI.respo_v_nick_name.lower()
+                x_nick_name = self.respoAPI.respo_x_nick_name.lower()
                 if (engine != ''):
                     if   ((len(a_nick_name) != 0) and (engine.lower() == a_nick_name)):
                         engine_text = a_nick_name + ',\n'
@@ -995,26 +1151,26 @@ class ChatClass:
                 engine_text = ''
 
                 try:
-                    qLog.log('info', self.proc_id, '### Assistant ###')
+                    qLog.log('info', self.proc_id, '### Respo ###')
 
                     if (self.coreai is not None):
-                        self.assistantAPI.set_models(   max_wait_sec=self.coreai.chat_class.assistantAPI.assistant_max_wait_sec,
-                                                        a_model=self.coreai.chat_class.assistantAPI.assistant_a_model,
-                                                        a_use_tools=self.coreai.chat_class.assistantAPI.assistant_a_use_tools,
-                                                        b_model=self.coreai.chat_class.assistantAPI.assistant_b_model,
-                                                        b_use_tools=self.coreai.chat_class.assistantAPI.assistant_b_use_tools,
-                                                        v_model=self.coreai.chat_class.assistantAPI.assistant_v_model,
-                                                        v_use_tools=self.coreai.chat_class.assistantAPI.assistant_v_use_tools,
-                                                        x_model=self.coreai.chat_class.assistantAPI.assistant_x_model,
-                                                        x_use_tools=self.coreai.chat_class.assistantAPI.assistant_x_use_tools, )
+                        self.respoAPI.set_models(   max_wait_sec=self.coreai.chat_class.respoAPI.respo_max_wait_sec,
+                                                    a_model=self.coreai.chat_class.respoAPI.respo_a_model,
+                                                    a_use_tools=self.coreai.chat_class.respoAPI.respo_a_use_tools,
+                                                    b_model=self.coreai.chat_class.respoAPI.respo_b_model,
+                                                    b_use_tools=self.coreai.chat_class.respoAPI.respo_b_use_tools,
+                                                    v_model=self.coreai.chat_class.respoAPI.respo_v_model,
+                                                    v_use_tools=self.coreai.chat_class.respoAPI.respo_v_use_tools,
+                                                    x_model=self.coreai.chat_class.respoAPI.respo_x_model,
+                                                    x_use_tools=self.coreai.chat_class.respoAPI.respo_x_use_tools, )
 
                     res_text, res_path, res_files, res_name, res_api, res_history = \
-                        self.assistantAPI.chatBot(      chat_class=chat_class, model_select=model_select, session_id=session_id, 
-                                                        history=history, function_modules=function_modules,
-                                                        sysText=sysText, reqText=reqText, inpText=inpText2,
-                                                        filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
+                        self.respoAPI.chatBot(      chat_class=chat_class, model_select=model_select, session_id=session_id, 
+                                                    history=history, function_modules=function_modules,
+                                                    sysText=sysText, reqText=reqText, inpText=inpText2,
+                                                    filePath=filePath, jsonSchema=jsonSchema, inpLang=inpLang, outLang=outLang, )
                     if ((res_text != '') and (res_text != '!')):
-                        res_engine = 'Assistant'
+                        res_engine = 'Respo'
                         res_data = res_text
                 except Exception as e:
                     qLog.log('error', self.proc_id, str(e))

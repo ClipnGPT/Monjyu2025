@@ -83,7 +83,8 @@
             <div class="tab-header">
                 <button data-target="reset">Reset</button>
                 <button data-target="gpt">ChatGPT</button>
-                <button data-target="asst">Assistant</button>
+                <button data-target="asst">Assist</button>
+                <button data-target="resp">Respo</button>
                 <button data-target="gemn">Gemini</button>
                 <button data-target="free">FreeAI</button>
                 <button data-target="clad">Claude</button>
@@ -214,16 +215,16 @@
                 </table>
             </div>
 
-            <!-- Assistantタブ -->
+            <!-- Assistタブ -->
             <div class="tab-content" id="asst" style="justify-content: center;">
                 <table>
                     <tr><td align="right">　</td><td>　</td></tr>
                     <tr>
-                        <td align="right">【Assistant】</td>
+                        <td align="right">【Assist】</td>
                         <td><a href="https://platform.openai.com/docs/models#current-model-aliases" target="_blank">https://platform.openai.com/docs/models</a></td>
                     </tr>
 
-                    <tr><td align="right">　</td><td>　</td></tr>
+                    <tr><td align="right">　</td><td>※ OpenAI Assistant API 利用</td></tr>
                     <tr>
                         <td align="right">　</td>
                         <td>(Setting)</td>
@@ -243,7 +244,7 @@
                         <td>(OpenAI Models)</td>
                     </tr>
                     <tr>
-                        <td align="right"><span id="asst_a_nick_name">assistant-a</span>, :</td>
+                        <td align="right"><span id="asst_a_nick_name">assist-a</span>, :</td>
                         <td>
                             <select id="asst_a_model" name="asst_a_model">
                                 <option value="">Auto (自動)</option>
@@ -262,7 +263,7 @@
                     </tr>
                     <tr><td align="right">　</td><td align="center"><button type="button" id="asst-a2bvx-button">↓ (a to b,v,x,)</button></td></tr>
                     <tr>
-                        <td align="right"><span id="asst_b_nick_name">assistant-b</span>, :</td>
+                        <td align="right"><span id="asst_b_nick_name">assist-b</span>, :</td>
                         <td>
                             <select id="asst_b_model" name="asst_b_model">
                                 <option value="">Auto (自動)</option>
@@ -280,7 +281,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td align="right"><span id="asst_v_nick_name">assistant-v</span>, :</td>
+                        <td align="right"><span id="asst_v_nick_name">assist-v</span>, :</td>
                         <td>
                             <select id="asst_v_model" name="asst_v_model">
                                 <option value="">Auto (自動)</option>
@@ -298,7 +299,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td align="right"><span id="asst_x_nick_name">assistant-x</span>, :</td>
+                        <td align="right"><span id="asst_x_nick_name">assist-x</span>, :</td>
                         <td>
                             <select id="asst_x_model" name="asst_x_model">
                                 <option value="">Auto (自動)</option>
@@ -309,6 +310,110 @@
                         <td align="right">tools :</td>
                         <td>
                             <select id="asst_x_use_tools" name="asst_x_use_tools">
+                                <option value="">Auto (自動)</option>
+                                <option value="yes">Yes (有効)</option>
+                                <option value="no">No (無効)</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Respoタブ -->
+            <div class="tab-content" id="resp" style="justify-content: center;">
+                <table>
+                    <tr><td align="right">　</td><td>　</td></tr>
+                    <tr>
+                        <td align="right">【Responses】</td>
+                        <td><a href="https://platform.openai.com/docs/models#current-model-aliases" target="_blank">https://platform.openai.com/docs/models</a></td>
+                    </tr>
+
+                    <tr><td align="right">　</td><td>※ OpenAI Responses API 利用</td></tr>
+                    <tr>
+                        <td align="right">　</td>
+                        <td>(Setting)</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Timeout :</td>
+                        <td>
+                            <select id="resp_max_wait_sec" name="resp_max_wait_sec">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <tr><td align="right">　</td><td>　</td></tr>
+                    <tr>
+                        <td align="right">　</td>
+                        <td>(OpenAI Models)</td>
+                    </tr>
+                    <tr>
+                        <td align="right"><span id="resp_a_nick_name">respo-a</span>, :</td>
+                        <td>
+                            <select id="resp_a_model" name="resp_a_model">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">tools :</td>
+                        <td>
+                            <select id="resp_a_use_tools" name="resp_a_use_tools">
+                                <option value="">Auto (自動)</option>
+                                <option value="yes">Yes (有効)</option>
+                                <option value="no">No (無効)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr><td align="right">　</td><td align="center"><button type="button" id="resp-a2bvx-button">↓ (a to b,v,x,)</button></td></tr>
+                    <tr>
+                        <td align="right"><span id="resp_b_nick_name">respo-b</span>, :</td>
+                        <td>
+                            <select id="resp_b_model" name="resp_b_model">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">tools :</td>
+                        <td>
+                            <select id="resp_b_use_tools" name="resp_b_use_tools">
+                                <option value="">Auto (自動)</option>
+                                <option value="yes">Yes (有効)</option>
+                                <option value="no">No (無効)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right"><span id="resp_v_nick_name">respo-v</span>, :</td>
+                        <td>
+                            <select id="resp_v_model" name="resp_v_model">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">tools :</td>
+                        <td>
+                            <select id="resp_v_use_tools" name="resp_v_use_tools">
+                                <option value="">Auto (自動)</option>
+                                <option value="yes">Yes (有効)</option>
+                                <option value="no">No (無効)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right"><span id="resp_x_nick_name">respo-x</span>, :</td>
+                        <td>
+                            <select id="resp_x_model" name="resp_x_model">
+                                <option value="">Auto (自動)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">tools :</td>
+                        <td>
+                            <select id="resp_x_use_tools" name="resp_x_use_tools">
                                 <option value="">Auto (自動)</option>
                                 <option value="yes">Yes (有効)</option>
                                 <option value="no">No (無効)</option>

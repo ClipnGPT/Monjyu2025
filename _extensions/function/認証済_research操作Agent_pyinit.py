@@ -26,6 +26,8 @@ qText_complete    = 'Research-Agent function complete!'
 qIO_func2py       = 'temp/research操作Agent_func2py.txt'
 qIO_py2func       = 'temp/research操作Agent_py2func.txt'
 
+B_USE_VERSION     = '0.1.37'
+
 qPath_sandbox     = 'temp/sandbox/'
 qWebUI_name       = 'web-ui-main'
 qWebUI_zip        = '_datas/reacts/web-ui-main.zip'
@@ -127,13 +129,14 @@ if __name__ == '__main__':
         pip_install('langchain-anthropic')
         pip_install('langchain-google-genai')
         #pip_install('browser-use')
-        pip_install('browser-use', '0.1.37')
+        pip_install('browser-use', '0.1.40')
 
         requirement_file = qPath_sandbox + qWebUI_name + '/requirements.txt'
         if (not os.path.isfile(requirement_file)):
 
             # web-ui
-            #pip_install('browser-use', '0.1.37')
+            #pip_install('browser-use')
+            #pip_install('browser-use', B_USE_VERSION)
             pip_install('pyperclip')
             pip_install('gradio')
             pip_install('json-repair')
@@ -145,6 +148,11 @@ if __name__ == '__main__':
                 install_proc2 = subprocess.call(['cmd', '/c', f"pip install -r { requirement_file }"], shell=True, )
             else:
                 install_proc2 = subprocess.call([f"pip install -r { requirement_file }"])
+
+        if (os.name == 'nt'):
+            print('')
+            pipshow_proc = subprocess.Popen(['cmd', '/c', 'pip show browser-use'], shell=True, )
+            print('')
 
         print('playwright install ...')
         if (os.name == 'nt'):

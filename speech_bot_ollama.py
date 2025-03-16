@@ -655,8 +655,12 @@ class _ollamaAPI:
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:6].lower() == ('azure,')):
             inpText = inpText.strip()[6:]
-        elif (inpText.strip()[:7].lower() == ('chatgpt,')):
+        elif (inpText.strip()[:8].lower() == ('chatgpt,')):
+            inpText = inpText.strip()[8:]
+        elif (inpText.strip()[:7].lower() == ('assist,')):
             inpText = inpText.strip()[7:]
+        elif (inpText.strip()[:6].lower() == ('respo,')):
+            inpText = inpText.strip()[6:]
         elif (inpText.strip()[:7].lower() == ('gemini,')):
             inpText = inpText.strip()[7:]
         elif (inpText.strip()[:7].lower() == ('freeai,')):
