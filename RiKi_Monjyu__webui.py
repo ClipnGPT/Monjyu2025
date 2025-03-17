@@ -255,6 +255,7 @@ class WebUiClass:
         self.app.get("/get_source")(self.get_source)
         self.app.post("/post_tts_text")(self.post_tts_text)
         self.app.post("/post_tts_csv")(self.post_tts_csv)
+        self.app.post("/post_files_out2inp")(self.post_files_out2inp)
         self.app.get("/get_stt")(self.get_stt)
         self.app.get("/get_url_to_text")(self.get_url_to_text)
         self.app.post("/post_speech_json")(self.post_speech_json)
@@ -1095,6 +1096,38 @@ class WebUiClass:
                 print(e)
 
         return JSONResponse({'message': 'post_tts_csv successfully'})
+
+    async def post_files_out2inp(self):
+        # コピーしたファイル数をカウント
+        copied_count = 0
+
+        try:
+            # 出力ディレクトリ内のファイル一覧を取得
+            file_table = [
+                (f, os.path.getctime(os.path.join(qPath_output, f)))
+                for f in os.listdir(qPath_output)
+                if os.path.isfile(os.path.join(qPath_output, f))
+            ]
+                        
+            # 現在時刻を取得
+            now = datetime.datetime.now()
+            # 5分前の時刻を計算
+            five_minutes_ago = now - datetime.timedelta(minutes=5)
+            
+            # 各ファイルについて処理
+            for f, create_time in file_table:
+                # ファイルの作成日時が5分以内かチェック
+                if datetime.datetime.fromtimestamp(create_time) >= five_minutes_ago:
+                    src_path = os.path.join(qPath_output, f)
+                    dst_path = os.path.join(qPath_input, f)
+                    
+                    # ファイルをコピー（メタデータを保持）
+                    shutil.copy2(src_path, dst_path)
+                    copied_count += 1
+            
+        except Exception as e:
+            print(e)
+        return JSONResponse({'message': f'post_files_out2inp successfully: {copied_count} files copied'})
 
     async def get_stt(self, input_field: str ):
         # 音声入力

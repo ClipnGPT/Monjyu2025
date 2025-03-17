@@ -23,10 +23,13 @@ import base64
 
 
 # gemini チャットボット
-import google.generativeai as genai
-#import google.ai.generativelanguage as glm
+from google import genai
+from google.genai import types
 
 import speech_bot_gemini_key as gemini_key
+
+# インターフェース
+qPath_output = 'temp/output/'
 
 
 
@@ -135,13 +138,14 @@ class _geminiAPI:
                     ):
 
         # 認証
-        self.bot_auth                 = None
-        self.gemini_key_id            = gemini_key_id
+        self.bot_auth                   = None
+        self.gemini_key_id              = gemini_key_id
+        self.client                     = None  
 
         if (gemini_key_id[:1] == '<'):
             return False
         try:
-            genai.configure(api_key=gemini_key_id, ) 
+            self.client = genai.Client(api_key=gemini_key_id, ) 
         except Exception as e:
             print(e)
             return False
@@ -234,18 +238,16 @@ class _geminiAPI:
 
     def get_models(self, ):
         try:
-            models = genai.list_models()
+            models = self.client.models.list()
             self.models = {}
             for model in models:
-                #print(model)
-                supported = model.supported_generation_methods
-                if ('generateContent' in supported):
+                if ("generateContent" in model.supported_actions):
                     key = model.name.replace('models/', '')
                     if  (key.find('gemini-2') >= 0) or (key.find('gemini-exp') >= 0):
                     #if True:
                         token = model.input_token_limit
                         #print(key, token, )
-                        self.models[key] = {"id":key, "token":str(token), "modality":str(supported), "date": '????/??/??', }
+                        self.models[key] = {"id":key, "token":str(token), "modality":str(model.supported_actions), "date":'????/??/??', }
         except Exception as e:
             print(e)
             return False
@@ -584,21 +586,22 @@ class _geminiAPI:
 
                     # 確認
                     hit = False
-                    up_files = genai.list_files()
+                    up_files = self.client.files.list()
                     for upf in up_files:
                         if (upf.display_name == os.path.basename(file_name)):
                             hit = True
-                            upload_obj = genai.get_file(upf.name)
-                            req_files.append(upload_obj)
+                            upload_obj = self.client.files.get(name=upf.name)
+                            req_files.append( types.Part.from_uri(file_uri=upload_obj.uri, mime_type=upload_obj.mime_type) )
                             break
 
-                    if (hit == False):
+                    # ***free特別処理*** 毎回送信
+                    #if (hit == False):
+                    if True:
 
                         # 送信
                         self.print(session_id, f" Gemini : Upload file '{ file_name }'.")
-                        upload_file = genai.upload_file(file_name, display_name=os.path.basename(file_name), )
-                        upload_obj  = genai.get_file(upload_file.name)
-
+                        upload_file = self.client.files.upload(file=file_name) #, display_name=os.path.basename(file_name), )
+                        upload_obj  = self.client.files.get(name=upload_file.name)
                         # 待機
                         self.print(session_id, f" Gemini : Upload processing ... '{ upload_file.name }'")
                         chkTime = time.time()
@@ -607,10 +610,9 @@ class _geminiAPI:
                         if (upload_file.state.name == "PROCESSING"):
                             self.print(session_id, ' Gemini : Upload timeout. (120s)')
                             return res_text, res_path, res_files, res_name, res_api, res_history
-
                         # 完了
                         self.print(session_id, ' Gemini : Upload complete.')
-                        req_files.append(upload_obj)
+                        req_files.append( types.Part.from_uri(file_uri=upload_obj.uri, mime_type=upload_obj.mime_type) )
 
         # tools
         tools = []
@@ -621,56 +623,57 @@ class _geminiAPI:
                 # tools
                 #tools.append({"code_execution": {}, })
                 #tools.append({"google_search": {}, })
+                function_declarations = []
                 for module_dic in function_modules.values():
                     func_dic = module_dic['function']
-                    func_str = json.dumps(func_dic, ensure_ascii=False, )
+                    #func_str = json.dumps(func_dic, ensure_ascii=False, )
                     #func_str = func_str.replace('"type"', '"type_"')
-                    func_str = func_str.replace('"object"', '"OBJECT"')
-                    func_str = func_str.replace('"string"', '"STRING"')
-                    func     = json.loads(func_str)
-                    tools.append(func)
+                    #func_str = func_str.replace('"object"', '"OBJECT"')
+                    #func_str = func_str.replace('"string"', '"STRING"')
+                    #func     = json.loads(func_str)
+                    function_declarations.append(func_dic)
+                if (len(function_declarations) > 0):
+                    tools.append({"function_declarations": function_declarations })
 
         # gemini 設定
         if (jsonSchema is None) or (jsonSchema == ''):
-            # 通常
             if (res_api.find('image-gen') < 0):
-                generation_config_normal = {
-                    "temperature": temperature,
-                    "top_p": 0.95,
-                    "top_k": 32,
-                    "max_output_tokens": 8192,
-                    "response_mime_type": "text/plain",
-                }
+                # 通常
+                if (len(image_urls) <= 0):
+                    generation_config = types.GenerateContentConfig(
+                        temperature= temperature,
+                        top_p= 0.95,
+                        top_k= 32,
+                        max_output_tokens= 8192,
+                        tools=tools,
+                        response_mime_type= "text/plain", )
+                # 画像認識
+                else:
+                    generation_config = types.GenerateContentConfig(
+                        temperature= temperature,
+                        top_p= 0.95,
+                        top_k= 32,
+                        max_output_tokens= 8192,
+                        response_mime_type= "text/plain", )
             # イメージ生成
             else:
-                generation_config_normal = {
-                    "temperature": temperature,
-                    "top_p": 0.95,
-                    "top_k": 32,
-                    "max_output_tokens": 8192,
-                    "response_modalities": ["image", "text"],
-                    "response_mime_type": "text/plain",
-                }
-            gemini = genai.GenerativeModel(
-                            model_name=res_api,
-                            generation_config=generation_config_normal,
-                            system_instruction=sysText, tools=tools, 
-                            safety_settings=self.safety_settings, )
+                generation_config = types.GenerateContentConfig(
+                    temperature= temperature,
+                    top_p= 0.95,
+                    top_k= 32,
+                    max_output_tokens= 8192,
+                    response_mime_type= "text/plain",
+                    response_modalities= ["Image", "Text"], )
         else:
             # 2024/09/04時点 スキーマ実行時はtools使えない！
             tools = []
-            generation_config_json = {
-                "temperature": temperature,
-                "top_p": 0.95,
-                "top_k": 32,
-                "max_output_tokens": 8192,
-                "response_mime_type": "application/json",
-            }
-            gemini = genai.GenerativeModel( 
-                            model_name=res_api,
-                            generation_config=generation_config_json,
-                            system_instruction=sysText, tools=tools, 
-                            safety_settings=self.safety_settings, )
+            generation_config = types.GenerateContentConfig(
+                    temperature= temperature,
+                    top_p= 0.95,
+                    top_k= 32,
+                    max_output_tokens= 8192,
+                    tools=tools,
+                    response_mime_type= "application/json", )
 
         # # ファイル削除
         # files = genai.list_files()
@@ -679,12 +682,11 @@ class _geminiAPI:
         #    genai.delete_file(f.name)
 
         request = []
-        request.append(msg_text)
-        request = list(req_files + request)
-
-        # gemini
-        #chat = gemini.start_chat(history=history, )
-        chat = gemini.start_chat(history=[], )
+        parts = []
+        parts.append( types.Part.from_text(text=msg_text) )
+        for file_obj in req_files:
+            parts.append( file_obj )
+        request.append( types.Content( role="user", parts=parts, ) )
 
         # ストリーム実行?
         if (session_id == 'admin'):
@@ -721,8 +723,12 @@ class _geminiAPI:
                 if (stream == True):
 
                     chkTime  = time.time()
-                    content  = {"role": "user", "parts": request }
-                    streams  = chat.send_message(content=content, stream=stream, )
+                    streams  = self.client.models.generate_content_stream(
+                        model=res_api,
+                        contents=request,
+                        config=generation_config,
+                        #tools=tools, 
+                    )
 
                     # Stream 処理
                     for chunk in streams:
@@ -740,9 +746,19 @@ class _geminiAPI:
                                 if (inline_data is not None):
                                     data      = inline_data.data
                                     mime_type = inline_data.mime_type
-                                    print(mime_type)
+                                    try:
+                                        # ファイル出力
+                                        nowTime  = datetime.datetime.now()
+                                        output_path = qPath_output + nowTime.strftime('%Y%m%d.%H%M%S') + '.image.png'
+                                        f = open(output_path, 'wb')
+                                        f.write(data)
+                                        f.close()
+                                        res_path = output_path
+                                        res_files.append(res_path)
+                                    except Exception as e:
+                                        print(e)
 
-                        if (content_text == ''):
+                        if (content_text == '') and (res_path == ''):
                             content_parts = chunk.candidates[0].content.parts
 
                     # 改行
@@ -751,9 +767,13 @@ class _geminiAPI:
 
                 # 通常実行
                 if (stream == False):
-                        content  = {"role": "user", "parts": request }
-                        response = chat.send_message(content=content, stream=stream, )
-                        #print(response)
+                        #content  = {"role": "user", "parts": request }
+                        response = self.client.models.generate_content(
+                            model=res_api,
+                            contents=request,
+                            config=generation_config,
+                            #tools=tools, 
+                        )
 
                         for p in range(len(response.candidates[0].content.parts)):
                             chunk_text = response.candidates[0].content.parts[p].text
@@ -768,9 +788,19 @@ class _geminiAPI:
                                 if (inline_data is not None):
                                     data      = inline_data.data
                                     mime_type = inline_data.mime_type
-                                    print(mime_type)
+                                    try:
+                                        # ファイル出力
+                                        nowTime  = datetime.datetime.now()
+                                        output_path = qPath_output + nowTime.strftime('%Y%m%d.%H%M%S') + '.image.png'
+                                        f = open(output_path, 'wb')
+                                        f.write(data)
+                                        f.close()
+                                        res_path = output_path
+                                        res_files.append(res_path)
+                                    except Exception as e:
+                                        print(e)
 
-                        if (content_text == ''):
+                        if (content_text == '') and (res_path == ''):
                             content_parts = response.candidates[0].content.parts
 
                 # 共通 text 処理
@@ -781,20 +811,26 @@ class _geminiAPI:
                     else:
                         time.sleep(5.00)
                     res_content += content_text + '\n'
+                else:
+                    if (res_path != ''):
+                        res_role    = 'assistant'
+                        res_content += res_path + '\n'
 
                 # 共通 parts 処理
                 if (content_parts is not None):
                     try:
                         for parts in content_parts:
-                            f_name   = parts.function_call.name
-                            f_args   = parts.function_call.args
-                            f_kwargs = None
-                            if (f_name != '') and (f_args is not None):
-                                json_dic = {}
-                                for key,value in f_args.items():
-                                    json_dic[key] = value
-                                f_kwargs = json.dumps(json_dic, ensure_ascii=False, )
-                                tool_calls.append({"id": parts, "type": "function", "function": { "name": f_name, "arguments": f_kwargs } })
+                            function_call = parts.function_call
+                            if (function_call is not None):
+                                f_name   = function_call.name
+                                f_args   = function_call.args
+                                f_kwargs = None
+                                if (f_name is not None) and (f_args is not None):
+                                    json_dic = {}
+                                    for key,value in f_args.items():
+                                        json_dic[key] = value
+                                    f_kwargs = json.dumps(json_dic, ensure_ascii=False, )
+                                    tool_calls.append({"id": parts, "type": "function", "function": { "name": f_name, "arguments": f_kwargs } })
                     except Exception as e:
                         print(e)
 
@@ -1041,8 +1077,8 @@ if __name__ == '__main__':
             if True:
                 sysText = None
                 reqText = ''
-                inpText = 'free-b,toolsで兵庫県三木市の天気を調べて'
-                #inpText = 'free-b,toolsで日本の３大都市の天気を調べて'
+                inpText = 'flash,toolsで兵庫県三木市の天気を調べて'
+                #inpText = 'flash,toolsで日本の３大都市の天気を調べて'
                 print()
                 print('[Request]')
                 print(reqText, inpText )

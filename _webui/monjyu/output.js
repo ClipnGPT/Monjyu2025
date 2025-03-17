@@ -182,6 +182,20 @@ function post_tts_text(speech_text) {
     });
 }
 
+// files_out2inp処理
+function post_files_out2inp() {
+    $.ajax({
+        url: '/post_files_out2inp',
+        method: 'POST',
+        success: function(response) {
+            console.log('post_files_out2inp:', response); // レスポンスをログに表示
+        },
+        error: function(xhr, status, error) {
+            console.error('post_files_out2inp error:', error); // エラーログを出力
+        }
+    });
+}
+
 // Live出力(text)
 function post_live_request(live_req, live_text) {
     $.ajax({
@@ -197,8 +211,6 @@ function post_live_request(live_req, live_text) {
         }
     });
 }
-
-
 
 // ドキュメントが読み込まれた時に実行される処理
 $(document).ready(function() {
@@ -278,6 +290,9 @@ $(document).ready(function() {
     });
     $('#tts-data-button').click(function() {
         post_tts_text( $('#output_data').val() );
+    });
+    $('#set-files-button').click(function() {
+        post_files_out2inp();
     });
     $('#live-data-button').click(function() {
         post_live_request( '', $('#output_data').val() );
