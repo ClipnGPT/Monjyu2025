@@ -444,8 +444,8 @@ class _class:
 
                 # html 確認
                 if (file_name[-5:].lower() == '.html'):
-                    # html-sandbox起動中
-                    to_file = qPath_sandbox + 'html-sandbox/public/index.html'
+                    # react_sandbox起動中
+                    to_file = qPath_sandbox + 'react_sandbox/public/index.html'
                     if (os.path.isfile(to_file)):
                         shutil.copy2(qPath_output + file_name, to_file)
 
@@ -579,7 +579,7 @@ if __name__ == '__main__':
 
     print(ext.func_proc('{ ' \
                       + '"runMode" : "assistant",' \
-                      + '"file_path" : "html-sandbox.zip"' \
+                      + '"file_path" : "react_sandbox.zip"' \
                       + ' }'))
 
     #print(ext.func_proc('{ ' \

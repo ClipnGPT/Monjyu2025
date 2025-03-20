@@ -20,6 +20,9 @@ function get_default_image() {
         success: function(data) {
             // 画像情報を更新
             $('#image_img').attr('src', data.image_data);
+            //if (data.image_ext === 'gif') {
+                // gif 処理
+            //}
         },
         error: function(xhr, status, error) {
             console.error('get_default_image error:', error);
@@ -37,12 +40,15 @@ function get_image_info() {
             if (data.image_data !== last_image_data) {
                 // 画像データが存在する場合
                 if (data.image_data) {
-                        // 画像情報を更新
+                    // 画像情報を更新
                     $('#image_img').attr('src', data.image_data);
+                    //if (data.image_ext === 'gif') {
+                        // gif 処理
+                    //}
                 } else {
-                    // 画像データがnullまたは空の場合は、デフォルト画像を取得
                     get_default_image();
                 }
+
                 // 最新の画像データを保持
                 last_image_data = data.image_data;
             }
@@ -219,6 +225,10 @@ $(document).ready(function() {
     $('#output_files_list').hide();
     $('#output_files_empty').show();
 
+    // デフォルト画像を取得する
+    get_default_image();
+    get_image_info();
+
     // localStorageからデータ復元
     const storedData = JSON.parse(localStorage.getItem('output_formData'));
 
@@ -242,8 +252,6 @@ $(document).ready(function() {
     };
 
     // 定期的な更新処理
-    get_default_image();
-    get_image_info();
     get_output_log_user();
     get_output_list();
     setInterval(get_image_info,  3000); // 3秒ごとにイメージ情報を更新

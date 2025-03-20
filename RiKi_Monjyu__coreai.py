@@ -1290,7 +1290,7 @@ class CoreAiClass:
                                 if (os.path.isfile(filename)):
                                     self.data.sandbox_file = filename
                             if (ext.lower() == '.html'):
-                                filename = qPath_sandbox + 'html-sandbox/public/index.html'
+                                filename = qPath_sandbox + 'react_sandbox/public/index.html'
                                 if (os.path.isfile(filename)):
                                     self.data.sandbox_file = filename
 

@@ -69,8 +69,8 @@ $(document).ready(function() {
         post_sandbox_open();
     });
 
-    $('#btn-html-sandbox').click(function() {
-        post_set_react('html-sandbox.zip');
+    $('#btn-react_sandbox').click(function() {
+        post_set_react('react_sandbox.zip');
     });
 
 });

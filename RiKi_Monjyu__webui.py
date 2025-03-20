@@ -51,7 +51,7 @@ qPath_tts       = 'temp/s6_5tts_txt/'
 qPath_reacts    = '_datas/reacts/'
 qPath_templates = '_webui/monjyu'
 qPath_static    = '_webui/monjyu/static'
-DEFAULT_ICON    = qPath_static + '/' + "icon_monjyu.png"
+DEFAULT_ICON    = qPath_static + '/' + "icon_monjyu.gif"
 
 qPath_sandbox = 'temp/sandbox/'
 qSandBox_name = 'react_sandbox'
@@ -903,23 +903,27 @@ class WebUiClass:
     async def get_default_image(self):
         # デフォルト画像データの取得
         image_data = self._get_image_data(DEFAULT_ICON)
-        return JSONResponse(content={"image_data": image_data})
+        _, image_ext = os.path.splitext(DEFAULT_ICON.lower())
+        return JSONResponse(content={"image_data": image_data, "image_ext": image_ext})
 
     async def get_image_info(self):
         # 次回表示する画像データの取得
         image_data = None
+        image_ext  = None
         if ((time.time() - self.last_image_time) > 60):
             self.last_image_file = None
             self.last_image_time = 0
         if (self.last_image_file is not None):
             image_data = self._get_image_data(self.last_image_file)
-        return JSONResponse(content={"image_data": image_data})
+            if (image_data is not None):
+                _, image_ext = os.path.splitext(self.last_image_file.lower())
+        return JSONResponse(content={"image_data": image_data, "image_ext": image_ext})
 
     def _get_image_data(self, image_path):
         # 画像ファイルをBase64エンコードしてデータURIスキーマ形式で返す
-        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
         image_data = None
-        if any(image_path.lower().endswith(ext) for ext in image_extensions):
+        _, image_ext = os.path.splitext(image_path.lower())
+        if (image_ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp']):
             try:
                 with open(image_path, "rb") as image_file:
                     encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
@@ -932,8 +936,8 @@ class WebUiClass:
         # アップロードされた複数ファイルを解析してテキストを返す
         drop_text = ''
         for file in files:
-            file_extension = file.filename.lower().split('.')[-1]
-            if f".{file_extension}" in [".py", ".txt", ".html", ".json", ".bas"]:
+            _, file_extension = os.path.splitext(file.filename.lower())
+            if (file_extension in [".py", ".txt", ".html", ".json", ".csv", ".bas", ".vba"]):
                 file_content = await file.read()
                 encoding = chardet.detect(file_content)['encoding']
                 text = file_content.decode(encoding)
@@ -1331,7 +1335,7 @@ class WebUiClass:
                         if (os.path.isfile(filename)):
                             self.data.sandbox_file = filename
                     if (ext.lower() == '.html'):
-                        filename = qPath_sandbox + 'html-sandbox/public/index.html'
+                        filename = qPath_sandbox + 'react_sandbox/public/index.html'
                         if (os.path.isfile(filename)):
                             self.data.sandbox_file = filename
 
